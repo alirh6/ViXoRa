@@ -2,7 +2,7 @@
 export function createHomePage (ctx) {
   function render () {
   return `
-    <div >slm</div>
+    
   `
     
   }

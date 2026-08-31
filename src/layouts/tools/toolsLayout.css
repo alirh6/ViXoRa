@@ -1,0 +1,980 @@
+/* tools-layout.css */
+/* ViXoRa Tools Layout CSS (for vcr-* classes) */
+
+/* -------------------------------
+   Design Tokens
+-------------------------------- */
+:root {
+  color-scheme: dark;
+
+  --vcr-bg: #070b14;
+  --vcr-surface: rgba(16, 22, 36, 0.78);
+  --vcr-surface-2: rgba(20, 27, 43, 0.88);
+  --vcr-surface-3: rgba(26, 34, 54, 0.92);
+
+  --vcr-border: rgba(255, 255, 255, 0.08);
+  --vcr-border-2: rgba(0, 240, 255, 0.16);
+
+  --vcr-text: rgba(255, 255, 255, 0.92);
+  --vcr-muted: rgba(255, 255, 255, 0.60);
+  --vcr-dim: rgba(255, 255, 255, 0.42);
+
+  --vcr-cyan: #00f0ff;
+  --vcr-cyan-2: #00c2ff;
+  --vcr-purple: #a78bfa;
+  --vcr-green: #2dffb2;
+  --vcr-red: #ff4d6d;
+  --vcr-yellow: #ffd166;
+
+  --vcr-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --vcr-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.35);
+
+  --vcr-radius: 16px;
+  --vcr-radius-sm: 12px;
+
+  --vcr-header-h: 78px;
+
+  --vcr-sidebar-w: 320px;
+  --vcr-sidebar-w-collapsed: 78px;
+
+  --vcr-gap: 14px;
+  --vcr-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic",
+    "Noto Naskh Arabic", "Vazirmatn", Arial, sans-serif;
+
+  --vcr-focus: 0 0 0 3px rgba(0, 240, 255, 0.28), 0 0 0 1px rgba(0, 240, 255, 0.34);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -------------------------------
+   Base
+-------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--vcr-font);
+  background: radial-gradient(1200px 600px at 50% -10%, rgba(0, 240, 255, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 80% 30%, rgba(167, 139, 250, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 20% 70%, rgba(45, 255, 178, 0.10), transparent 60%),
+    var(--vcr-bg);
+  color: var(--vcr-text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:where(button, a, input, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--vcr-focus);
+  border-radius: 10px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Nice scrollbar (Chromium/WebKit) */
+.vcr-sidebar__scroll,
+.vcr-popover__body,
+.vcr-cmdk-results {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.vcr-sidebar__scroll::-webkit-scrollbar,
+.vcr-popover__body::-webkit-scrollbar,
+.vcr-cmdk-results::-webkit-scrollbar {
+  width: 10px;
+}
+
+.vcr-sidebar__scroll::-webkit-scrollbar-thumb,
+.vcr-popover__body::-webkit-scrollbar-thumb,
+.vcr-cmdk-results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* -------------------------------
+   Layout Root
+-------------------------------- */
+.vcr-layout {
+  min-height: 100vh;
+}
+
+.vcr-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  height: var(--vcr-header-h);
+  padding: 10px 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  background: linear-gradient(180deg, rgba(10, 14, 24, 0.92), rgba(10, 14, 24, 0.70));
+  border-bottom: 1px solid var(--vcr-border);
+  backdrop-filter: blur(12px);
+}
+
+/* Header areas */
+.vcr-header__brand {
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+}
+
+.vcr-header__center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+}
+
+.vcr-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* -------------------------------
+   Brand / Logo
+-------------------------------- */
+.vcr-header__logo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vcr-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  position: relative;
+  display: grid;
+  place-items: center;
+
+  background:
+    radial-gradient(16px 16px at 35% 35%, rgba(0, 240, 255, 0.9), transparent 60%),
+    radial-gradient(26px 26px at 75% 70%, rgba(167, 139, 250, 0.65), transparent 60%),
+    rgba(255, 255, 255, 0.06);
+
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.10);
+}
+
+.vcr-logo-glow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 20px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.16), transparent 60%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.vcr-logo-text {
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.vcr-brand-info {
+  display: grid;
+  gap: 2px;
+}
+
+.vcr-brand-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vcr-badge-version {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  background: rgba(0, 240, 255, 0.10);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.vcr-brand-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--vcr-muted);
+}
+
+/* -------------------------------
+   Command Button (Header)
+-------------------------------- */
+.vcr-cmd-btn {
+  width: min(680px, 100%);
+  height: 44px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 0 12px;
+
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: var(--vcr-shadow-soft);
+  cursor: pointer;
+
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.vcr-cmd-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 240, 255, 0.24);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.vcr-cmd-btn__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--vcr-muted);
+  font-size: 13px;
+}
+
+.vcr-kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.20);
+}
+
+/* -------------------------------
+   Status / DateTime
+-------------------------------- */
+.vcr-status-pill {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.vcr-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--vcr-green);
+  box-shadow: 0 0 0 3px rgba(45, 255, 178, 0.18);
+}
+
+.vcr-status-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+
+.vcr-datetime-card {
+  height: 44px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.vcr-time {
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  font-size: 14px;
+}
+
+.vcr-date {
+  font-size: 12px;
+  color: var(--vcr-muted);
+}
+
+/* -------------------------------
+   Action Buttons / Dropdowns
+-------------------------------- */
+.vcr-dropdown-wrapper {
+  position: relative;
+}
+
+.vcr-action-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
+}
+
+.vcr-action-icon-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 240, 255, 0.22);
+  background: rgba(0, 240, 255, 0.07);
+}
+
+.vcr-notif-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--vcr-red);
+  box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.18);
+}
+
+/* User pill */
+.vcr-user-pill {
+  height: 44px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
+}
+
+.vcr-user-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 240, 255, 0.22);
+  background: rgba(0, 240, 255, 0.07);
+}
+
+.vcr-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.vcr-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vcr-avatar-online {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--vcr-green);
+  box-shadow: 0 0 0 3px rgba(10, 14, 24, 0.85);
+}
+
+.vcr-user-info {
+  display: grid;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.vcr-user-name {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.vcr-user-role {
+  font-size: 11px;
+  color: var(--vcr-muted);
+}
+
+/* Popover */
+.vcr-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(12, 16, 28, 0.88);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--vcr-shadow);
+  overflow: hidden;
+}
+
+.vcr-popover--notif {
+  width: 360px;
+}
+
+.vcr-popover__header {
+  padding: 14px 14px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.06), transparent);
+}
+
+.vcr-notif-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.vcr-badge-count {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.20);
+  background: rgba(0, 240, 255, 0.10);
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.vcr-popover__body {
+  max-height: 340px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.vcr-notif-item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vcr-notif-item + .vcr-notif-item {
+  margin-top: 10px;
+}
+
+.vcr-notif-item.unread {
+  border-color: rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.06);
+}
+
+.vcr-notif-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.vcr-notif-icon.cyan {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.22);
+}
+
+.vcr-notif-icon.purple {
+  background: rgba(167, 139, 250, 0.14);
+  border-color: rgba(167, 139, 250, 0.26);
+}
+
+.vcr-notif-content p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.vcr-notif-content small {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--vcr-muted);
+  font-size: 11px;
+}
+
+/* user popover links */
+.vcr-popover-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.86);
+  background: transparent;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.vcr-popover-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(0, 240, 255, 0.16);
+}
+
+.vcr-popover-link--danger:hover {
+  border-color: rgba(255, 77, 109, 0.30);
+  background: rgba(255, 77, 109, 0.10);
+}
+
+.vcr-popover-sep {
+  height: 1px;
+  margin: 10px 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* -------------------------------
+   Main Body (Content + Sidebar)
+-------------------------------- */
+.vcr-body {
+  min-height: calc(100vh - var(--vcr-header-h));
+  display: flex;
+
+  /* Important for RTL: sidebar must appear on the right side even though DOM order is content then aside */
+  flex-direction: row-reverse;
+
+  gap: var(--vcr-gap);
+  padding: var(--vcr-gap);
+}
+
+.vcr-panel-content {
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--vcr-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--vcr-shadow-soft);
+  padding: 18px;
+}
+
+/* -------------------------------
+   Sidebar
+-------------------------------- */
+.vcr-sidebar {
+  width: var(--vcr-sidebar-w);
+  min-width: var(--vcr-sidebar-w);
+  border-radius: var(--vcr-radius);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: linear-gradient(180deg, rgba(12, 16, 28, 0.86), rgba(12, 16, 28, 0.68));
+  box-shadow: var(--vcr-shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.vcr-sidebar__scroll {
+  height: 100%;
+  padding: 16px 12px;
+  overflow: auto;
+}
+
+.vcr-sidebar-toggle {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.vcr-sidebar-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 240, 255, 0.22);
+  background: rgba(0, 240, 255, 0.07);
+}
+
+.vcr-toggle-chevron {
+  transition: transform 180ms ease;
+}
+
+/* Collapsed state */
+.vcr-body.is-collapsed .vcr-sidebar {
+  width: var(--vcr-sidebar-w-collapsed);
+  min-width: var(--vcr-sidebar-w-collapsed);
+}
+
+.vcr-body.is-collapsed .vcr-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.vcr-body.is-collapsed .vcr-menu-group__title,
+.vcr-body.is-collapsed .vcr-menu-text,
+.vcr-body.is-collapsed .vcr-menu-badge {
+  display: none !important;
+}
+
+/* Menu groups */
+.vcr-menu-group + .vcr-menu-group {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.10);
+}
+
+.vcr-menu-group__title {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 4px 10px 10px;
+}
+
+.vcr-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+/* Menu item */
+.vcr-menu-item {
+  position: relative;
+}
+
+.vcr-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 10px;
+  border-radius: 14px;
+
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+
+  transition: transform 130ms ease, background 130ms ease, border-color 130ms ease;
+}
+
+.vcr-menu-link:hover {
+  transform: translateY(-1px);
+  background: rgba(0, 240, 255, 0.06);
+  border-color: rgba(0, 240, 255, 0.18);
+}
+
+.vcr-menu-item.active .vcr-menu-link {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.12), rgba(255, 255, 255, 0.03));
+  border-color: rgba(0, 240, 255, 0.30);
+  box-shadow: 0 12px 28px rgba(0, 240, 255, 0.08);
+}
+
+.vcr-menu-item--logout .vcr-menu-link:hover {
+  background: rgba(255, 77, 109, 0.10);
+  border-color: rgba(255, 77, 109, 0.30);
+}
+
+.vcr-menu-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.vcr-menu-sticker {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+}
+
+.vcr-menu-text {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.vcr-menu-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* Tooltip for collapsed sidebar */
+.vcr-collapsed-tooltip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+
+  display: none;
+  white-space: nowrap;
+  pointer-events: none;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 16, 28, 0.92);
+  box-shadow: var(--vcr-shadow);
+}
+
+.vcr-tooltip-badge {
+  margin-inline-start: 8px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.vcr-body.is-collapsed .vcr-menu-item:hover .vcr-collapsed-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* -------------------------------
+   Command Palette (CmdK)
+-------------------------------- */
+.vcr-cmdk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  background: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur(8px);
+
+  display: grid;
+  place-items: start center;
+
+  padding: 90px 16px 24px;
+}
+
+.vcr-cmdk-dialog {
+  width: min(760px, 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 16, 28, 0.92);
+  box-shadow: var(--vcr-shadow);
+  overflow: hidden;
+}
+
+.vcr-cmdk-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.06), transparent);
+}
+
+.vcr-cmdk-title {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.vcr-cmdk-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.vcr-cmdk-close:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.vcr-cmdk-input-wrap {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vcr-cmdk-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0 14px;
+  outline: none;
+}
+
+.vcr-cmdk-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.vcr-cmdk-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--vcr-muted);
+}
+
+.vcr-cmdk-results {
+  max-height: min(420px, 60vh);
+  overflow: auto;
+  padding: 12px 12px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.vcr-cmdk-item {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.vcr-cmdk-item.is-active {
+  border-color: rgba(0, 240, 255, 0.30);
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 240, 255, 0.08);
+}
+
+.vcr-cmdk-link {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 12px;
+}
+
+.vcr-cmdk-item__title {
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.vcr-cmdk-item__meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.62);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+
+.vcr-cmdk-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  background: rgba(0, 240, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
+}
+
+.vcr-cmdk-empty {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.70);
+  text-align: center;
+}
+
+/* -------------------------------
+   Responsive
+-------------------------------- */
+@media (max-width: 980px) {
+  .vcr-header__brand {
+    min-width: auto;
+  }
+
+  .vcr-brand-sub {
+    display: none;
+  }
+
+  .vcr-status-pill {
+    display: none;
+  }
+
+  .vcr-popover {
+    width: min(92vw, 360px);
+    right: -6px;
+  }
+
+  .vcr-sidebar {
+    width: 280px;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 780px) {
+  .vcr-header__center {
+    display: none;
+  }
+
+  .vcr-body {
+    flex-direction: column;
+  }
+
+  .vcr-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .vcr-body.is-collapsed .vcr-sidebar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .vcr-sidebar-toggle {
+    left: 14px;
+  }
+}

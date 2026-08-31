@@ -1,5 +1,5 @@
 import { createDashboardLayout } from '../../layouts/home/homeLayout.js';
-
+import { createToolsLayout } from '../../layouts/tools/toolsLayout.js';
 
 
 export const routes = [
@@ -8,6 +8,13 @@ export const routes = [
     path: '/',
     layout: createDashboardLayout,
     layoutKey: 'dashboard-layout',
+    component: () => import('../../pages/home/home.js'),
+    meta: { requiresAuth: false, title: 'داشبورد' }
+  },
+  {
+    path: '/tools/dashboard',
+    layout: createToolsLayout,
+    layoutKey: 'toolsLayout',
     component: () => import('../../pages/home/home.js'),
     meta: { requiresAuth: false, title: 'داشبورد' }
   },
