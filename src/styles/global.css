@@ -1,0 +1,16 @@
+
+
+
+:root{
+  --site-primary: #7c5cff;
+  --site-secondary: #2ce0ba;
+  --site-text: #edf2ff;
+}
+
+body {
+  background-color: #0f172a; /* تم تیره مدرن */
+  background-image: var(--bg-mesh);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
