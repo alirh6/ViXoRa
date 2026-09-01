@@ -1,0 +1,51 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "ali",
+      "username": "alirh",
+      "lastName": "rh",
+      "role": "admin",
+      "age": 33,
+      "email": "ali@gmail.com",
+      "phoneNumber": "09397988728",
+      "plan": "pro",
+      "address": "pasdaran golestan4",
+      "city": "tehran",
+      "country": "iran",
+      "jobTitle": "developer",
+      "tools": {
+        "notes": [
+          {
+            "id": "notes-1788292936555",
+            "createdAt": "2026-09-01T20:02:16.555Z",
+            "title": "سیبشسیبشسی",
+            "content": "ثصضقثصق"
+          },
+          {
+            "id": "notes-1788292766338",
+            "createdAt": "2026-09-01T19:59:26.338Z",
+            "title": "sdfasdfasd",
+            "content": "sadfasdf"
+          }
+        ],
+        "todos": [],
+        "customerInfo": []
+      }
+    },
+    {
+      "id": "2",
+      "name": "zahra",
+      "username": "zahra",
+      "role": "user",
+      "email": "zahra@gmail.com",
+      "plan": "free",
+      "tools": {
+        "notes": [],
+        "todos": [],
+        "customerInfo": []
+      }
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

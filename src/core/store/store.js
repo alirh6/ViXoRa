@@ -24,7 +24,10 @@ export function createStore({ initialState = {}, storage = null, persistKey = nu
 
   function setState(updater) {
     const previousState = state;
-    const nextState = typeof updater === 'function' ? updater(previousState) : { ...previousState, ...updater };
+    const nextState = 
+      typeof updater === 'function' 
+        ? updater(previousState) 
+        : { ...previousState, ...updater };
 
     if (!nextState || typeof nextState !== 'object' || Array.isArray(nextState)) {
       throw new TypeError('[Store] setState must produce a valid state object');

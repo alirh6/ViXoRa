@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "json-server --watch src/db/db.json --port 3001"
   },
   "devDependencies": {
+    "json-server": "^1.0.0-beta.15",
     "vite": "^8.2.2"
   }
 }

@@ -1,0 +1,885 @@
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("../global/fonts/Montserrat/Montserrat.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "AmericanSignature";
+  src: url("../global/fonts/AmericanSignature/AmericanSignature.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Berkeley-Mono-Variable";
+  src: url("../global/fonts/Berkeley/Berkeley-Mono-Variable.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* !! Dana Font Family */
+@font-face {
+  font-family: "DanaBlack";
+  src: url("../global/fonts/DanaFamily/DanaBlack.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaBold";
+  src: url("../global/fonts/DanaFamily/DanaBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaExtrabold";
+  src: url("../global/fonts/DanaFamily/DanaExtrabold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaMedium";
+  src: url("../global/fonts/DanaFamily/DanaMedium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaBlack";
+  src: url("../global/fonts/DanaFamily/DanaBlack.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaRegular";
+  src: url("../global/fonts/DanaFamily/DanaRegular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaRegularItalic";
+  src: url("../global/fonts/DanaFamily/DanaRegularItalic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DanaThin";
+  src: url("../global/fonts/DanaFamily/DanaThin.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Digi font dif */
+@font-face {
+  font-family: "DigiAnilBold";
+  src: url("../global/fonts/Digi/DigiAnilBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DigiDaryaBold";
+  src: url("../global/fonts/Digi/DigiDaryaBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DigiHilanBold";
+  src: url("../global/fonts/Digi/DigiHilanBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DigiTiamBrush";
+  src: url("../global/fonts/Digi/DigiTiamBrush.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+@font-face {
+  font-family: "Gattely";
+  src: url("../global/fonts/Gattely/Gattely.ttf") ;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Geist Font Family */
+@font-face {
+  font-family: "Geist_Variable";
+  src: url("../global/fonts/Geist/Geist_Variable.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistPixel_Circle";
+  src: url("../global/fonts/Geist/GeistPixel_Circle.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistPixel_Grid";
+  src: url("../global/fonts/Geist/GeistPixel_Grid.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistPixel_Line";
+  src: url("../global/fonts/Geist/GeistPixel_Line.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistPixel_Square";
+  src: url("../global/fonts/Geist/GeistPixel_Square.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistPixel_Triangle";
+  src: url("../global/fonts/Geist/GeistPixel_Triangle.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist_Variable2";
+  src: url("../global/fonts/Geist/Geist_Variable2.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GeistMono_Variable";
+  src: url("../global/fonts/Geist/GeistMono_Variable.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Giest2";
+  src: url("../global/fonts/Geist/Giest2.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! PX Grotesk Font */
+@font-face {
+  font-family: "Px_Grotesk_Regular";
+  src: url("../global/fonts/Grotesk/Px_Grotesk_Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PxGrotesk_Bold";
+  src: url("../global/fonts/Grotesk/PxGrotesk_Bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Holimount Font */
+@font-face {
+  font-family: "Holimount";
+  src: url("../global/fonts/Holimount/Holimount.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HolimountSwash";
+  src: url("../global/fonts/Holimount/HolimountSwash.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+@font-face {
+  font-family: "icons";
+  src: url("../global/fonts/Icons/icons.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+@font-face {
+  font-family: "IdentifyDemoRegular";
+  src: url("../global/fonts/Identify/IdentifyDemoRegular-0WM3d.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Inter Font */
+@font-face {
+  font-family: "Inter";
+  src: url("../global/fonts/inter/Inter.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "interCheck";
+  src: url("../global/fonts/inter/interCheck.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "interCheck2";
+  src: url("../global/fonts/inter/interCheck2.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterTight-VariableFont_wght";
+  src: url("../global/fonts/inter/InterTight-VariableFont_wght.ttf") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! IRANSans Font Family */
+@font-face {
+  font-family: "IRANSans";
+  src: url("../global/fonts/IRANSans/IRANSans.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANSansBold";
+  src: url("../global/fonts/IRANSans/IRANSansBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANSansLight";
+  src: url("../global/fonts/IRANSans/IRANSansLight.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANSansMedium";
+  src: url("../global/fonts/IRANSans/IRANSansMedium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+/* !! IRANYekan */
+@font-face {
+  font-family: "iranyekan";
+  src: url("../global/fonts/IranYekan/iranyekan.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranYekan2";
+  src: url("../global/fonts/IranYekan/iranYekan2.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranyekan3";
+  src: url("../global/fonts/IranYekan/iranYekan3.woff2") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranyekan4";
+  src: url("../global/fonts/IranYekan/iranYekan4.woff2") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranyekan5";
+  src: url("../global/fonts/IranYekan/iranYekan5.woff2") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranyekan6";
+  src: url("../global/fonts/IranYekan/iranYekan6.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iranyekan7";
+  src: url("../global/fonts/IranYekan/iranYekan7.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+/* !! KenaarHeavy */
+@font-face {
+  font-family: "KenaarHeavy";
+  src: url("../global/fonts/Kenaar/KenaarHeavy.woff") format("woff"),
+       url("../global/fonts/Kenaar/KenaarHeavy.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KenaarHeavyWidth";
+  src: url("../global/fonts/Kenaar/KenaarHeavyWidth.woff") format("woff"),
+       url("../global/fonts/Kenaar/KenaarHeavyWidth.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+@font-face {
+  font-family: "KhodkarBold";
+  src: url("../global/fonts/Khodkar/KhodkarBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+/* !! Lemonada  */
+/* ?? this font must to be changed  */
+@font-face {
+  font-family: "Lemonada-Bold";
+  src: url("../global/fonts/Lemonada/Lemonada-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lemonada-Regular";
+  src: url("../global/fonts/Lemonada/Lemonada-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "Mona-Sans";
+  src: url("../global/fonts/MonaSans/Mona-Sans.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !!Paykan Font Family */
+@font-face {
+  font-family: "PaykanBlack";
+  src: url("../global/fonts/Paykan/PaykanBlack.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PaykanBold";
+  src: url("../global/fonts/Paykan/PaykanBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PaykanExtraBlack";
+  src: url("../global/fonts/Paykan/PaykanExtraBlack.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PaykanLight";
+  src: url("../global/fonts/Paykan/PaykanLight.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PaykanRegular";
+  src: url("../global/fonts/Paykan/PaykanRegular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PaykanThin";
+  src: url("../global/fonts/Paykan/PaykanThin.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "Pinar-VF";
+  src: url("../global/fonts/Pinar/Pinar-VF[wght-KSHD-DSTY].ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+@font-face {
+  font-family: "SaansVF";
+  src: url("../global/fonts/SaansVF/SaansVF.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Apple Font Family */
+@font-face {
+  font-family: "sf-pro-display-regular";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-display-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-display-semibold";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-display-semibold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-icons-regular";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-icons-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-icons-semibold";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-icons-semibold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-text-regular-italic";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-text-regular-italic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-text-regular";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-text-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "sf-pro-text-semibold";
+  src: url("../global/fonts/SFPro-appleSanFrancisco/sf-pro-text-semibold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "Shams";
+  src: url("../global/fonts/shams/Shams.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "Thesignature";
+  src: url("../global/fonts/Thesignature/Thesignature.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "TTPines-Regular";
+  src: url("../global/fonts/TTPines/TTPines-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+/* !! Vazir Font Family */
+@font-face {
+  font-family: "Vazir";
+  src: url("../global/fonts/Vazir/Vazir.woff") format("woff"),
+       url("../global/fonts/Vazir/Vazir.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazir-Bold";
+  src: url("../global/fonts/Vazir/Vazir-Bold.woff") format("woff"),
+       url("../global/fonts/Vazir/Vazir-Bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazir-Light";
+  src: url("../global/fonts/Vazir/Vazir-Light.woff") format("woff"),
+       url("../global/fonts/Vazir/Vazir-Light.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazir-Medium";
+  src: url("../global/fonts/Vazir/Vazir-Medium.woff") format("woff"),
+       url("../global/fonts/Vazir/Vazir-Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazir-Thin";
+  src: url("../global/fonts/Vazir/Vazir-Thin.woff") format("woff"),
+       url("../global/fonts/Vazir/Vazir-Thin.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "WFVisualSans-RegularText";
+  src: url("../global/fonts/WFVisualSans/WFVisualSans-RegularText.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "WFVisualSans-SemiBold";
+  src: url("../global/fonts/WFVisualSans/WFVisualSans-SemiBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+/* !! Kalameh Font Family */
+@font-face {
+  font-family: "download";
+  src: url("../global/fonts/kalameh/download.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "fa-light-300";
+  src: url("../global/fonts/kalameh/fa-light-300.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "fa-regular-400";
+  src: url("../global/fonts/kalameh/fa-regular-400.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "fa-solid-900";
+  src: url("../global/fonts/kalameh/fa-solid-900.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-Black";
+  src: url("../global/fonts/kalameh/KalamehWeb-Black.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-Bold";
+  src: url("../global/fonts/kalameh/KalamehWeb-Bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-ExtraBold";
+  src: url("../global/fonts/kalameh/KalamehWeb-ExtraBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-Medium";
+  src: url("../global/fonts/kalameh/KalamehWeb-Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-Regular";
+  src: url("../global/fonts/kalameh/KalamehWeb-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KalamehWeb-SemiBold";
+  src: url("../global/fonts/kalameh/KalamehWeb-SemiBold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "fontawesome-webfont";
+  src: url("../global/fonts/yekanbakh/fontawesome-webfont.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nioicon";
+  src: url("../global/fonts/yekanbakh/Nioicon.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "YekanBakhFaNum-Bold";
+  src: url("../global/fonts/yekanbakh/YekanBakhFaNum-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "YekanBakhFaNum-Regular";
+  src: url("../global/fonts/yekanbakh/YekanBakhFaNum-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "YekanBakhFaNum-SemiBold";
+  src: url("../global/fonts/yekanbakh/YekanBakhFaNum-SemiBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+@font-face {
+  font-family: "Mono_Medium";
+  src: url("../global/fonts/satoshi/Mono_Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "rationaldisplay_medium";
+  src: url("../global/fonts/satoshi/rationaldisplay_medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "rationaldisplay_semibold";
+  src: url("../global/fonts/satoshi/rationaldisplay_semibold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi_Variable";
+  src: url("../global/fonts/satoshi/Satoshi_Variable.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+
+
+
+@font-face {
+  font-family: "check";
+  src: url("../global/fonts/gilroy/check.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DMSans-Bold";
+  src: url("../global/fonts/gilroy/DMSans-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DMSans-Medium";
+  src: url("../global/fonts/gilroy/DMSans-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DMSans-Regular";
+  src: url("../global/fonts/gilroy/DMSans-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "nunito-sans-latin-400";
+  src: url("../global/fonts/gilroy/nunito-sans-latin-400.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "nunito-sans-latin-600";
+  src: url("../global/fonts/gilroy/nunito-sans-latin-600.woff") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "nunito-sans-latin-700";
+  src: url("../global/fonts/gilroy/nunito-sans-latin-700.woff") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "nunito-sans-v15-latin-500";
+  src: url("../global/fonts/gilroy/nunito-sans-v15-latin-500.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+@font-face {
+  font-family: "Pacifico-Regular";
+  src: url("../global/fonts/Pacifico/Pacifico-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

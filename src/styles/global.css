@@ -1,10 +1,285 @@
 
 
+* {
+  box-sizing: border-box;
+}
 
-:root{
-  --site-primary: #7c5cff;
-  --site-secondary: #2ce0ba;
+:root {
+
+
+/* ?? Dana Font Family */
+  --DanaBlack:"DanaBlack";
+  --DanaBold: "DanaBold";
+  --DanaExtrabold:"DanaExtrabold";
+  --DanaMedium:"DanaMedium";
+  --DanaBlack:'DanaBlack';
+  --DanaRegular:"DanaRegular";
+  --DanaRegularItalic:"DanaRegularItalic";
+  --DanaThin:"DanaThin";
+
+
+/* ?? Digi Font */
+  --DigiAnilBold:"DigiAnilBold";
+  --DigiDaryaBold:"DigiDaryaBold";
+  --DigiHilanBold:"DigiHilanBold";
+  --DigiTiamBrush:"DigiTiamBrush";
+
+
+/* ?? Gattely Font */
+  --Gattely:"Gattely";
+
+
+/* ?? Geist Font Family */
+  --Geist_Variable:"Geist_Variable";
+  --GeistPixel_Circle:"GeistPixel_Circle";
+  --GeistPixel_Grid:"GeistPixel_Grid";
+  --GeistPixel_Line:"GeistPixel_Line";
+  --GeistPixel_Square:"GeistPixel_Square";
+  --GeistPixel_Triangle:"GeistPixel_Triangle";
+  --Geist_Variable2:"Geist_Variable2";
+  --GeistMono_Variable:"GeistMono_Variable";
+  --Giest2:"Giest2";
+
+
+/* ?? PX Grotesk Font */
+  --Px_Grotesk_Regular:"Px_Grotesk_Regular";
+  --PxGrotesk_Bold:"PxGrotesk_Bold";
+
+
+/* ?? Holimount Font */
+  --Holimount:"Holimount";
+  --HolimountSwash:"HolimountSwash";
+
+
+  --icons:"icons";
+
+
+  --IdentifyDemoRegular:"IdentifyDemoRegular";
+
+
+/* ?? Inter Font */
+  --Inter:"Inter";
+  --interCheck:"interCheck";
+  --interCheck2: "interCheck2";
+  --InterTight-VariableFont_wght:"InterTight-VariableFont_wght";
+
+/* ?? IRANSans Font Family */
+  --IRANSans:"IRANSans";
+  --IRANSansBold:"IRANSansBold";
+  --IRANSansLight:"IRANSansLight";
+  --IRANSansMedium:"IRANSansMedium";
+
+
+/* ?? IRANYekan */
+  --iranyekan:"iranyekan";
+  --iranYekan2:"iranYekan2";
+  --iranYekan3: "iranYekan3";
+  --iranYekan4: "iranYekan4";
+  --iranYekan5: "iranYekan5";
+  --iranYekan6: "iranYekan6";
+  --iranYekan7: "iranYekan7";
+
+
+
+/* ?? KenaarHeavy */
+  --KenaarHeavy:"KenaarHeavy";
+  --KenaarHeavyWidth:"KenaarHeavyWidth";
+
+
+/* ?? Khodkar  */
+  --KhodkarBold:"KhodkarBold";
+
+
+/* ?? Lemonada  */
+  --Lemonada-Bold:"Lemonada-Bold";
+  --Lemonada-Regular:"Lemonada-Regular";
+
+
+/* ?? Mona-Sans  */
+  --Mona-Sans:"Mona-Sans";
+
+
+/* ?? Paykan Font Family */
+  --PaykanBlack:"PaykanBlack";
+  --PaykanBold:"PaykanBold";
+  --PaykanExtraBlack:"PaykanExtraBlack";
+  --PaykanLight:"PaykanLight";
+  --PaykanRegular:"PaykanRegular";
+  --PaykanThin:"PaykanThin";
+
+
+
+/* ?? Pinar-VF & SaansVF Font */
+  --Pinar-VF:"Pinar-VF";
+  --SaansVF:"SaansVF";
+
+
+
+/* ?? Apple Font Family */
+  --sf-pro-display-regular:"sf-pro-display-regular";
+  --sf-pro-display-semibold:"sf-pro-display-semibold";
+  --sf-pro-icons-regular:"sf-pro-icons-regular";
+  --sf-pro-icons-semibold:"sf-pro-icons-semibold";
+  --sf-pro-text-regular-italic:"sf-pro-text-regular-italic";
+  --sf-pro-text-regular:"sf-pro-text-regular";
+  --sf-pro-text-semibold:"sf-pro-text-semibold";
+
+
+
+/* ?? Shams & Thesignature & TTPines-Regular Font */
+  --Shams:"Shams";
+  --Thesignature:"Thesignature";
+  --TTPines-Regular:"TTPines-Regular";
+
+
+
+/* ?? Vazir Font Family */ 
+  --Vazir:"Vazir";
+  --Vazir-Bold:"Vazir-Bold";
+  --Vazir-Light:"Vazir-Light";
+  --Vazir-Medium:"Vazir-Medium";
+  --Vazir-Thin:"Vazir-Thin";
+
+
+/* ?? WFVisualSans Font */ 
+  --WFVisualSans-RegularText:"WFVisualSans-RegularText";
+  --WFVisualSans-SemiBold:"WFVisualSans-SemiBold";
+
+
+
+/* ?? Pacifico Font */
+  --Pacifico-Regular:"Pacifico-Regular";
+
+
+  /* ?? kalameh fon family */
+  --download:"download";
+  --fa-light-300:"fa-light-300";
+  --fa-regular-400:"fa-regular-400";
+  --fa-solid-900:"fa-solid-900";
+  --KalamehWeb-Black:"KalamehWeb-Black";
+  --KalamehWeb-Bold:"KalamehWeb-Bold";
+  --KalamehWeb-ExtraBold:"KalamehWeb-ExtraBold";
+  --KalamehWeb-Medium:"KalamehWeb-Medium.woff2";
+  --KalamehWeb-Regular:"KalamehWeb-Regular";
+  --KalamehWeb-SemiBold:"KalamehWeb-SemiBold";
+
+
+
+
+  --fontawesome-webfont:"fontawesome-webfont";
+  --Nioicon:"Nioicon";
+  --YekanBakhFaNum-Bold:"YekanBakhFaNum-Bold";
+  --YekanBakhFaNum-Regular:"YekanBakhFaNum-Regular";
+  --YekanBakhFaNum-SemiBold:"YekanBakhFaNum-SemiBold";
+
+
+
+  --Mono_Medium:"Mono_Medium";
+  --rationaldisplay_medium:"rationaldisplay_medium";
+  --rationaldisplay_semibold:"rationaldisplay_semibold";
+  --Satoshi_Variable:"Satoshi_Variable";
+  
+
+  --check:"check";
+  --DMSans-Bold:"DMSans-Bold";
+  --DMSans-Medium:"DMSans-Medium";
+  --DMSans-Regular:"DMSans-Regular";
+  --nunito-sans-latin-400:"nunito-sans-latin-400";
+  --nunito-sans-latin-600:"nunito-sans-latin-600";
+  --nunito-sans-latin-700:"nunito-sans-latin-700";
+  --nunito-sans-v15-latin-500:"nunito-sans-v15-latin-500";
+
+
+
+  --primary-gradient: linear-gradient(135deg, #1d4ed8 0%, #06b6d4 100%);
+  --bg-mesh: radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.15), transparent 60%);
+
+
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-alt: #F1F5F9;
+  --border: #E2E8F0;
+
+  --logo-font: "Montserrat";
+
+  --text-strong: #0F172A;
+  --text-normal: #334155;
+  --text-muted: #64748B;
+  --text-on-dark: #F8FAFC;
+
+  --primary-dark: #0F172A;
+  --primary-dark-2: #1E293B;
+  --primary-dark-3: #334155;
+
+  --brand: #1D4ED8;
+  --brand-hover: #1E40AF;
+  --brand-soft: #DBEAFE;
+
+  --accent: #F59E0B;
+  --accent-hover: #D97706;
+  --accent-soft: #FEF3C7;
+
+  --success: #10B981;
+  --success-soft: #D1FAE5;
+
+  --warning: #F59E0B;
+  --warning-soft: #FEF3C7;
+
+  --danger: #EF4444;
+  --danger-soft: #FEE2E2;
+
+
+
+  --logo-color: #2563EB;
+  --header: #0F172A;
+  --basic-color-1: #23254e;
+  --basic-color-2: #424242;
+  --basic-color-3: #3f4064;
+  --Pale-color-1: #c0c2c5;
+  --site-color-1: linear-gradient(225deg, rgb(210, 44, 78) 0%, rgb(238, 56, 78) 100%);
+  --discount-box-color: #d32f2f;
+  --brand-color: #1672dd;
+  --iranYekan: "iranyekanwebregular";
+  --shortDesColor: #c0c2c5;
+  --white: white ;
+  --black: black ;
+  --px5: 5px;
+  --px10: 10px;
+  --px15: 15px;
+  --px20: 20px;
+  --px25: 25px;
+  --px30: 30px;
+  --light-border-color: rgb(202, 201, 201);
+  --light-input-color: #e9ecf1;
+  --light-floating-input-color: #4f46e5;
+  --light-search-input-box: #ccc;
+  --header-bottom-boxShadow1: 0 0 #0000;
+  --header-bottom-boxShadow2: 0 2px 0 rgba(0,0,0,0.05);
+  --header-bottom-boxShadow3: 0 2px 0 rgba(0,0,0,0.05);
+  --49AF46: #49af46;
+  --13B6FF: #13b6ff;
+  --FF6331: #ff6331;
+  --EC407A: #ec407a;
+  --FFC50C: #ffc50c;
+  --8540FF: #8540ff;
+  --F57F17: #f57f17;
+  --0ABEAD: #0abead;
+  --F57F15: rgb(245, 128, 25);
+  --FF633: rgb(255, 99, 49);
+  --0ABEAD: rgb(10, 190, 173);
+
+  --site-bg: #050816;
+  --site-bg-soft: #0a1020;
+  --site-surface: rgba(255, 255, 255, 0.06);
+  --site-surface-strong: rgba(255, 255, 255, 0.1);
+  --site-line: rgba(255, 255, 255, 0.1);
   --site-text: #edf2ff;
+  --site-muted: rgba(237, 242, 255, 0.72);
+  --site-primary: #7c5cff;
+  --site-primary-2: #5a89ff;
+  --site-secondary: #2ce0ba;
+  --site-accent: #ffb46b;
+  --site-shadow: 0 30px 90px rgba(0, 0, 0, 0.36);
 }
 
 body {
@@ -13,4 +288,10 @@ body {
   color: white;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+}
+
+
+a{
+  text-decoration: none;
+  color: var(--site-text);
 }
