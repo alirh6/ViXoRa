@@ -168,6 +168,7 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.5);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -191,7 +192,7 @@
   padding: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   transform: scale(0.95);
-  transition: transform 0);
+  transition: all .3s;
 }
 
 /* Feedback states */
@@ -210,6 +211,7 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.5);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -255,8 +257,7 @@
 
 .modal-close-btn {
   background: transparent;
-  border: none;
-: 1px solid var(--border-card);
+  border: 1px solid var(--border-card);
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
