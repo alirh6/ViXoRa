@@ -6,6 +6,7 @@ import './styles/global.css'
 import './layouts/home/homeLayout.css'
 import './layouts/tools/toolsLayout.css'
 import './pages/home/home.css'
+import './pages/tools/note/note.css'
 
 
 

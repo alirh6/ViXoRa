@@ -15,7 +15,7 @@ export const routes = [
     path: '/tools/dashboard',
     layout: createToolsLayout,
     layoutKey: 'toolsLayout',
-    component: () => import('../../pages/home/home.js'),
+    component: () => import('../../pages/tools/dashboard/toolsDashboard.js'),
     meta: { requiresAuth: false, title: 'داشبورد' }
   },
   {

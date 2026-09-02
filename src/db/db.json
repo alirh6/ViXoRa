@@ -15,20 +15,7 @@
       "country": "iran",
       "jobTitle": "developer",
       "tools": {
-        "notes": [
-          {
-            "id": "notes-1788292936555",
-            "createdAt": "2026-09-01T20:02:16.555Z",
-            "title": "سیبشسیبشسی",
-            "content": "ثصضقثصق"
-          },
-          {
-            "id": "notes-1788292766338",
-            "createdAt": "2026-09-01T19:59:26.338Z",
-            "title": "sdfasdfasd",
-            "content": "sadfasdf"
-          }
-        ],
+        "notes": [],
         "todos": [],
         "customerInfo": []
       }

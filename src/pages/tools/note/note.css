@@ -1,0 +1,19 @@
+
+
+.empty-msg{
+  font-family: var(--IRANSans);
+}
+
+
+.x{
+  font-size: 20px;
+  font-family: var(--DanaRegular);
+  /* font-weight: lighter; */
+  margin-bottom: 20px;
+}
+
+.xx{
+  font-size: 20px;
+  font-family: var(--Mono_Medium);
+  font-family: var(--check);
+}
