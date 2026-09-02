@@ -1,3 +1,4 @@
+
 // // src/core/actions/tools-service.js
 // import { getAppState } from '../state/app-state.js';
 // import { selectCurrentUser } from '../state/selectors.js';
@@ -23,8 +24,7 @@
 // }
 
 // /**
-//  * دریافت تمام آیتم‌های یک ابزار برای کاربر لاگین شده
-//  * @param {string} toolName - نام ابزار مثلا 'notes' یا 'todos'
+//  * دریافت دیتای یک ابزار
 //  */
 // export async function getToolData(toolName) {
 //   const user = getActiveUser();
@@ -32,7 +32,7 @@
 // }
 
 // /**
-//  * ایجاد یک آیتم جدید داخل ابزار
+//  * ایجاد آیتم جدید
 //  */
 // export async function createToolItem(toolName, itemPayload) {
 //   const user = getActiveUser();
@@ -43,11 +43,11 @@
 //     ...itemPayload
 //   };
 
-//   updateUserInDatabase(user.id, (current) => {
+//   await updateUserInDatabase(user.id, (current) => {
 //     if (!current.tools) current.tools = {};
 //     if (!Array.isArray(current.tools[toolName])) current.tools[toolName] = [];
     
-//     current.tools[toolName].unshift(newItem); // اضافه به ابتدای لیست
+//     current.tools[toolName].unshift(newItem);
 //     return current;
 //   });
 
@@ -55,13 +55,13 @@
 // }
 
 // /**
-//  * ویرایش یک آیتم از ابزار بر اساس ID
+//  * ویرایش آیتم
 //  */
 // export async function updateToolItem(toolName, itemId, updatedFields) {
 //   const user = getActiveUser();
 //   let updatedItem = null;
 
-//   updateUserInDatabase(user.id, (current) => {
+//   await updateUserInDatabase(user.id, (current) => {
 //     const list = current.tools?.[toolName] || [];
 //     const index = list.findIndex((item) => String(item.id) === String(itemId));
 
@@ -83,12 +83,12 @@
 // }
 
 // /**
-//  * حذف یک آیتم از ابزار بر اساس ID
+//  * حذف آیتم
 //  */
 // export async function deleteToolItem(toolName, itemId) {
 //   const user = getActiveUser();
 
-//   updateUserInDatabase(user.id, (current) => {
+//   await updateUserInDatabase(user.id, (current) => {
 //     if (!current.tools) current.tools = {};
 //     const list = current.tools[toolName] || [];
 //     current.tools[toolName] = list.filter((item) => String(item.id) !== String(itemId));
@@ -99,101 +99,202 @@
 // }
 
 
+
+
+
+
+
+
+
+
 // src/core/actions/tools-service.js
-import { getAppState } from '../state/app-state.js';
+
+import { getAppState, setAuthUser } from '../state/app-state.js';
 import { selectCurrentUser } from '../state/selectors.js';
-import { findUserById, updateUserInDatabase } from '../storage/db-client.js';
+import {
+  getUserById,
+  updateUserInDatabase,
+  sanitizeUser,
+} from '../storage/db-client.js';
 
-/**
- * دریافت امن کاربر لاگین شده
- */
-function getActiveUser() {
+import { setStoredUser } from '../storage/session-storage.js';
+
+function getActiveUserFromState() {
   const state = getAppState();
-  const authUser = selectCurrentUser(state);
+  const user = selectCurrentUser(state);
 
-  if (!authUser || !authUser.id) {
-    throw new Error('[ToolsService] No authenticated user found.');
+  if (!user || !user.id) {
+    throw new Error(
+      '[ToolsService] No authenticated user found.'
+    );
   }
 
-  const fullUserData = findUserById(authUser.id);
-  if (!fullUserData) {
-    throw new Error(`[ToolsService] User with id ${authUser.id} does not exist in DB.`);
-  }
-
-  return fullUserData;
+  return user;
 }
 
-/**
- * دریافت دیتای یک ابزار
- */
+async function getFreshActiveUser() {
+  const activeUser = getActiveUserFromState();
+  const freshUser = await getUserById(activeUser.id);
+
+  if (!freshUser) {
+    throw new Error(
+      `[ToolsService] User ${activeUser.id} does not exist.`
+    );
+  }
+
+  return freshUser;
+}
+
+function createItemId(toolName) {
+  return `${toolName}-${crypto.randomUUID()}`;
+}
+
 export async function getToolData(toolName) {
-  const user = getActiveUser();
-  return user.tools?.[toolName] || [];
+  if (!toolName || typeof toolName !== 'string') {
+    throw new TypeError(
+      '[ToolsService] toolName must be a non-empty string.'
+    );
+  }
+
+  const user = await getFreshActiveUser();
+
+  const list = user.tools?.[toolName];
+
+  return Array.isArray(list)
+    ? structuredClone(list)
+    : [];
 }
 
-/**
- * ایجاد آیتم جدید
- */
 export async function createToolItem(toolName, itemPayload) {
-  const user = getActiveUser();
-  
+  const user = await getFreshActiveUser();
+
   const newItem = {
-    id: `${toolName}-${Date.now()}`,
+    id: createItemId(toolName),
     createdAt: new Date().toISOString(),
-    ...itemPayload
+    ...(itemPayload || {}),
   };
 
-  await updateUserInDatabase(user.id, (current) => {
-    if (!current.tools) current.tools = {};
-    if (!Array.isArray(current.tools[toolName])) current.tools[toolName] = [];
-    
-    current.tools[toolName].unshift(newItem);
-    return current;
-  });
+  const updatedUser = await updateUserInDatabase(
+    user.id,
+    (currentUser) => {
+      const tools = currentUser.tools || {};
+      const list = Array.isArray(tools[toolName])
+        ? tools[toolName]
+        : [];
 
-  return newItem;
+      return {
+        ...currentUser,
+
+        tools: {
+          ...tools,
+          [toolName]: [newItem, ...list],
+        },
+      };
+    }
+  );
+
+  const safeUser = sanitizeUser(updatedUser);
+
+  setStoredUser(safeUser);
+  setAuthUser(safeUser);
+
+  return structuredClone(newItem);
 }
 
-/**
- * ویرایش آیتم
- */
-export async function updateToolItem(toolName, itemId, updatedFields) {
-  const user = getActiveUser();
+export async function updateToolItem(
+  toolName,
+  itemId,
+  updatedFields
+) {
+  const user = await getFreshActiveUser();
+
   let updatedItem = null;
 
-  await updateUserInDatabase(user.id, (current) => {
-    const list = current.tools?.[toolName] || [];
-    const index = list.findIndex((item) => String(item.id) === String(itemId));
+  const updatedUser = await updateUserInDatabase(
+    user.id,
+    (currentUser) => {
+      const tools = currentUser.tools || {};
+      const list = Array.isArray(tools[toolName])
+        ? tools[toolName]
+        : [];
 
-    if (index === -1) {
-      throw new Error(`[ToolsService] Item ${itemId} not found in ${toolName}`);
+      const index = list.findIndex(
+        (item) => String(item.id) === String(itemId)
+      );
+
+      if (index === -1) {
+        throw new Error(
+          `[ToolsService] Item ${itemId} not found.`
+        );
+      }
+
+      updatedItem = {
+        ...list[index],
+        ...(updatedFields || {}),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const nextList = [...list];
+      nextList[index] = updatedItem;
+
+      return {
+        ...currentUser,
+
+        tools: {
+          ...tools,
+          [toolName]: nextList,
+        },
+      };
     }
+  );
 
-    list[index] = {
-      ...list[index],
-      ...updatedFields,
-      updatedAt: new Date().toISOString()
-    };
+  const safeUser = sanitizeUser(updatedUser);
 
-    updatedItem = list[index];
-    return current;
-  });
+  setStoredUser(safeUser);
+  setAuthUser(safeUser);
 
-  return updatedItem;
+  return structuredClone(updatedItem);
 }
 
-/**
- * حذف آیتم
- */
 export async function deleteToolItem(toolName, itemId) {
-  const user = getActiveUser();
+  const user = await getFreshActiveUser();
 
-  await updateUserInDatabase(user.id, (current) => {
-    if (!current.tools) current.tools = {};
-    const list = current.tools[toolName] || [];
-    current.tools[toolName] = list.filter((item) => String(item.id) !== String(itemId));
-    return current;
-  });
+  const updatedUser = await updateUserInDatabase(
+    user.id,
+    (currentUser) => {
+      const tools = currentUser.tools || {};
+      const list = Array.isArray(tools[toolName])
+        ? tools[toolName]
+        : [];
+
+      const exists = list.some(
+        (item) => String(item.id) === String(itemId)
+      );
+
+      if (!exists) {
+        throw new Error(
+          `[ToolsService] Item ${itemId} not found.`
+        );
+      }
+
+      return {
+        ...currentUser,
+
+        tools: {
+          ...tools,
+          [toolName]: list.filter(
+            (item) =>
+              String(item.id) !== String(itemId)
+          ),
+        },
+      };
+    }
+  );
+
+  const safeUser = sanitizeUser(updatedUser);
+
+  setStoredUser(safeUser);
+  setAuthUser(safeUser);
 
   return true;
 }

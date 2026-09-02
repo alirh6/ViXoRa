@@ -1,12 +1,31 @@
+
 // // src/core/storage/db-client.js
 // import initialDb from '../../db/db.json';
 // import { createLocalStorageAdapter } from '../../utilities/storage.js';
 
 // const storage = createLocalStorageAdapter();
 // const DB_KEY = 'ViXoRa:database';
+// const API_BASE_URL = 'http://localhost:3001';
 
 // /**
-//  * دریافت کل دیتابیس (با پشتیبانی از دیتای اولیه db.json)
+//  * همگام‌سازی دیتابیس لوکال با json-server
+//  */
+// export async function syncDatabaseWithServer() {
+//   try {
+//     const res = await fetch(`${API_BASE_URL}/users`);
+//     if (res.ok) {
+//       const users = await res.json();
+//       const db = getDatabase();
+//       db.users = users;
+//       saveDatabase(db);
+//     }
+//   } catch {
+//     // اگر سرور خاموش بود، با دیتای لوکال ادامه می‌دهد
+//   }
+// }
+
+// /**
+//  * دریافت کل دیتابیس
 //  */
 // export function getDatabase() {
 //   const db = storage.get(DB_KEY, null);
@@ -25,17 +44,17 @@
 // }
 
 // /**
-//  * پیدا کردن یک کاربر با آیدی
+//  * پیدا کردن کاربر با آیدی
 //  */
 // export function findUserById(userId) {
 //   const db = getDatabase();
-//   return db.users.find((u) => String(u.id) === String(userId)) || null;
+//   return db.users?.find((u) => String(u.id) === String(userId)) || null;
 // }
 
 // /**
-//  * آپدیت اطلاعات یک کاربر مشخص در دیتابیس
+//  * به‌روزرسانی اطلاعات کاربر همزمان در LocalStorage و فایل db.json
 //  */
-// export function updateUserInDatabase(userId, updaterFn) {
+// export async function updateUserInDatabase(userId, updaterFn) {
 //   const db = getDatabase();
 //   const index = db.users.findIndex((u) => String(u.id) === String(userId));
 
@@ -43,11 +62,26 @@
 //     throw new Error(`[DB] User with id "${userId}" not found.`);
 //   }
 
+//   // ۱. آپدیت دیتای کاربر با تابع تبدیل
 //   const currentUser = db.users[index];
 //   const updatedUser = updaterFn(currentUser);
-
 //   db.users[index] = updatedUser;
+
+//   // ۲. ذخیره فوری در LocalStorage
 //   saveDatabase(db);
+
+//   // ۳. ذخیره در سرور json-server (نوشتن روی فایل واقعی db.json)
+//   try {
+//     await fetch(`${API_BASE_URL}/users/${userId}`, {
+//       method: 'PUT',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(updatedUser),
+//     });
+//   } catch {
+//     console.warn('[DB] json-server is offline, saved locally only.');
+//   }
 
 //   return updatedUser;
 // }
@@ -56,203 +90,183 @@
 
 
 
-
-// // src/core/storage/db-client.js
-// import initialDbData from "../../db/db.json";
-
-// const DB_KEY = "ViXoRa:database";
-// const API_BASE_URL = "http://localhost:3001";
-
-// /**
-//  * مدیریت دیتابیس لوکال و همگام‌سازی با json-server
-//  */
-// class DbClient {
-//   constructor() {
-//     this.init();
-//   }
-
-//   // مقداردهی اولیه و همگام‌سازی با سرور
-//   async init() {
-//     const local = localStorage.getItem(DB_KEY);
-//     if (!local) {
-//       this._saveLocal(initialDbData);
-//     }
-    
-//     // تلاش برای دریافت آخرین دیتا از json-server در پس‌زمینه
-//     await this.syncFromServer();
-//   }
-
-//   _getLocal() {
-//     try {
-//       const data = localStorage.getItem(DB_KEY);
-//       return data ? JSON.parse(data) : initialDbData;
-//     } catch (e) {
-//       console.error("[DbClient] Failed to read local storage", e);
-//       return initialDbData;
-//     }
-//   }
-
-//   _saveLocal(data) {
-//     try {
-//       localStorage.setItem(DB_KEY, JSON.stringify(data));
-//     } catch (e) {
-//       console.error("[DbClient] Failed to save to local storage", e);
-//     }
-//   }
-
-//   // سینک کردن لوکال‌استوریج با اطلاعات فایل db.json سرور
-//   async syncFromServer() {
-//     try {
-//       const res = await fetch(`${API_BASE_URL}/users`);
-//       if (res.ok) {
-//         const users = await res.json();
-//         const currentData = this._getLocal();
-//         currentData.users = users;
-//         this._saveLocal(currentData);
-//       }
-//     } catch {
-//       // سرور روشن نباشد، دیتای لوکال استفاده می‌شود
-//     }
-//   }
-
-//   // دریافت همه کاربران
-//   getAllUsers() {
-//     return this._getLocal().users || [];
-//   }
-
-//   // دریافت اطلاعات یک کاربر
-//   getUserById(userId) {
-//     const users = this.getAllUsers();
-//     return users.find((u) => String(u.id) === String(userId)) || null;
-//   }
-
-//   // آپدیت ابزارهای کاربر (نوشتن همزمان در LocalStorage و فایل db.json)
-//   async updateUserTools(userId, toolName, newItems) {
-//     const data = this._getLocal();
-//     const userIndex = data.users.findIndex((u) => String(u.id) === String(userId));
-
-//     if (userIndex === -1) {
-//       throw new Error(`User with ID ${userId} not found.`);
-//     }
-
-//     // ۱. اطمینان از وجود ساختار tools
-//     if (!data.users[userIndex].tools) {
-//       data.users[userIndex].tools = {};
-//     }
-
-//     // ۲. به‌روزرسانی ابزار مشخص شده
-//     data.users[userIndex].tools[toolName] = newItems;
-
-//     // ۳. ذخیره در LocalStorage
-//     this._saveLocal(data);
-
-//     // ۴. ارسال به json-server برای ذخیره فیزیکی روی فایل db.json
-//     try {
-//       const targetUser = data.users[userIndex];
-//       const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
-//         method: "PUT",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(targetUser),
-//       });
-
-//       if (!res.ok) {
-//         console.warn(`[DbClient] Server update failed: ${res.statusText}`);
-//       }
-//     } catch (err) {
-//       console.warn("[DbClient] Server is offline, saved locally only.", err.message);
-//     }
-
-//     return data.users[userIndex].tools[toolName];
-//   }
-// }
-
-// export const dbClient = new DbClient();
-
 // src/core/storage/db-client.js
-import initialDb from '../../db/db.json';
-import { createLocalStorageAdapter } from '../../utilities/storage.js';
 
-const storage = createLocalStorageAdapter();
-const DB_KEY = 'ViXoRa:database';
 const API_BASE_URL = 'http://localhost:3001';
 
-/**
- * همگام‌سازی دیتابیس لوکال با json-server
- */
-export async function syncDatabaseWithServer() {
+async function parseResponse(response) {
+  let body = null;
+
   try {
-    const res = await fetch(`${API_BASE_URL}/users`);
-    if (res.ok) {
-      const users = await res.json();
-      const db = getDatabase();
-      db.users = users;
-      saveDatabase(db);
-    }
+    body = await response.json();
   } catch {
-    // اگر سرور خاموش بود، با دیتای لوکال ادامه می‌دهد
-  }
-}
-
-/**
- * دریافت کل دیتابیس
- */
-export function getDatabase() {
-  const db = storage.get(DB_KEY, null);
-  if (!db || !Array.isArray(db.users)) {
-    storage.set(DB_KEY, initialDb);
-    return structuredClone(initialDb);
-  }
-  return db;
-}
-
-/**
- * ذخیره دیتابیس در LocalStorage
- */
-export function saveDatabase(db) {
-  return storage.set(DB_KEY, db);
-}
-
-/**
- * پیدا کردن کاربر با آیدی
- */
-export function findUserById(userId) {
-  const db = getDatabase();
-  return db.users?.find((u) => String(u.id) === String(userId)) || null;
-}
-
-/**
- * به‌روزرسانی اطلاعات کاربر همزمان در LocalStorage و فایل db.json
- */
-export async function updateUserInDatabase(userId, updaterFn) {
-  const db = getDatabase();
-  const index = db.users.findIndex((u) => String(u.id) === String(userId));
-
-  if (index === -1) {
-    throw new Error(`[DB] User with id "${userId}" not found.`);
+    body = null;
   }
 
-  // ۱. آپدیت دیتای کاربر با تابع تبدیل
-  const currentUser = db.users[index];
-  const updatedUser = updaterFn(currentUser);
-  db.users[index] = updatedUser;
+  if (!response.ok) {
+    const message =
+      body?.message ||
+      `Request failed with status ${response.status}`;
 
-  // ۲. ذخیره فوری در LocalStorage
-  saveDatabase(db);
+    throw new Error(message);
+  }
 
-  // ۳. ذخیره در سرور json-server (نوشتن روی فایل واقعی db.json)
-  try {
-    await fetch(`${API_BASE_URL}/users/${userId}`, {
+  return body;
+}
+
+function normalizeId(id) {
+  return String(id);
+}
+
+export async function getUserById(userId, { signal } = {}) {
+  if (userId === null || userId === undefined || userId === '') {
+    return null;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/users/${encodeURIComponent(userId)}`,
+    { signal }
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  return parseResponse(response);
+}
+
+export async function findUserByCredentials(
+  username,
+  password,
+  { signal } = {}
+) {
+  const normalizedUsername = String(username || '').trim();
+
+  if (!normalizedUsername || !password) {
+    return null;
+  }
+
+  const query = new URLSearchParams({
+    username: normalizedUsername,
+  });
+
+  const response = await fetch(
+    `${API_BASE_URL}/users?${query.toString()}`,
+    { signal }
+  );
+
+  const users = await parseResponse(response);
+
+  if (!Array.isArray(users)) {
+    throw new Error('[DB] Invalid users response.');
+  }
+
+  const user = users.find(
+    (candidate) =>
+      String(candidate.username).toLowerCase() ===
+        normalizedUsername.toLowerCase() &&
+      candidate.password === password
+  );
+
+  return user || null;
+}
+
+export async function findUserByUsername(
+  username,
+  { signal } = {}
+) {
+  const normalizedUsername = String(username || '').trim();
+
+  if (!normalizedUsername) {
+    return null;
+  }
+
+  const query = new URLSearchParams({
+    username: normalizedUsername,
+  });
+
+  const response = await fetch(
+    `${API_BASE_URL}/users?${query.toString()}`,
+    { signal }
+  );
+
+  const users = await parseResponse(response);
+
+  if (!Array.isArray(users)) {
+    throw new Error('[DB] Invalid users response.');
+  }
+
+  return (
+    users.find(
+      (user) =>
+        String(user.username).toLowerCase() ===
+        normalizedUsername.toLowerCase()
+    ) || null
+  );
+}
+
+export async function createUser(userData, { signal } = {}) {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+    signal,
+  });
+
+  return parseResponse(response);
+}
+
+export async function updateUserInDatabase(
+  userId,
+  updaterFn,
+  { signal } = {}
+) {
+  if (typeof updaterFn !== 'function') {
+    throw new TypeError('[DB] updaterFn must be a function.');
+  }
+
+  const currentUser = await getUserById(userId, { signal });
+
+  if (!currentUser) {
+    throw new Error(
+      `[DB] User with id "${userId}" not found.`
+    );
+  }
+
+  const updatedUser = await updaterFn(structuredClone(currentUser));
+
+  if (!updatedUser || typeof updatedUser !== 'object') {
+    throw new TypeError(
+      '[DB] updaterFn must return a valid user object.'
+    );
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/users/${encodeURIComponent(userId)}`,
+    {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(updatedUser),
-    });
-  } catch {
-    console.warn('[DB] json-server is offline, saved locally only.');
+      signal,
+    }
+  );
+
+  return parseResponse(response);
+}
+
+export function sanitizeUser(user) {
+  if (!user || typeof user !== 'object') {
+    return null;
   }
 
-  return updatedUser;
+  const { password, ...safeUser } = user;
+  return structuredClone(safeUser);
+}
+
+export function areSameUserId(firstId, secondId) {
+  return normalizeId(firstId) === normalizeId(secondId);
 }

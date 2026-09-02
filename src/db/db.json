@@ -32,6 +32,82 @@
         "todos": [],
         "customerInfo": []
       }
+    },
+    {
+      "id": "6jNIWhbp6Wk",
+      "name": "ali",
+      "username": "ali",
+      "email": "ali@gmail.com",
+      "password": "ali12345",
+      "role": "user",
+      "plan": "plus",
+      "tools": {
+        "notes": [
+          {
+            "id": "notes-cc1475ba-55e1-4f55-bdaf-b2e83ab28176",
+            "createdAt": "2026-09-02T13:51:46.708Z",
+            "title": "asdADa",
+            "content": "ASDadADSFDAGSFD"
+          },
+          {
+            "id": "notes-c6483f43-1ef5-4447-935b-71efd6ad6d3e",
+            "createdAt": "2026-09-02T13:48:35.916Z",
+            "title": "سیبلیبل",
+            "content": "سیبلسیبلسسس"
+          },
+          {
+            "id": "notes-52c1ad2a-b560-49d3-b864-7ada6d0a35a3",
+            "createdAt": "2026-09-02T13:42:09.442Z",
+            "title": "سیبلسیبل",
+            "content": "سیبلسیلسیب"
+          },
+          {
+            "id": "notes-0b0f7426-4f11-443e-812d-78b909e2e68f",
+            "createdAt": "2026-09-02T13:41:21.774Z",
+            "title": "سیبلسیبل",
+            "content": "سیلسیبل"
+          },
+          {
+            "id": "notes-6c75d258-18e4-480b-ba19-cacc35364921",
+            "createdAt": "2026-09-02T13:40:09.613Z",
+            "title": "بیلسبیل",
+            "content": "سیبلسیبل"
+          },
+          {
+            "id": "notes-27a7ebee-7116-4345-ab9a-2e40ab48bf45",
+            "createdAt": "2026-09-02T13:39:15.907Z",
+            "title": "یبلسیبل",
+            "content": "سیبلسیبلسی"
+          },
+          {
+            "id": "notes-a3ce1626-ab1b-4acc-95ba-07d24bbaac3d",
+            "createdAt": "2026-09-02T13:38:36.140Z",
+            "title": "یبلسیبل",
+            "content": "سیبلسیلس"
+          },
+          {
+            "id": "notes-04fc79c3-05b6-4abd-bf2f-000c269ea5ff",
+            "createdAt": "2026-09-02T13:35:49.590Z",
+            "title": "fsdfasd",
+            "content": "asdfasdfas"
+          },
+          {
+            "id": "notes-d1a6e15a-791e-459a-a16d-d5893f2df6e0",
+            "createdAt": "2026-09-02T13:33:15.200Z",
+            "title": "طزذزذطز",
+            "content": "طزذطزذطزذ"
+          },
+          {
+            "id": "notes-40b93c98-025d-4fac-bf68-50b22848c5b1",
+            "createdAt": "2026-09-02T13:33:07.181Z",
+            "title": "زطذطزذ",
+            "content": "طزرذطزذ"
+          }
+        ],
+        "todos": [],
+        "customerInfo": []
+      },
+      "createdAt": "2026-09-02T13:06:55.793Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
