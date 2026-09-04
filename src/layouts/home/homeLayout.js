@@ -1,4 +1,4 @@
-export function createDashboardLayout() {
+export function createHomeLayout(ctx) {
   let outlet = null;
   let layoutRoot = null;
   let isToolsMenuOpen = false;
@@ -7,11 +7,13 @@ export function createDashboardLayout() {
   let handleToolsButtonClick = null;
   let handleKeyDown = null;
   let handleLanguageClick = null;
+  console.log(ctx);
+  
 
   const toolsMenuId = 'hp-tools-menu';
 
   function render() {
-    return `
+    return /*html*/`
       <div class="HP-layout" data-dashboard-layout>
         <header class="HP-header">
           <a
@@ -114,6 +116,18 @@ export function createDashboardLayout() {
           </nav>
 
           <div class="HPHeader-tools" data-tools-container>
+
+          <div class="HPHeader-right-dashboardAndLoginWrapper">
+            ${ctx.user.id
+              ? `
+                <a class="HPHeader-dashboardBtn" href="/dashboard">Dashboard</a>
+              `
+              : `<a class="HPHeader-loginBtn" href="/login">login</a>
+              `
+            }
+          </div>
+
+          <div class="HPHeaderRight-ToolsWrapper">
             <button
               class="HPHeaderTools-openBtn"
               type="button"
@@ -271,6 +285,7 @@ export function createDashboardLayout() {
                 </li>
               </ul>
             </div>
+          </div>
           </div>
         </header>
 

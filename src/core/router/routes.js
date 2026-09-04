@@ -1,51 +1,28 @@
-// import { createDashboardLayout } from '../../layouts/home/homeLayout.js';
-// import { createToolsLayout } from '../../layouts/tools/toolsLayout.js';
-
-
-// export const routes = [
-//   // صفحه اصلی (ریدایرکت خودکار به داشبورد)
-//   {
-//     path: '/',
-//     layout: createDashboardLayout,
-//     layoutKey: 'dashboard-layout',
-//     component: () => import('../../pages/home/home.js'),
-//     meta: { requiresAuth: false, title: 'داشبورد' }
-//   },
-//   {
-//     path: '/tools/dashboard',
-//     layout: createToolsLayout,
-//     layoutKey: 'toolsLayout',
-//     component: () => import('../../pages/tools/dashboard/toolsDashboard.js'),
-//     meta: { requiresAuth: false, title: 'داشبورد' }
-//   },
-//   {
-//     path: '/tools/note',
-//     layout: createToolsLayout,
-//     layoutKey: 'toolsLayout',
-//     component: () => import('../../pages/tools/note/note.js'),
-//     meta: { requiresAuth: false, title: 'داشبورد' }
-//   },
-// ];
-
-
-
-
-
-
 // src/core/router/routes.js
 
-import { createDashboardLayout } from '../../layouts/home/homeLayout.js';
+import { createHomeLayout } from '../../layouts/home/homeLayout.js';
 import { createToolsLayout } from '../../layouts/tools/toolsLayout.js';
+import { createDashboardLayout } from '../../layouts/dashboard/dashboardLayout.js';
 
 export const routes = [
   {
     path: '/',
-    layout: createDashboardLayout,
-    layoutKey: 'dashboard-layout',
+    layout: createHomeLayout,
+    layoutKey: 'home-layout',
     component: () => import('../../pages/home/home.js'),
     meta: {
       requiresAuth: false,
-      title: 'خانه',
+      title: 'home',
+    },
+  },
+  {
+    path: '/',
+    layout: createDashboardLayout,
+    layoutKey: 'dashboard-layout',
+    component: () => import('../../pages/dashboard/dashboard.js'),
+    meta: {
+      requiresAuth: true,
+      title: 'Dashboard',
     },
   },
 
@@ -85,8 +62,17 @@ export const routes = [
     path: '/tools/note',
     layout: createToolsLayout,
     layoutKey: 'tools-layout',
-    component: () => import('../../pages/tools/note/note.js'),
+    component: () => import('../../pages/tools/note/NotePage.js'),
     meta: { requiresAuth: true, title: 'داشبورد' }
+  },
+
+  {
+    path: '/tools/customerInfo',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/customerInfo/customerInfo.js'),
+    meta: { requiresAuth: true, title: 'داشبورد' }
+    
   },
 
   //  {

@@ -98,6 +98,7 @@
 .HPHeaderMenu-li{
 
 }
+
 .HPHeaderMenu-img{
 
 }
@@ -105,8 +106,12 @@
 
 /* ** section tools */
 
-.HPHeader-tools{
 
+
+
+.HPHeader-tools{
+  display: flex;
+  gap: 12px;
 }
 
 .HPHeaderTools-openBtn{

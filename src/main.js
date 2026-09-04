@@ -31,6 +31,7 @@ import './layouts/home/homeLayout.css';
 import './layouts/tools/toolsLayout.css';
 import './pages/home/home.css';
 import './pages/tools/note/note.css';
+import './pages/tools/customerInfo/customerInfo.css'
 import './pages/auth/auth.css';
 
 document.addEventListener('DOMContentLoaded', async () => {

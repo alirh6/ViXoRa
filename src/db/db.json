@@ -80,12 +80,6 @@
             "content": "سیبلسیبلسی"
           },
           {
-            "id": "notes-a3ce1626-ab1b-4acc-95ba-07d24bbaac3d",
-            "createdAt": "2026-09-02T13:38:36.140Z",
-            "title": "یبلسیبل",
-            "content": "سیبلسیلس"
-          },
-          {
             "id": "notes-04fc79c3-05b6-4abd-bf2f-000c269ea5ff",
             "createdAt": "2026-09-02T13:35:49.590Z",
             "title": "fsdfasd",
@@ -96,16 +90,49 @@
             "createdAt": "2026-09-02T13:33:15.200Z",
             "title": "طزذزذطز",
             "content": "طزذطزذطزذ"
-          },
-          {
-            "id": "notes-40b93c98-025d-4fac-bf68-50b22848c5b1",
-            "createdAt": "2026-09-02T13:33:07.181Z",
-            "title": "زطذطزذ",
-            "content": "طزرذطزذ"
           }
         ],
         "todos": [],
-        "customerInfo": []
+        "customerInfo": [
+          {
+            "id": "customerInfo-d5e44518-2259-451a-8285-33e3971ec921",
+            "createdAt": "2026-09-03T10:42:32.546Z",
+            "name": "sdfgsdfg",
+            "lastName": "sdfgsdfg",
+            "username": "sdfgsdfg",
+            "avatar": "",
+            "email": "",
+            "phoneNumber": "",
+            "job": "نامشخص",
+            "purchases": "",
+            "inventory": 0,
+            "address": "ثبت نشده",
+            "Description": "",
+            "country": "iran",
+            "nationality": "iran",
+            "plan": "free",
+            "maritalStatus": "single"
+          },
+          {
+            "id": "customerInfo-bd306001-906b-44b5-8826-f22ef4f38266",
+            "createdAt": "2026-09-03T10:28:42.198Z",
+            "name": "sdfgsdfg",
+            "lastName": "dfgsdfg",
+            "username": "dfgsdf",
+            "avatar": "",
+            "email": "",
+            "phoneNumber": "",
+            "job": "نامشخص",
+            "purchases": "",
+            "inventory": 0,
+            "address": "ثبت نشده",
+            "Description": "",
+            "country": "iran",
+            "nationality": "iran",
+            "plan": "free",
+            "maritalStatus": "single"
+          }
+        ]
       },
       "createdAt": "2026-09-02T13:06:55.793Z"
     }

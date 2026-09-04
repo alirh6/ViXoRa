@@ -110,6 +110,7 @@ async function parseResponse(response) {
 
     throw new Error(message);
   }
+console.log(body);
 
   return body;
 }
@@ -127,10 +128,12 @@ export async function getUserById(userId, { signal } = {}) {
     `${API_BASE_URL}/users/${encodeURIComponent(userId)}`,
     { signal }
   );
+  
 
   if (response.status === 404) {
     return null;
   }
+
 
   return parseResponse(response);
 }
