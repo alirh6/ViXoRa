@@ -10,13 +10,14 @@ export const routes = [
     layout: createHomeLayout,
     layoutKey: 'home-layout',
     component: () => import('../../pages/home/home.js'),
+    style: () => import('../../pages/home/home.css'),
     meta: {
       requiresAuth: false,
       title: 'home',
     },
   },
   {
-    path: '/',
+    path: '/dashboard',
     layout: createDashboardLayout,
     layoutKey: 'dashboard-layout',
     component: () => import('../../pages/dashboard/dashboard.js'),

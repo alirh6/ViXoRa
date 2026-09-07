@@ -110,7 +110,6 @@ async function parseResponse(response) {
 
     throw new Error(message);
   }
-console.log(body);
 
   return body;
 }

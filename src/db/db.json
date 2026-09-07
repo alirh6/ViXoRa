@@ -5,10 +5,40 @@
       "name": "ali",
       "username": "alirh",
       "lastName": "rh",
+      "password": "ali12345",
       "role": "admin",
       "age": 33,
       "email": "ali@gmail.com",
       "phoneNumber": "09397988728",
+      "birthDate": "25/2/1994",
+    "nationalCode": "0440242442" ,
+
+    "about": [],
+    "inventory": 12458000,
+    "tickets": [],
+    "messages": [],
+    "invitedFriends": [],
+    "totalExpenditure": [],
+    "createdAt": "",
+    "lastUpdated": "",
+
+    "security": {
+      "firstLoginIp": "",
+      "firstLoginUserAgent": "",
+      "lastLoginIp": "",
+      "lastLoginUserAgent": ""
+    },
+
+    "memberSince": "",
+    "lastLoginAt": "",
+    "profileCompleted": "false",
+    "cardNumber": "",
+    "shabaNumber": "",
+
+    "profileIsComplete": "false",
+
+
+      "avatar":"https://cdn.imgurl.ir/uploads/872840_me2.png",
       "plan": "pro",
       "address": "pasdaran golestan4",
       "city": "tehran",
@@ -26,7 +56,9 @@
       "username": "zahra",
       "role": "user",
       "email": "zahra@gmail.com",
+      "avatar":"",
       "plan": "free",
+          "profileIsComplete": "false",
       "tools": {
         "notes": [],
         "todos": [],
@@ -39,8 +71,11 @@
       "username": "ali",
       "email": "ali@gmail.com",
       "password": "ali12345",
+      "phoneNumber": "09397988728",
       "role": "user",
+      "avatar":"https://cdn.imgurl.ir/uploads/872840_me2.png",
       "plan": "plus",
+          "profileIsComplete": "false",
       "tools": {
         "notes": [
           {
@@ -110,6 +145,7 @@
             "Description": "",
             "country": "iran",
             "nationality": "iran",
+            "avatar":"",
             "plan": "free",
             "maritalStatus": "single"
           },
@@ -129,6 +165,7 @@
             "Description": "",
             "country": "iran",
             "nationality": "iran",
+            "avatar":"",
             "plan": "free",
             "maritalStatus": "single"
           }

@@ -118,7 +118,7 @@ export function createHomeLayout(ctx) {
           <div class="HPHeader-tools" data-tools-container>
 
           <div class="HPHeader-right-dashboardAndLoginWrapper">
-            ${ctx.user.id
+            ${ctx?.user?.id
               ? `
                 <a class="HPHeader-dashboardBtn" href="/dashboard">Dashboard</a>
               `
