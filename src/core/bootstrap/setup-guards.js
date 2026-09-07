@@ -1,19 +1,29 @@
-import { createAuthGuard } from "../guards/auth.guard.js"; 
-import { createRoleGuard } from "../guards/role.guard.js";
-import { createTitleGuard } from "../guards/title.guard.js"
+// src/core/bootstrap/setup-guards.js
+
+import { createAuthGuard } from '../guards/auth.guard.js';
+import { createRoleGuard } from '../guards/role.guard.js';
+import { createTitleGuard } from '../guards/title.guard.js';
+import { APP_NAME } from '../../config/app-config.js';
 
 /**
  * راه‌اندازی و اتصال گاردهای سراسری به روتر
- * @param {Object} router - شیء روتر برنامه
- * @param {Object} store - شیء استیت سراسری برنامه
+ * ترتیب اجرا: title → auth → role
+ *
+ * @param {Object} router
+ * @param {Object} store
+ * @returns {Function[]} توابع حذف هر گارد
  */
-export function setupGuards(router, store) {
-  // ۱. گارد تغییر تایتل (اول اجرا می‌شود)
-  router.beforeEach(createTitleGuard('ViXoRa'));
+export function setupGuards(router, store, options = {}) {
+  const {
+    appName = APP_NAME,
+    loginPath = '/login',
+    homePath = '/tools/dashboard',
+    unauthorizedPath = '/unauthorized',
+  } = options;
 
-  // ۲. گارد احراز هویت (بررسی لاگین/مهمان)
-  router.beforeEach(createAuthGuard(store));
+  const removeTitle = router.beforeEach(createTitleGuard(appName));
+  const removeAuth = router.beforeEach(createAuthGuard(store, { loginPath, homePath }));
+  const removeRole = router.beforeEach(createRoleGuard(store, { unauthorizedPath }));
 
-  // ۳. گارد بررسی دسترسی نقش‌ها (Admin/User)
-  router.beforeEach(createRoleGuard(store));
+  return [removeTitle, removeAuth, removeRole];
 }

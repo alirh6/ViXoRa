@@ -1,51 +1,98 @@
+// src/core/state/selectors.js
+
 /**
- * Selector functions - توابع خالص برای استخراج داده از State
+ * Selectors — توابع خالص برای خواندن state
+ * هیچ side-effect ندارند؛ استفاده مستقیم و در store.watch امن است.
  */
 
 export function selectAuth(state) {
-  return state.auth;
+  return state?.auth ?? { status: 'guest', user: null };
 }
 
 export function selectAuthStatus(state) {
-  return state.auth.status;
+  return state?.auth?.status ?? 'guest';
 }
 
 export function selectCurrentUser(state) {
-  return state.auth.user;
+  return state?.auth?.user ?? null;
+}
+
+export function selectUserId(state) {
+  return state?.auth?.user?.id ?? null;
+}
+
+export function selectUserName(state) {
+  const user = state?.auth?.user;
+  if (!user) return '';
+  return [user.name, user.lastName].filter(Boolean).join(' ').trim();
+}
+
+export function selectUserDisplayName(state) {
+  return selectUserName(state) || state?.auth?.user?.username || 'کاربر';
 }
 
 export function selectIsAuthenticated(state) {
-  return state.auth.status === 'authenticated';
+  return state?.auth?.status === 'authenticated' && Boolean(state?.auth?.user?.id);
 }
 
 export function selectIsGuest(state) {
-  return state.auth.status === 'guest';
+  return !selectIsAuthenticated(state);
+}
+
+export function selectIsChecking(state) {
+  return state?.auth?.status === 'checking';
 }
 
 export function selectUserRole(state) {
-  return state.auth.user?.role ?? null;
+  return state?.auth?.user?.role ?? null;
+}
+
+export function selectIsAdmin(state) {
+  return selectUserRole(state) === 'admin';
 }
 
 export function selectUserPlan(state) {
-  return state.auth.user?.plan ?? null;
+  return state?.auth?.user?.plan ?? null;
+}
+
+export function selectUserAvatar(state) {
+  return state?.auth?.user?.avatar || '';
+}
+
+export function selectUserTools(state) {
+  return state?.auth?.user?.tools ?? {};
+}
+
+export function selectToolItems(state, toolName) {
+  const tools = selectUserTools(state);
+  const list = tools?.[toolName];
+  return Array.isArray(list) ? list : [];
+}
+
+export function selectToolCount(state, toolName) {
+  return selectToolItems(state, toolName).length;
 }
 
 export function selectUi(state) {
-  return state.ui;
+  return state?.ui ?? { isSidebarOpen: false, theme: 'light', language: 'persian' };
 }
 
 export function selectTheme(state) {
-  return state.ui.theme;
+  return state?.ui?.theme ?? 'light';
+}
+
+export function selectIsDarkTheme(state) {
+  return selectTheme(state) === 'dark';
 }
 
 export function selectLanguage(state) {
-  return state.ui.language;
+  return state?.ui?.language ?? 'persian';
 }
 
 export function selectIsSidebarOpen(state) {
-  return state.ui.isSidebarOpen;
+  return Boolean(state?.ui?.isSidebarOpen);
 }
 
 export function selectIsAppInitialized(state) {
-  return state.app.isInitialized;
+  return Boolean(state?.app?.isInitialized);
 }

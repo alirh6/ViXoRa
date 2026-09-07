@@ -1,25 +1,20 @@
-
-
+// src/core/guards/role.guard.js
 
 /**
- * گارد کنترل سطح دسترسی بر اساس نقش
- * @param {Object} store - شیء استیت سراسری برنامه
- * @returns {Function} تابع گارد ناوبری
+ * گارد کنترل سطح دسترسی بر اساس نقش کاربر
  */
-export function createRoleGuard(store) {
-  return async function roleGuard({ to }) {
-    // اگر صفحه نقش خاصی تعیین نکرده، عبور آزاد است
-    if (!to.meta?.roles || !Array.isArray(to.meta.roles)) {
+export function createRoleGuard(store, { unauthorizedPath = '/unauthorized' } = {}) {
+  return async function roleGuard({ to, state: guardState }) {
+    if (!to.meta?.roles || !Array.isArray(to.meta.roles) || to.meta.roles.length === 0) {
       return true;
     }
 
-    const state = store.getState();
+    const state = guardState || store?.getState?.() || {};
     const userRole = state.auth?.user?.role;
 
-    // اگر نقش کاربر جزو نقش‌های مجاز نبود
     if (!to.meta.roles.includes(userRole)) {
       console.warn(`[RoleGuard] Access denied for role "${userRole}" to path "${to.path}"`);
-      return { redirect: '/unauthorized' }; // یا return false برای توقف کامل
+      return { redirect: unauthorizedPath };
     }
 
     return true;

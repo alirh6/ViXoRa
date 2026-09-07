@@ -1,100 +1,45 @@
 {
+  "$schema": "./node_modules/json-server/schema.json",
   "users": [
     {
       "id": "1",
       "name": "ali",
-      "username": "alirh",
       "lastName": "rh",
+      "username": "alirh",
       "password": "ali12345",
-      "role": "admin",
-      "age": 33,
       "email": "ali@gmail.com",
       "phoneNumber": "09397988728",
-      "birthDate": "25/2/1994",
       "nationalCode": "0440242442",
-      "about": [],
+      "birthDate": "25/2/1994",
+      "age": 33,
+      "role": "admin",
+      "plan": "pro",
+      "avatar": "https://cdn.imgurl.ir/uploads/872840_me2.png",
+      "address": "pasdaran golestan4",
+      "city": "tehran",
+      "country": "iran",
+      "jobTitle": "developer",
       "inventory": 12458000,
+      "cardNumber": "",
+      "shabaNumber": "",
+      "about": [],
       "tickets": [],
       "messages": [],
       "invitedFriends": [],
       "totalExpenditure": [],
-      "createdAt": "",
-      "lastUpdated": "",
       "security": {
         "firstLoginIp": "",
         "firstLoginUserAgent": "",
         "lastLoginIp": "",
         "lastLoginUserAgent": ""
       },
-      "memberSince": "",
+      "memberSince": "2026-01-11T09:00:00.000Z",
       "lastLoginAt": "",
-      "profileCompleted": "false",
-      "cardNumber": "",
-      "shabaNumber": "",
-      "profileIsComplete": "false",
-      "avatar": "https://cdn.imgurl.ir/uploads/872840_me2.png",
-      "plan": "pro",
-      "address": "pasdaran golestan4",
-      "city": "tehran",
-      "country": "iran",
-      "jobTitle": "developer",
+      "createdAt": "2026-01-11T09:00:00.000Z",
+      "lastUpdated": "",
+      "profileIsComplete": false,
       "tools": {
-        "notes": [
-          {
-            "id": "notes-7d71d66d-d38e-4f17-93ac-2ea551c16c62",
-            "createdAt": "2026-09-07T12:28:26.567Z",
-            "title": "برنامه‌ریزی پروژهیبلسبیل",
-            "content": "- دامنسیبلسیبلسیبله کار\n- نقاط عطف\n- ریسک‌ها\n- وابستگی‌ها",
-            "category": "کاریسیبلسبیلسیب",
-            "priority": "high",
-            "color": "violet",
-            "status": "doing",
-            "dueAt": "",
-            "tags": [
-              "پروژه",
-              "برنامه‌ریزی"
-            ],
-            "checklist": [
-              {
-                "id": "check-8cadd849-54a3-44f9-91c7-c72e5a9f244c",
-                "text": "تعریف دامنه",
-                "done": false
-              },
-              {
-                "id": "check-e3dbaf41-22df-4328-adf7-f7cdc2b44b7e",
-                "text": "تعیین نقاط عطف",
-                "done": true
-              },
-              {
-                "id": "check-b9963fe9-2a6c-4a0c-9b43-b18d3da9a6a6",
-                "text": "شناسایی ریسک‌ها",
-                "done": true
-              }
-            ],
-            "pinned": false,
-            "favorite": false,
-            "archived": false,
-            "trashed": false,
-            "updatedAt": "2026-09-07T15:39:50.192Z"
-          },
-          {
-            "id": "notes-465d4d7a-41e8-4ca8-b0cc-afe7b44cf2b3",
-            "createdAt": "2026-09-07T12:27:39.285Z",
-            "title": "سیبلبی",
-            "content": "سیبلسیبل",
-            "category": "یسبلیبل",
-            "priority": "high",
-            "color": "violet",
-            "status": "todo",
-            "dueAt": "1994-11-11",
-            "tags": [],
-            "checklist": [],
-            "pinned": false,
-            "favorite": false,
-            "archived": false,
-            "trashed": false
-          }
-        ],
+        "notes": [],
         "todos": [],
         "customerInfo": []
       }
@@ -102,12 +47,15 @@
     {
       "id": "2",
       "name": "zahra",
+      "lastName": "",
       "username": "zahra",
-      "role": "user",
+      "password": "zahra123",
       "email": "zahra@gmail.com",
-      "avatar": "",
+      "role": "user",
       "plan": "free",
-      "profileIsComplete": "false",
+      "avatar": "",
+      "createdAt": "2026-02-02T09:00:00.000Z",
+      "profileIsComplete": false,
       "tools": {
         "notes": [],
         "todos": [],
@@ -117,14 +65,16 @@
     {
       "id": "6jNIWhbp6Wk",
       "name": "ali",
+      "lastName": "",
       "username": "ali",
-      "email": "ali@gmail.com",
       "password": "ali12345",
+      "email": "ali@gmail.com",
       "phoneNumber": "09397988728",
       "role": "user",
-      "avatar": "https://cdn.imgurl.ir/uploads/872840_me2.png",
       "plan": "plus",
-      "profileIsComplete": "false",
+      "avatar": "https://cdn.imgurl.ir/uploads/872840_me2.png",
+      "createdAt": "2026-09-02T13:06:55.793Z",
+      "profileIsComplete": false,
       "tools": {
         "notes": [
           {
@@ -217,9 +167,7 @@
             "maritalStatus": "single"
           }
         ]
-      },
-      "createdAt": "2026-09-02T13:06:55.793Z"
+      }
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

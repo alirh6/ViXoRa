@@ -1,183 +1,50 @@
-// import { createStore } from '../store/store.js';
-// import { createLocalStorageAdapter } from '../../utilities/storage.js';
-
-// const STORAGE_KEY = 'ViXoRa:state';
-
-// const initialState = {
-//   auth: {
-//     status: 'checking', // 'checking' | 'authenticated' | 'guest'
-//     user: null,
-//   },
-//   ui: {
-//     isSidebarOpen: false,
-//     theme: 'light', // 'light' | 'dark'
-//     language: 'english', // 'english' | 'persian'
-//   },
-//   app: {
-//     isInitialized: false,
-//   },
-// };
-
-// const storage = createLocalStorageAdapter();
-
-
-// export const appStore = createStore({initialState, storage, persistKey: STORAGE_KEY})
-
-
-// function normalizeUser (rawUser) {
-//   if (!rawUser || typeof rawUser !== 'object') {return null}
-
-//   const hasValidId = (typeof rawUser.id === 'string' || typeof rawUser.id === 'number') && rawUser.id.trim() !== ''
-//   const hasValidRole = rawUser.role === 'admin' || rawUser.role === 'user'
-//   const hasValidPlan = rawUser.plan === 'free' || rawUser.plan === 'pro' || rawUser.plan === 'plus' || rawUser.plan === 'go' || rawUser.plan === "gift"
-
-//   if (!hasValidId || !hasValidPlan || !hasValidRole) {
-//     return null
-//   }
-
-//   return {
-//     id: rawUser.id,
-//     name: typeof rawUser.name === 'string' ? rawUser.name : 'user',
-//     email: typeof rawUser.email === 'string' ? rawUser.email : '',
-//     role : rawUser.role,
-//     plan: rawUser.plan
-//   }
-// }
-
-// function normalizeAuthState (rawAuth = {}) {
-//   const user = normalizeUser(rawAuth.user)
-
-//   if(!user) {
-//     return {
-//       status: 'guest',
-//       user: null,
-//     }
-//   }
-
-//   return {
-//     status: 'authenticated',
-//     user,
-//   };
-// }
-
-// function normalizeUi (ui) {
-//   return ui && typeof ui === 'object' ? ui : {}
-// }
-
-// function normalizeUiState (rawUi = {}) {
-//   const validTheme = ['light' , 'dark']
-//   const validLanguage = ['english' , 'persian' , 'france' , 'spanish' , 'arabic']
-
-//   return {
-//     isSidebarOpen: typeof rawUi.isSidebarOpen === 'boolean' ? rawUi.isSidebarOpen : false,
-//     theme: validTheme.includes(rawUi.theme) ? rawUi.theme : 'light',
-//     language: validLanguage.includes(rawUi.language) ? rawUi.language : 'english'
-//   }
-// }
-
-// function normalizeState (rawState = {}) {
-//   return {
-//     auth : normalizeAuthState(rawState.auth),
-//     ui: normalizeUiState(normalizeUi(rawState.ui)),
-//     app: {
-//       isInitialized: true,
-//     },
-//   }
-// }
-
-// export function initializeAppState () {
-//   appStore.initialize(normalizeState)
-// }
-
-// export function getAppState () {
-//   return appStore.getState()
-// }
-
-// export function setAuthUser (userData) {
-//   const normalizedUser = normalizeUser(userData)
-
-//   if (!normalizedUser) {
-//     throw new Error('[AppState] Invalid user data provided for login.');
-//   }
-
-//   appStore.setState((current) => ({
-//     ...current,
-//     auth: {
-//       status: 'authenticated',
-//       user: normalizedUser,
-//     },
-//   }));
-// }
-
-// export function clearAuthUser() {
-//   appStore.setState((current) => ({
-//     ...current,
-//     auth: {
-//       status: 'guest',
-//       user: null,
-//     },
-//   }));
-// }
-
-// export function setTheme(theme) {
-//   if (theme !== 'light' && theme !== 'dark') return;
-//   appStore.setState((current) => ({
-//     ...current,
-//     ui: {
-//       ...current.ui,
-//       theme,
-//     },
-//   }));
-// }
-
-// export function toggleSidebar() {
-//   appStore.setState((current) => ({
-//     ...current,
-//     ui: {
-//       ...current.ui,
-//       isSidebarOpen: !current.ui.isSidebarOpen,
-//     },
-//   }));
-// }
-
-
-
-
-
-
-
-
 // src/core/state/app-state.js
+
+/**
+ * ViXoRa Global State — auth / ui / app
+ * ------------------------------------------------------------------
+ * تنها منبع حقیقت state برنامه.
+ * صفحات و کامپوننت‌ها فقط از توابع export شده استفاده می‌کنند.
+ */
 
 import { createStore } from '../store/store.js';
 import { createLocalStorageAdapter } from '../../utilities/storage.js';
+import {
+  APP_LANGUAGES,
+  STORAGE_KEYS,
+  USER_PLANS,
+  USER_ROLES,
+} from '../../config/app-config.js';
 
-const STORAGE_KEY = 'ViXoRa:state';
+const storage = createLocalStorageAdapter();
 
 const initialState = {
   auth: {
-    status: 'checking',
+    status: 'checking', // 'checking' | 'authenticated' | 'guest'
     user: null,
   },
 
   ui: {
     isSidebarOpen: false,
     theme: 'light',
-    language: 'english',
+    language: 'persian',
   },
 
   app: {
     isInitialized: false,
+    version: '2.4.0',
   },
 };
-
-const storage = createLocalStorageAdapter();
 
 export const appStore = createStore({
   initialState,
   storage,
-  persistKey: STORAGE_KEY,
+  persistKey: STORAGE_KEYS.state,
 });
+
+/* ------------------------------------------------------------------ */
+/* نرمال‌سازی                                                          */
+/* ------------------------------------------------------------------ */
 
 function hasValidId(id) {
   return (
@@ -187,127 +54,104 @@ function hasValidId(id) {
 }
 
 export function normalizeUser(rawUser) {
-  if (!rawUser || typeof rawUser !== 'object') {
-    return null;
-  }
-
-  if (!hasValidId(rawUser.id)) {
-    return null;
-  }
+  if (!rawUser || typeof rawUser !== 'object') return null;
+  if (!hasValidId(rawUser.id)) return null;
 
   const user = structuredClone(rawUser);
-
   delete user.password;
 
   return {
     ...user,
     id: String(user.id),
-    name:
-      typeof user.name === 'string'
-        ? user.name
-        : 'user',
 
-    username:
-      typeof user.username === 'string'
-        ? user.username
-        : '',
+    name: typeof user.name === 'string' ? user.name : 'user',
+    lastName: typeof user.lastName === 'string' ? user.lastName : '',
+    username: typeof user.username === 'string' ? user.username : '',
+    email: typeof user.email === 'string' ? user.email : '',
+    phoneNumber: typeof user.phoneNumber === 'string' ? user.phoneNumber : '',
+    avatar: typeof user.avatar === 'string' ? user.avatar : '',
+    jobTitle: typeof user.jobTitle === 'string' ? user.jobTitle : '',
 
-    email:
-      typeof user.email === 'string'
-        ? user.email
-        : '',
+    role: USER_ROLES.includes(user.role) ? user.role : 'user',
+    plan: USER_PLANS.includes(user.plan) ? user.plan : 'plus',
 
-    role:
-      user.role === 'admin' || user.role === 'user'
-        ? user.role
-        : 'user',
-
-    plan:
-      ['plus', 'pro', 'plus', 'go', 'gift'].includes(user.plan)
-        ? user.plan
-        : 'plus',
+    profileIsComplete:
+      user.profileIsComplete === true || user.profileIsComplete === 'true',
 
     tools:
-      user.tools && typeof user.tools === 'object'
+      user.tools && typeof user.tools === 'object' && !Array.isArray(user.tools)
         ? user.tools
         : {},
   };
 }
 
 function normalizeAuthState(rawAuth = {}) {
-  const user = normalizeUser(rawAuth.user);
+  const user = normalizeUser(rawAuth?.user);
 
   if (!user) {
     return {
-      status:
-        rawAuth.status === 'checking'
-          ? 'checking'
-          : 'guest',
+      status: rawAuth?.status === 'checking' ? 'checking' : 'guest',
       user: null,
     };
   }
 
-  return {
-    status: 'authenticated',
-    user,
-  };
+  return { status: 'authenticated', user };
 }
 
 function normalizeUiState(rawUi = {}) {
-  const validThemes = ['light', 'dark'];
-
-  const validLanguages = [
-    'english',
-    'persian',
-    'france',
-    'spanish',
-    'arabic',
-  ];
-
   return {
-    isSidebarOpen:
-      typeof rawUi.isSidebarOpen === 'boolean'
-        ? rawUi.isSidebarOpen
-        : false,
+    isSidebarOpen: typeof rawUi?.isSidebarOpen === 'boolean' ? rawUi.isSidebarOpen : false,
 
-    theme: validThemes.includes(rawUi.theme)
-      ? rawUi.theme
-      : 'light',
+    theme: rawUi?.theme === 'dark' ? 'dark' : 'light',
 
-    language: validLanguages.includes(rawUi.language)
-      ? rawUi.language
-      : 'english',
+    language: APP_LANGUAGES.includes(rawUi?.language) ? rawUi.language : 'persian',
   };
 }
 
 function normalizeState(rawState = {}) {
   return {
-    auth: normalizeAuthState(rawState.auth),
-
-    ui: normalizeUiState(rawState.ui),
-
+    auth: normalizeAuthState(rawState?.auth),
+    ui: normalizeUiState(rawState?.ui),
     app: {
       isInitialized: true,
+      version: typeof rawState?.app?.version === 'string' ? rawState.app.version : '2.4.0',
     },
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* راه‌اندازی                                                          */
+/* ------------------------------------------------------------------ */
+
 export function initializeAppState() {
   appStore.initialize(normalizeState);
+  return appStore.getState();
 }
 
 export function getAppState() {
   return appStore.getState();
 }
 
+export function subscribeAppState(listener) {
+  return appStore.subscribe(listener);
+}
+
+/** subscribe روی auth.user — مخصوص صفحات ابزار */
+export function subscribeCurrentUser(listener) {
+  return appStore.watch(
+    (state) => state.auth.user,
+    ({ value, previousValue }) => listener(value, previousValue)
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Auth actions                                                        */
+/* ------------------------------------------------------------------ */
+
 export function setAuthChecking() {
   appStore.setState((current) => ({
     ...current,
-
-    auth: {
-      status: 'checking',
-      user: null,
-    },
+    auth: { status: 'checking', user: null },
   }));
 }
 
@@ -315,54 +159,61 @@ export function setAuthUser(userData) {
   const normalizedUser = normalizeUser(userData);
 
   if (!normalizedUser) {
-    throw new Error(
-      '[AppState] Invalid user data provided.'
-    );
+    throw new Error('[AppState] Invalid user data provided.');
   }
 
   appStore.setState((current) => ({
     ...current,
-
-    auth: {
-      status: 'authenticated',
-      user: normalizedUser,
-    },
+    auth: { status: 'authenticated', user: normalizedUser },
   }));
+
+  return normalizedUser;
 }
 
 export function clearAuthUser() {
   appStore.setState((current) => ({
     ...current,
-
-    auth: {
-      status: 'guest',
-      user: null,
-    },
+    auth: { status: 'guest', user: null },
   }));
 }
 
+/* ------------------------------------------------------------------ */
+/* UI actions                                                          */
+/* ------------------------------------------------------------------ */
+
 export function setTheme(theme) {
-  if (!['light', 'dark'].includes(theme)) {
-    return;
-  }
+  if (theme !== 'light' && theme !== 'dark') return;
 
   appStore.setState((current) => ({
     ...current,
+    ui: { ...current.ui, theme },
+  }));
+}
 
-    ui: {
-      ...current.ui,
-      theme,
-    },
+export function toggleTheme() {
+  const next = appStore.getState().ui.theme === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  return next;
+}
+
+export function setLanguage(language) {
+  if (!APP_LANGUAGES.includes(language)) return;
+
+  appStore.setState((current) => ({
+    ...current,
+    ui: { ...current.ui, language },
+  }));
+}
+
+export function setSidebarOpen(isOpen) {
+  appStore.setState((current) => ({
+    ...current,
+    ui: { ...current.ui, isSidebarOpen: Boolean(isOpen) },
   }));
 }
 
 export function toggleSidebar() {
-  appStore.setState((current) => ({
-    ...current,
-
-    ui: {
-      ...current.ui,
-      isSidebarOpen: !current.ui.isSidebarOpen,
-    },
-  }));
+  const next = !appStore.getState().ui.isSidebarOpen;
+  setSidebarOpen(next);
+  return next;
 }

@@ -1,14 +1,25 @@
-
+// src/core/guards/title.guard.js
 
 /**
- * گارد تنظیم تایتل صفحه مرورگر
- * @param {string} appName - نام پیش‌فرض برنامه
- * @returns {Function} تابع گارد ناوبری
+ * گارد تنظیم عنوان سند
+ *
+ * `managesDocumentTitle` به روتر اعلام می‌کند که مدیریت document.title
+ * بر عهدهٔ این گارد است تا عنوان دو بار و با دو فرمت نوشته نشود.
  */
 export function createTitleGuard(appName = 'ViXoRa') {
-  return function titleGuard({ to }) {
-    const pageTitle = to.meta?.title;
-    document.title = pageTitle ? `${appName} | ${pageTitle}` : appName;
+  function titleGuard({ to }) {
+    if (typeof document === 'undefined') return true;
+
+    const rawTitle = to.meta?.title;
+
+    const pageTitle = typeof rawTitle === 'function' ? rawTitle(to) : rawTitle;
+
+    document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
+
     return true;
-  };
+  }
+
+  titleGuard.managesDocumentTitle = true;
+
+  return titleGuard;
 }
