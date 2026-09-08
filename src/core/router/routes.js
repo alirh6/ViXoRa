@@ -22,6 +22,7 @@ export const routes = [
     component: () => import('../../pages/home/home.js'),
     style: () => import('../../pages/home/home.css?inline'),
     meta: { requiresAuth: false, title: 'خانه' },
+    guards:[]
   },
 
   {
@@ -62,6 +63,22 @@ export const routes = [
     // style: () => import('../../pages/tools/note/notePage.css?inline'),
     meta: { requiresAuth: true, title: 'یادداشت‌ها' },
   },
+
+  {
+      path: '/tools/music',
+      layout: createToolsLayout,
+      layoutKey: 'tools-layout',
+      component: () => import('../../pages/tools/music/music.js'),
+      meta: { requiresAuth: true, title: 'موزیک پلیر' },
+    },
+
+  {
+      path: '/tools/customerInfo',
+      layout: createToolsLayout,
+      layoutKey: 'tools-layout',
+      component: () => import('../../pages/tools/customerInfo/customerInfo.js'),
+      meta: { requiresAuth: true, title: 'اطلاعات مشتریان' },
+    },
 
 { 
     path: '/404',

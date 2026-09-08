@@ -1,1222 +1,1981 @@
-// src/pages/tools/customer/customer.js
+// src/pages/tools/customerInfo/customerInfo.js
+
+/**
+ * ViXoRa — فضای کاری «اطلاعات مشتریان» (CRM)
+ * ============================================
+ * قرارداد روتر:  render / afterRender / destroy
+ * داده:          user.tools.customerInfo در LocalStorage (بدون بک‌اند)
+ *
+ * معماری: رندر منطقه‌ای (header/toolbar/panels/sidebar/view/profile) تا
+ * تایپ کاربر قطع نشود؛ ویرایش درجا روی blur/Enter ذخیره می‌شود.
+ */
+
+import {
+  readPersistedUi,
+  readPersistedHeaderConfig,
+  createDefaultUiState,
+  getActiveBucket,
+  getFormSections,
+  toggleFormSection,
+  toggleSelection,
+  toggleColumn,
+  getVisibleColumnDefs,
+  DEFAULT_HEADER_CONFIG,
+  HEADER_ACTION_META,
+  RULE_FIELD_OPTIONS,
+} from './customer-state.js';
+
+import {
+  renderHeader,
+  renderToolbar,
+  renderFilterPanel,
+  renderSidebar,
+  renderActiveView,
+  renderBulkBar,
+  renderPager,
+  renderProfile,
+  renderDashboard,
+  renderCommandPalette,
+  renderRowMenu,
+  renderEmptyState,
+  renderLoadingState,
+  renderErrorState,
+  renderInlineField,
+} from './customer-renderers.js';
+
+import {
+  buildInlineInput,
+  readInlineValue,
+  buildSectionForm,
+  readSectionForm,
+  showFormErrors,
+  buildCampaignForm,
+  buildSegmentsManager,
+  buildSegmentForm,
+  readSegmentForm,
+  buildImportForm,
+  buildSettingsForm,
+  buildMapPicker,
+  buildMessageForm,
+} from './customer-editor.js';
+
+import {
+  normalizeCustomer,
+  normalizeCustomerList,
+  createEmptyCustomer,
+  createId,
+  getCustomerName,
+  getAge,
+  getAgeRange,
+  getBalanceRange,
+  getCustomerStats,
+  validateCustomerDraft,
+  CUSTOMER_FIELD_MAP,
+  CUSTOMER_SECTIONS,
+  AGE_RANGE_LABELS,
+  BALANCE_RANGE_LABELS,
+  GENDER_LABELS,
+  ACCOUNT_TYPE_LABELS,
+  CUSTOMER_STATUS_LABELS,
+  LOYALTY_TIER_LABELS,
+} from '../../../core/schemas/customer-schema.js';
+
+import {
+  SMART_BUCKETS,
+  filterCustomers,
+  countBuckets,
+  countSegment,
+  getDashboardStats,
+  getSavedSegments,
+  saveSegment,
+  deleteSegment,
+  customersToCsv,
+  parseCsv,
+  previewImport,
+  mapImportRow,
+  normalizeRule,
+  RULE_OPERATORS,
+} from '../../../core/services/segmentation-service.js';
+
+import {
+  sendCustomerMessage,
+  sendBulkCampaign,
+  startCampaignScheduler,
+  stopCampaignScheduler,
+  getOutreachSettings,
+  updateOutreachSettings,
+  getOutreachTemplates,
+  applyMergeFields,
+} from '../../../core/services/outreach-service.js';
+
+import {
+  geocode,
+  reverseGeocode,
+  applyLocation,
+  buildOsmEmbedUrl,
+  buildExternalMapUrl,
+  getCurrentPosition,
+  formatAddressParts,
+} from '../../../core/services/location-service.js';
+
+import { collectTelemetry } from '../../../core/services/telemetry-service.js';
+
+import { toast } from '../../../utilities/toast.js';
+import { confirmDialog, createModal } from '../../../utilities/modal.js';
+import { escapeHtml, delegate, on, debounce, openExternal } from '../../../utilities/dom-utils.js';
+import { injectScopedCss } from '../../../utilities/css-scope.js';
 
 import {
   getToolData,
   createToolItem,
   updateToolItem,
   deleteToolItem,
+  setToolItems,
+  deleteManyToolItems,
 } from '../../../core/actions/tools-service.js';
 
-const TOOL_NAME = 'customerInfo';
-const PREFS_KEY = 'ViXoRa:customer:preferences';
-const LOGS_KEY = 'ViXoRa:customer:logs';
+import { customerInfoCss } from './customerInfo.css.js';
 
-export default function createCustomerPage(ctx) {
-  // State محلی صفحه
-  let customers = [];
-  let logs = [];
-  let prefs = {
-    searchQuery: '',
-    sortBy: 'alphabetical',
-    viewMode: 'view-grid',
+const TOOL_NAME = 'customerInfo';
+const AUTO_BACKUP_KEY = 'ViXoRa:customerInfo:autobackup';
+
+/** کلید همهٔ بخش‌ها (برای ساخت بخش‌های پروفایل) */
+const CUSTOMER_SECTION_KEYS = CUSTOMER_SECTIONS.map((section) => section.key);
+
+/* ================================================================== */
+/* مرتب‌سازی                                                          */
+/* ================================================================== */
+
+function sortCustomers(customers, sortKey = 'newest', direction = 'desc') {
+  const list = Array.isArray(customers) ? customers.slice() : [];
+  const dir = direction === 'asc' ? 1 : -1;
+
+  const byString = (getValue) => (a, b) => String(getValue(a) ?? '').localeCompare(String(getValue(b) ?? ''), 'fa');
+  const byNumber = (getValue) => (a, b) => (Number(getValue(a) || 0) - Number(getValue(b) || 0)) * dir;
+  const byDate = (getValue) => (a, b) => (Date.parse(getValue(b) || 0) - Date.parse(getValue(a) || 0)) * dir;
+
+  switch (sortKey) {
+    case 'name':
+      return list.sort(byString((c) => getCustomerName(c)));
+    case 'balance-desc':
+      return list.sort(byNumber((c) => c.balance));
+    case 'balance-asc':
+      return list.sort((a, b) => (Number(a.balance || 0) - Number(b.balance || 0)));
+    case 'spend-desc':
+      return list.sort(byNumber((c) => c.totalSpent));
+    case 'orders-desc':
+      return list.sort(byNumber((c) => c.orderCount));
+    case 'age-asc':
+      return list.sort((a, b) => (getAge(a) ?? 999) - (getAge(b) ?? 999));
+    case 'age-desc':
+      return list.sort((a, b) => (getAge(b) ?? -1) - (getAge(a) ?? -1));
+    case 'last-purchase':
+      return list.sort(byDate((c) => c.lastPurchaseAt));
+    case 'last-login':
+      return list.sort(byDate((c) => c.lastSeenAt || c.lastLoginAt));
+    case 'engagement':
+      return list.sort(byNumber((c) => getCustomerStats(c).engagementScore));
+    case 'oldest':
+      return list.sort((a, b) => Date.parse(a.signupAt || a.createdAt || 0) - Date.parse(b.signupAt || b.createdAt || 0));
+    case 'random':
+      return list.sort(() => Math.random() - 0.5);
+    case 'newest':
+    default:
+      return list.sort((a, b) => {
+        // سنجاق‌شده و ستاره‌دار اول، سپس جدیدترین
+        const pinDiff = Number(Boolean(b.pinned)) - Number(Boolean(a.pinned));
+        if (pinDiff !== 0) return pinDiff;
+        const favDiff = Number(Boolean(b.favorite)) - Number(Boolean(a.favorite));
+        if (favDiff !== 0) return favDiff;
+        return Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0);
+      });
+  }
+}
+
+/** نگاشت کلید ستون جدول → کلید مرتب‌سازی */
+function columnToSortKey(columnKey) {
+  const map = {
+    name: 'name',
+    balance: 'balance-desc',
+    totalSpent: 'spend-desc',
+    orderCount: 'orders-desc',
+    lastPurchaseAt: 'last-purchase',
   };
 
-  let selectedCustomerId = null;
-  let selectedCustomerIds = [];
+  return map[columnKey] || 'newest';
+}
 
-  // نگهداشت Listenerها برای پاکسازی کامل در destroy
-  const boundHandlers = {};
+/* ================================================================== */
+/* گروه‌بندی                                                          */
+/* ================================================================== */
 
-  // --- مدیریت Preferences و لاگ‌ها ---
-  function loadLocalData() {
+function getGroupKey(customer, groupBy) {
+  switch (groupBy) {
+    case 'gender':
+      return customer.gender || 'unknown';
+    case 'city':
+      return customer.city || 'نامشخص';
+    case 'country':
+      return customer.country || 'نامشخص';
+    case 'accountType':
+      return customer.accountType || 'normal';
+    case 'status':
+      return customer.status || 'active';
+    case 'tier':
+      return customer.loyaltyTier || 'none';
+    case 'ageRange':
+      return getAgeRange(customer);
+    case 'balanceRange':
+      return getBalanceRange(customer);
+    default:
+      return 'all';
+  }
+}
+
+function getGroupLabel(groupBy, key) {
+  switch (groupBy) {
+    case 'gender':
+      return GENDER_LABELS[key] || 'نامشخص';
+    case 'accountType':
+      return ACCOUNT_TYPE_LABELS[key] || key;
+    case 'status':
+      return CUSTOMER_STATUS_LABELS[key] || key;
+    case 'tier':
+      return LOYALTY_TIER_LABELS[key] || key;
+    case 'ageRange':
+      return AGE_RANGE_LABELS[key] || key;
+    case 'balanceRange':
+      return BALANCE_RANGE_LABELS[key] || key;
+    default:
+      return key;
+  }
+}
+
+/* ================================================================== */
+/* صفحه                                                                */
+/* ================================================================== */
+
+export function createCustomerInfoPage(ctx = {}) {
+  /* ---------------- state ---------------- */
+
+  const pageState = {
+    customers: [],
+    ui: readPersistedUi(),
+    headerConfig: readPersistedHeaderConfig(),
+    isLoading: true,
+    error: null,
+    isDestroyed: false,
+    commandQuery: '',
+    commandIndex: 0,
+    rowMenuId: null,
+  };
+
+  const refs = {};
+  const teardown = [];
+  let releaseCss = null;
+  let stopScheduler = null;
+
+  /* ---------------- ابزارهای داخلی ---------------- */
+
+  function register(cleanup) {
+    if (typeof cleanup === 'function') teardown.push(cleanup);
+    return cleanup;
+  }
+
+  function persistUi() {
     try {
-      const savedPrefs = localStorage.getItem(PREFS_KEY);
-      if (savedPrefs) {
-        prefs = { ...prefs, ...JSON.parse(savedPrefs) };
-      }
-      const savedLogs = localStorage.getItem(LOGS_KEY);
-      if (savedLogs) {
-        logs = JSON.parse(savedLogs);
-      }
-    } catch (err) {
-      console.error('[CustomerPage] Error loading local storage data:', err);
+      globalThis.localStorage.setItem('ViXoRa:customerInfo:ui', JSON.stringify(pageState.ui));
+      globalThis.localStorage.setItem('ViXoRa:customerInfo:header', JSON.stringify(pageState.headerConfig));
+    } catch (error) {
+      console.warn('[CustomerInfo] UI persist failed:', error);
     }
   }
 
-  function savePreferences() {
+  function setUi(patch, options = {}) {
+    const { regions = ['header', 'toolbar', 'panels', 'sidebar', 'view'] } = options;
+
+    pageState.ui = { ...pageState.ui, ...patch };
+    persistUi();
+
+    for (const region of regions) renderRegion(region);
+  }
+
+  function findCustomer(customerId) {
+    return pageState.customers.find((customer) => String(customer.id) === String(customerId)) || null;
+  }
+
+  function getOpenCustomer() {
+    return pageState.ui.openCustomerId ? findCustomer(pageState.ui.openCustomerId) : null;
+  }
+
+  function effectiveUi(extra = {}) {
+    return { ...pageState.ui, activeBucket: getActiveBucket(pageState.ui), ...extra };
+  }
+
+  function logActivity(customer, label) {
+    const entry = { id: createId('act'), type: 'change', label, at: new Date().toISOString() };
+    return { ...customer, activity: [entry, ...(customer.activity || [])].slice(0, 80) };
+  }
+
+  /* ---------------- ذخیره‌سازی ---------------- */
+
+  async function persistAll(options = {}) {
+    const { silent = true } = options;
+
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    } catch (err) {
-      console.error('[CustomerPage] Failed to save preferences:', err);
+      await setToolItems(TOOL_NAME, pageState.customers);
+      autoBackup();
+      return true;
+    } catch (error) {
+      console.error('[CustomerInfo] persist failed:', error);
+      if (!silent) toast.error(error?.message || 'ذخیره‌سازی ناموفق بود.');
+      return false;
     }
   }
 
-  function saveLog(actionType, message) {
-    const log = {
-      id: Date.now(),
-      time: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      actionType,
-      message,
-    };
-    logs.unshift(log);
-    if (logs.length > 30) logs.pop();
+  function autoBackup() {
     try {
-      localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
-    } catch (err) {
-      console.error('[CustomerPage] Failed to save log:', err);
+      globalThis.localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify({ at: new Date().toISOString(), count: pageState.customers.length }));
+    } catch {
+      /* ignore */
     }
   }
 
-  // --- سیستم Toast اعلان ---
-  function showToast(message, type = 'info') {
-    const existing = document.querySelector('.vcr-toast');
-    if (existing) existing.remove();
+  /** تغییر یک مشتری + ذخیره + رندر نواحی مرتبط */
+  async function applyCustomerChange(customerId, updater, options = {}) {
+    const { activity = null, regions = ['view', 'sidebar', 'profile'] } = options;
 
-    const toast = document.createElement('div');
-    toast.className = `vcr-toast vcr-toast--${type}`;
-    toast.innerHTML = `
-      <div class="vcr-toast__icon">⚡</div>
-      <div class="vcr-toast__content">
-        <span class="vcr-toast__title">سیستم هوشمند ViXoRa</span>
-        <span class="vcr-toast__message">${message}</span>
-      </div>
-      <div class="vcr-toast__progress"></div>
+    const index = pageState.customers.findIndex((customer) => String(customer.id) === String(customerId));
+    if (index === -1) return null;
+
+    let nextCustomer = updater({ ...pageState.customers[index] });
+    nextCustomer.updatedAt = new Date().toISOString();
+
+    if (activity) nextCustomer = logActivity(nextCustomer, activity);
+
+    const next = [...pageState.customers];
+    next[index] = nextCustomer;
+    pageState.customers = next;
+
+    for (const region of regions) renderRegion(region);
+
+    await persistAll();
+
+    return nextCustomer;
+  }
+
+  /* ---------------- بارگذاری ---------------- */
+
+  async function loadCustomers() {
+    pageState.isLoading = true;
+    pageState.error = null;
+    renderRegion('view');
+
+    try {
+      const raw = await getToolData(TOOL_NAME, { signal: ctx.signal });
+      if (pageState.isDestroyed) return;
+
+      pageState.customers = normalizeCustomerList(raw);
+      pageState.isLoading = false;
+
+      renderAllRegions();
+      await persistAll();
+    } catch (error) {
+      if (pageState.isDestroyed) return;
+
+      pageState.isLoading = false;
+      pageState.error = error?.message || 'خطای ناشناخته';
+      renderRegion('view');
+    }
+  }
+
+  /* ================================================================== */
+  /* رندر مناطق                                                         */
+  /* ================================================================== */
+
+  function render() {
+    releaseCss = injectScopedCss(customerInfoCss, 'customer-info-workspace');
+
+    const theme = pageState.ui.theme === 'light' ? 'light' : 'dark';
+
+    return `
+      <section class="vci-ws theme-${theme} density-${pageState.ui.density}" dir="rtl" data-customer-page>
+        <div class="vci-ws__shell">
+          <div data-region="header">${buildHeaderHtml()}</div>
+          <div data-region="toolbar">${buildToolbarHtml()}</div>
+          <div data-region="panels">${buildPanelsHtml()}</div>
+
+          <div class="vci-ws__layout">
+            <div data-region="sidebar">${buildSidebarHtml()}</div>
+            <main class="vci-ws__main">
+              <div data-region="view">${buildViewHtml()}</div>
+            </main>
+          </div>
+        </div>
+
+        <div class="vci-profile-host" data-region="profile">${buildProfileHtml()}</div>
+        <div class="vci-overlay-host" data-region="overlay">${buildOverlayHtml()}</div>
+
+        <button class="vci-fab" type="button" data-action="new-customer" aria-label="مشتری جدید" title="مشتری جدید (N)">
+          <span aria-hidden="true">＋</span>
+        </button>
+      </section>
     `;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      if (toast.parentNode) toast.remove();
-    }, 3200);
   }
 
-  // --- افکت کانفتی ---
-  function triggerConfetti() {
-    const canvas = document.createElement('canvas');
-    canvas.className = 'vcr-confetti-canvas';
-    document.body.appendChild(canvas);
-
-    const canvasCtx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const particles = [];
-    const colors = ['#00f0ff', '#bd00ff', '#ff007c', '#39ff14', '#ffeb3b'];
-
-    for (let i = 0; i < 90; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height - canvas.height,
-        r: Math.random() * 5 + 3,
-        d: Math.random() * canvas.height,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        tilt: Math.random() * 10 - 5,
-        tiltAngleIncremental: Math.random() * 0.07 + 0.02,
-        tiltAngle: 0,
-      });
+  function renderAllRegions() {
+    for (const region of ['header', 'toolbar', 'panels', 'sidebar', 'view', 'profile', 'overlay']) {
+      renderRegion(region);
     }
-
-    let animationId;
-    function draw() {
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      let finished = true;
-
-      particles.forEach((p) => {
-        p.tiltAngle += p.tiltAngleIncremental;
-        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 1.5;
-        p.x += Math.sin(p.tiltAngle) * 2;
-        p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 5;
-
-        if (p.y < canvas.height) finished = false;
-
-        canvasCtx.beginPath();
-        canvasCtx.lineWidth = p.r;
-        canvasCtx.strokeStyle = p.color;
-        canvasCtx.moveTo(p.x + p.tilt + p.r / 2, p.y);
-        canvasCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
-        canvasCtx.stroke();
-      });
-
-      if (!finished) {
-        animationId = requestAnimationFrame(draw);
-      } else {
-        cancelAnimationFrame(animationId);
-        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
-      }
-    }
-    draw();
   }
 
-  // --- موتور فیلتر و مرتب‌سازی ---
-  function getProcessedCustomers() {
-    let list = [...customers];
+  function renderRegion(region) {
+    if (pageState.isDestroyed) return;
 
-    const query = (prefs.searchQuery || '').toLowerCase().trim();
-    if (query) {
-      list = list
-        .map((customer) => {
-          let score = 0;
-          const name = String(customer.name || '').toLowerCase();
-          const lastName = String(customer.lastName || '').toLowerCase();
-          const username = String(customer.username || '').toLowerCase();
-          const email = String(customer.email || '').toLowerCase();
-          const phone = String(customer.phoneNumber || '');
-          const job = String(customer.job || '').toLowerCase();
-          const address = String(customer.address || '').toLowerCase();
-          const country = String(customer.country || '').toLowerCase();
+    const map = {
+      header: [refs.header, buildHeaderHtml],
+      toolbar: [refs.toolbar, buildToolbarHtml],
+      panels: [refs.panels, buildPanelsHtml],
+      sidebar: [refs.sidebar, buildSidebarHtml],
+      view: [refs.view, buildViewHtml],
+      profile: [refs.profile, buildProfileHtml],
+      overlay: [refs.overlay, buildOverlayHtml],
+    };
 
-          if (name.includes(query)) score += 100;
-          if (lastName.includes(query)) score += 100;
-          if (username.includes(query)) score += 80;
-          if (email.includes(query)) score += 80;
-          if (phone.includes(query)) score += 50;
-          if (job.includes(query)) score += 50;
-          if (address.includes(query)) score += 20;
-          if (country.includes(query)) score += 20;
+    const entry = map[region];
+    if (!entry) return;
 
-          return { customer, score };
-        })
-        .filter((item) => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map((item) => item.customer);
-    }
+    const [element, builder] = entry;
+    if (element) element.innerHTML = builder();
+  }
 
-    const sortVal = prefs.sortBy;
-    list.sort((a, b) => {
-      if (sortVal === 'alphabetical') {
-        return (a.lastName || '').localeCompare(b.lastName || '', 'fa');
-      }
-      if (sortVal === 'inventory-desc') {
-        return (Number(b.inventory) || 0) - (Number(a.inventory) || 0);
-      }
-      if (sortVal === 'inventory-asc') {
-        return (Number(a.inventory) || 0) - (Number(b.inventory) || 0);
-      }
-      if (sortVal === 'plan-premium') {
-        const planWeight = { plus: 5, pro: 4, eco: 3, gift: 2, free: 1 };
-        return (planWeight[b.plan] || 0) - (planWeight[a.plan] || 0);
-      }
-      if (sortVal === 'has-avatar') {
-        return (b.avatar ? 1 : 0) - (a.avatar ? 1 : 0);
-      }
-      return 0;
+  function buildHeaderHtml() {
+    return renderHeader({
+      ui: effectiveUi(),
+      headerConfig: pageState.headerConfig,
+      stats: getDashboardStats(pageState.customers),
     });
-
-    return list;
   }
 
-  // --- به‌روزرسانی پنل آمار ---
-  function updateInsights(list) {
-    const statTotalEl = document.getElementById('vcr-stat-total');
-    const statAvgEl = document.getElementById('vcr-stat-avg');
-    const statPremiumEl = document.getElementById('vcr-stat-premium');
-    const donutSegment = document.getElementById('vcr-donut-segment');
-    const donutPct = document.getElementById('vcr-donut-percentage');
-    const legendEl = document.getElementById('vcr-chart-legend');
+  function buildToolbarHtml() {
+    const visible = getVisibleCustomers();
+    return renderToolbar({ ui: effectiveUi(), resultCount: visible.length, totalCount: pageState.customers.filter((c) => !c.trashed).length });
+  }
 
-    if (!list || list.length === 0) {
-      if (statTotalEl) statTotalEl.textContent = '۰ تومان';
-      if (statAvgEl) statAvgEl.textContent = '۰ تومان';
-      if (statPremiumEl) statPremiumEl.textContent = '۰٪';
-      if (donutSegment) donutSegment.setAttribute('stroke-dasharray', '0 100');
-      if (donutPct) donutPct.textContent = '۰٪';
-      if (legendEl) legendEl.innerHTML = '<span class="vcr-chart-legend__empty">داده‌ای ثبت نشده</span>';
-      return;
-    }
+  function buildPanelsHtml() {
+    if (!pageState.ui.isFilterOpen) return '';
+    return renderFilterPanel({ ui: effectiveUi(), ruleFields: RULE_FIELD_OPTIONS });
+  }
 
-    const totalInventory = list.reduce((sum, c) => sum + (Number(c.inventory) || 0), 0);
-    const avgInventory = Math.round(totalInventory / list.length) || 0;
-    const premiumCount = list.filter((c) => ['pro', 'plus', 'gift'].includes(c.plan)).length;
-    const premiumPercent = Math.round((premiumCount / list.length) * 100) || 0;
-
-    if (statTotalEl) statTotalEl.textContent = `${new Intl.NumberFormat('fa-IR').format(totalInventory)} تومان`;
-    if (statAvgEl) statAvgEl.textContent = `${new Intl.NumberFormat('fa-IR').format(avgInventory)} تومان`;
-    if (statPremiumEl) statPremiumEl.textContent = `${premiumPercent}٪`;
-
-    const planCounts = list.reduce((acc, c) => {
-      const p = c.plan || 'free';
-      acc[p] = (acc[p] || 0) + 1;
+  function buildSidebarHtml() {
+    const segments = getSavedSegments();
+    const segmentCounts = segments.reduce((acc, segment) => {
+      acc[segment.id] = countSegment(pageState.customers, segment);
       return acc;
     }, {});
 
-    const topPlan = Object.entries(planCounts).sort((a, b) => b[1] - a[1])[0];
-
-    if (topPlan && donutSegment && donutPct && legendEl) {
-      const topPercentage = Math.round((topPlan[1] / list.length) * 100);
-      donutSegment.setAttribute('stroke-dasharray', `${topPercentage} ${100 - topPercentage}`);
-      donutPct.textContent = `${topPercentage}٪`;
-
-      const planColors = {
-        plus: 'var(--vcr-neon-cyan)',
-        pro: 'var(--vcr-neon-purple)',
-        eco: '#10b981',
-        gift: '#f59e0b',
-        free: '#64748b',
-      };
-
-      legendEl.innerHTML = Object.entries(planCounts)
-        .slice(0, 3)
-        .map(([plan, count]) => {
-          const pct = Math.round((count / list.length) * 100);
-          const color = planColors[plan] || 'var(--vcr-neon-cyan)';
-          return `
-            <div class="vcr-chart-legend__item">
-              <span class="vcr-chart-legend__dot" style="background:${color};"></span>
-              <span class="vcr-chart-legend__label">${plan.toUpperCase()}: ${pct}٪ (${count} نفر)</span>
-            </div>`;
-        })
-        .join('');
-    }
+    return renderSidebar({
+      ui: effectiveUi(),
+      bucketCounts: countBuckets(pageState.customers),
+      segmentCounts,
+      stats: getDashboardStats(pageState.customers),
+    });
   }
 
-  // --- رندر ویوهای ۳ گانه ---
-  function renderGridView(list) {
-    return list
-      .map((c) => {
-        const isChecked = selectedCustomerIds.includes(String(c.id)) ? 'checked' : '';
-        const formattedInventory = new Intl.NumberFormat('fa-IR').format(c.inventory || 0);
-        const nameLetter = (c.name || 'U').charAt(0).toUpperCase();
-        const avatarHTML = c.avatar
-          ? `<img class="vcr-custCard__avatar-img" src="${c.avatar}" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-             <div class="vcr-custCard__avatar-placeholder" style="display:none;">${nameLetter}</div>`
-          : `<div class="vcr-custCard__avatar-placeholder">${nameLetter}</div>`;
+  function buildViewHtml() {
+    if (pageState.isLoading) return renderLoadingState(8);
+    if (pageState.error) return renderErrorState(pageState.error);
 
-        return `
-          <article class="vcr-custCard" data-id="${c.id}">
-            <div class="vcr-custCard__checkbox-wrap">
-              <input type="checkbox" value="${c.id}" class="vcr-batch-checkbox" ${isChecked}>
-            </div>
+    const visible = getVisibleCustomers();
 
-            <span class="vcr-custPlan vcr-custPlan--${c.plan || 'free'}">${c.plan || 'free'}</span>
-            
-            <div class="vcr-custCard__header">
-              <div class="vcr-custCard__avatar-wrap">
-                ${avatarHTML}
-              </div>
-              <div class="vcr-custCard__meta">
-                <h3 class="vcr-custCard__fullname">${c.name || ''} ${c.lastName || ''}</h3>
-                <span class="vcr-custCard__username">@${c.username || 'user'}</span>
-              </div>
-            </div>
-
-            <div class="vcr-custCard__details">
-              <div class="vcr-custCard__row">
-                <span class="vcr-custCard__label">شغل:</span>
-                <span class="vcr-custCard__val">${c.job || 'ثبت نشده'}</span>
-              </div>
-              <div class="vcr-custCard__row">
-                <span class="vcr-custCard__label">موجودی:</span>
-                <span class="vcr-custCard__val vcr-custCard__val--accent">${formattedInventory} تومان</span>
-              </div>
-              <div class="vcr-custCard__row">
-                <span class="vcr-custCard__label">موبایل:</span>
-                <span class="vcr-custCard__val vcr-custCard__val--ltr">${c.phoneNumber || '---'}</span>
-              </div>
-              <div class="vcr-custCard__row">
-                <span class="vcr-custCard__label">آدرس:</span>
-                <span class="vcr-custCard__val vcr-custCard__val--truncate" title="${c.address || ''}">${c.address || 'ثبت نشده'}</span>
-              </div>
-            </div>
-
-            <div class="vcr-custCard__actions">
-              <button class="vcr-btn vcr-btn--danger-ghost vcr-custCard__btn" data-action="delete">حذف</button>
-              <button class="vcr-btn vcr-btn--primary-ghost vcr-custCard__btn" data-action="edit">ویرایش</button>
-            </div>
-          </article>
-        `;
-      })
-      .join('');
-  }
-
-  function renderTableView(list) {
-    const allSelected = list.length > 0 && list.every((c) => selectedCustomerIds.includes(String(c.id)));
-    const tableHeader = `
-      <div class="vcr-table-wrapper">
-        <table class="vcr-table">
-          <thead>
-            <tr>
-              <th style="width: 40px;"><input type="checkbox" id="vcr-select-all" ${allSelected ? 'checked' : ''} /></th>
-              <th>پروفایل</th>
-              <th>نام و نام خانوادگی</th>
-              <th>یوزرنیم</th>
-              <th>موبایل</th>
-              <th>شغل</th>
-              <th>موجودی (تومان)</th>
-              <th style="text-align: center;">عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    const rows = list
-      .map((c) => {
-        const isChecked = selectedCustomerIds.includes(String(c.id)) ? 'checked' : '';
-        const formattedInventory = new Intl.NumberFormat('fa-IR').format(c.inventory || 0);
-        const nameLetter = (c.name || 'U').charAt(0).toUpperCase();
-        const avatarHTML = c.avatar
-          ? `<img class="vcr-table__avatar-img" src="${c.avatar}" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-             <div class="vcr-table__avatar-placeholder" style="display:none;">${nameLetter}</div>`
-          : `<div class="vcr-table__avatar-placeholder">${nameLetter}</div>`;
-
-        return `
-          <tr data-id="${c.id}">
-            <td><input type="checkbox" value="${c.id}" class="vcr-batch-checkbox" ${isChecked} /></td>
-            <td><div class="vcr-table__avatar-wrap">${avatarHTML}</div></td>
-            <td class="vcr-table__name">${c.name || ''} ${c.lastName || ''}</td>
-            <td class="vcr-table__username">@${c.username || 'user'}</td>
-            <td class="vcr-table__phone">${c.phoneNumber || '---'}</td>
-            <td>${c.job || 'ثبت نشده'}</td>
-            <td class="vcr-table__inventory">${formattedInventory}</td>
-            <td>
-              <div class="vcr-table__actions">
-                <button class="vcr-btn vcr-btn--icon vcr-btn--edit" data-action="edit" title="ویرایش">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
-                <button class="vcr-btn vcr-btn--icon vcr-btn--delete" data-action="delete" title="حذف">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      })
-      .join('');
-
-    return `${tableHeader}${rows}</tbody></table></div>`;
-  }
-
-  function renderSplitView(list) {
-    if ((!selectedCustomerId || !list.some((c) => String(c.id) === String(selectedCustomerId))) && list.length > 0) {
-      selectedCustomerId = list[0].id;
+    if (visible.length === 0) {
+      return renderEmptyState({ hasQuery: Boolean(pageState.ui.query || pageState.ui.quickRules.length || pageState.ui.activeSegmentId) });
     }
 
-    const activeCustomer = list.find((c) => String(c.id) === String(selectedCustomerId)) || list[0];
-
-    const sidebarHtml = list
-      .map((c) => {
-        const isActive = String(c.id) === String(activeCustomer.id) ? 'active' : '';
-        const nameLetter = (c.name || 'U').charAt(0).toUpperCase();
-        return `
-          <div class="vcr-split-item ${isActive}" data-id="${c.id}" data-action="select-split">
-            <div class="vcr-split-item__avatar">
-              ${
-                c.avatar
-                  ? `<img src="${c.avatar}" alt="${c.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="vcr-split-item__placeholder" style="display:none;">${nameLetter}</div>`
-                  : `<div class="vcr-split-item__placeholder">${nameLetter}</div>`
-              }
-            </div>
-            <div class="vcr-split-item__info">
-              <span class="vcr-split-item__title">${c.name || ''} ${c.lastName || ''}</span>
-              <span class="vcr-split-item__sub">@${c.username || 'user'} | ${c.job || '---'}</span>
-            </div>
-          </div>
-        `;
-      })
-      .join('');
-
-    const formattedInventory = new Intl.NumberFormat('fa-IR').format(activeCustomer.inventory || 0);
-    const activeLetter = (activeCustomer.name || 'U').charAt(0).toUpperCase();
-
-    const logsHtml =
-      logs.length > 0
-        ? logs
-            .slice(0, 4)
-            .map(
-              (l) => `
-            <div class="vcr-timeline-item">
-              <span class="vcr-timeline-item__dot"></span>
-              <div class="vcr-timeline-item__content">
-                <span class="vcr-timeline-item__time">${l.time}</span>
-                <span class="vcr-timeline-item__msg">${l.message}</span>
-              </div>
-            </div>`
-            )
-            .join('')
-        : `<span class="vcr-timeline-empty">هیچ رخدادی ثبت نشده است.</span>`;
-
-    const detailPaneHtml = `
-      <div class="vcr-split-detail-pane" data-id="${activeCustomer.id}">
-        <div class="vcr-pane-card">
-          <div class="vcr-pane-card__header">
-            <div class="vcr-pane-card__avatar-wrap">
-              ${
-                activeCustomer.avatar
-                  ? `<img class="vcr-pane-card__avatar-img" src="${activeCustomer.avatar}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="vcr-pane-card__avatar-placeholder" style="display:none;">${activeLetter}</div>`
-                  : `<div class="vcr-pane-card__avatar-placeholder">${activeLetter}</div>`
-              }
-            </div>
-            <div class="vcr-pane-card__meta">
-              <h2 class="vcr-pane-card__title">${activeCustomer.name || ''} ${activeCustomer.lastName || ''}</h2>
-              <span class="vcr-pane-card__username">@${activeCustomer.username || 'user'}</span>
-            </div>
-            <span class="vcr-custPlan vcr-custPlan--${activeCustomer.plan || 'free'}">${activeCustomer.plan || 'free'}</span>
-          </div>
-
-          <div class="vcr-pane-grid">
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">موجودی حساب:</span>
-              <span class="vcr-pane-grid__val vcr-pane-grid__val--highlight">${formattedInventory} تومان</span>
-            </div>
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">شغل:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.job || 'ثبت نشده'}</span>
-            </div>
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">موبایل:</span>
-              <span class="vcr-pane-grid__val vcr-pane-grid__val--ltr">${activeCustomer.phoneNumber || '---'}</span>
-            </div>
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">ایمیل:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.email || 'ثبت نشده'}</span>
-            </div>
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">کشور / ملیت:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.country || 'iran'} / ${activeCustomer.nationality || 'iran'}</span>
-            </div>
-            <div class="vcr-pane-grid__item">
-              <span class="vcr-pane-grid__label">وضعیت تاهل:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.maritalStatus || 'نامشخص'}</span>
-            </div>
-            <div class="vcr-pane-grid__item vcr-pane-grid__item--full">
-              <span class="vcr-pane-grid__label">خریدهای مشتری:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.purchases || 'موردی ثبت نشده'}</span>
-            </div>
-            <div class="vcr-pane-grid__item vcr-pane-grid__item--full">
-              <span class="vcr-pane-grid__label">آدرس کامل:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.address || 'ثبت نشده'}</span>
-            </div>
-            <div class="vcr-pane-grid__item vcr-pane-grid__item--full">
-              <span class="vcr-pane-grid__label">توضیحات و یادداشت‌ها:</span>
-              <span class="vcr-pane-grid__val">${activeCustomer.Description || 'توضیحاتی وجود ندارد.'}</span>
-            </div>
-          </div>
-
-          <div class="vcr-activity-feed">
-            <h4 class="vcr-activity-feed__title">آخرین رخدادهای سیستم</h4>
-            <div class="vcr-activity-feed__list">
-              ${logsHtml}
-            </div>
-          </div>
-
-          <div class="vcr-pane-card__footer">
-            <button class="vcr-btn vcr-btn--danger vcr-custCard__btn" data-action="delete">حذف مشتری</button>
-            <button class="vcr-btn vcr-btn--primary vcr-custCard__btn" data-action="edit">ویرایش اطلاعات</button>
-          </div>
-        </div>
-      </div>
-    `;
+    const page = paginate(visible, pageState.ui.page, pageState.ui.pageSize);
+    const groups = pageState.ui.groupBy !== 'none' ? groupCustomers(page.items, pageState.ui.groupBy) : null;
 
     return `
-      <div class="vcr-split-layout">
-        <div class="vcr-split-sidebar">
-          ${sidebarHtml}
-        </div>
-        ${detailPaneHtml}
-      </div>
+      ${renderBulkBar({ selectedCount: pageState.ui.selectedIds.length, ui: effectiveUi() })}
+      ${renderActiveView({ customers: page.items, ui: effectiveUi(), groups, columns: pageState.ui.visibleColumns })}
+      ${renderPager({ page: page.page, pageSize: pageState.ui.pageSize, total: page.total })}
     `;
   }
 
-  function renderCustomerShow() {
-    const showSection = document.querySelector('.CI-show');
-    if (!showSection) return;
+  function buildProfileHtml() {
+    const customer = getOpenCustomer();
+    if (!customer) return '';
 
-    const list = getProcessedCustomers();
-    updateInsights(list);
+    const sections = getFormSections(CUSTOMER_SECTION_KEYS);
 
-    if (list.length === 0) {
-      showSection.innerHTML = `
-        <div class="vcr-empty-state">
-          <div class="vcr-empty-state__icon">🔍</div>
-          <h4 class="vcr-empty-state__title">هیچ مشتری یافت نشد</h4>
-          <p class="vcr-empty-state__text">با تغییر فیلتر جستجو یا افزودن مشتری جدید شروع کنید.</p>
-        </div>
-      `;
+    return renderProfile({ customer, ui: effectiveUi(), sections });
+  }
+
+  function buildOverlayHtml() {
+    if (!pageState.ui.isCommandOpen) return '';
+
+    return renderCommandPalette({
+      commands: buildCommands(),
+      query: pageState.commandQuery,
+      activeIndex: pageState.commandIndex,
+    });
+  }
+
+  /* ---------------- مشتق‌سازی داده ---------------- */
+
+  function getVisibleCustomers() {
+    const ui = pageState.ui;
+
+    const segment = ui.activeSegmentId ? getSavedSegments().find((item) => item.id === ui.activeSegmentId) : null;
+
+    const filtered = filterCustomers(pageState.customers, {
+      bucket: ui.bucket,
+      segment,
+      rules: ui.quickRules,
+      matcher: ui.quickMatcher,
+      query: ui.query,
+      excludeTrash: ui.bucket !== 'trash',
+    });
+
+    return sortCustomers(filtered, ui.sort, ui.sortDirection);
+  }
+
+  function paginate(items, page, pageSize) {
+    const total = items.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    const start = (safePage - 1) * pageSize;
+
+    return { items: items.slice(start, start + pageSize), page: safePage, total, totalPages };
+  }
+
+  function groupCustomers(customers, groupBy) {
+    const groups = new Map();
+
+    for (const customer of customers) {
+      const key = getGroupKey(customer, groupBy);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(customer);
+    }
+
+    return Array.from(groups.entries())
+      .map(([key, items]) => ({ key, label: getGroupLabel(groupBy, key), items }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
+  }
+
+  /* ================================================================== */
+  /* afterRender                                                        */
+  /* ================================================================== */
+
+  function afterRender() {
+    refs.root = document.querySelector('[data-customer-page]');
+
+    if (!refs.root) {
+      console.error('[CustomerInfo] Root not found after render.');
       return;
     }
 
-    switch (prefs.viewMode) {
-      case 'view-table':
-        showSection.innerHTML = renderTableView(list);
-        break;
-      case 'view-split':
-        showSection.innerHTML = renderSplitView(list);
-        break;
-      case 'view-grid':
-      default:
-        showSection.innerHTML = renderGridView(list);
-        break;
-    }
+    refs.header = refs.root.querySelector('[data-region="header"]');
+    refs.toolbar = refs.root.querySelector('[data-region="toolbar"]');
+    refs.panels = refs.root.querySelector('[data-region="panels"]');
+    refs.sidebar = refs.root.querySelector('[data-region="sidebar"]');
+    refs.view = refs.root.querySelector('[data-region="view"]');
+    refs.profile = refs.root.querySelector('[data-region="profile"]');
+    refs.overlay = refs.root.querySelector('[data-region="overlay"]');
+
+    attachEvents();
+    loadCustomers();
+    startSchedulers();
   }
 
-  function updateBatchToolbarUI() {
-    const batchToolbar = document.getElementById('vcr-batch-toolbar');
-    const batchCount = document.getElementById('vcr-batch-count');
-    if (!batchToolbar) return;
-
-    const count = selectedCustomerIds.length;
-    if (count > 0) {
-      batchToolbar.classList.remove('hidden');
-      if (batchCount) batchCount.textContent = count;
-    } else {
-      batchToolbar.classList.add('hidden');
-    }
-  }
-
-  // --- ارتباط با tools-service ---
-  async function handleAddOrUpdateCustomer(e) {
-    e.preventDefault();
-    const form = document.querySelector('.addCIModal-form');
-    if (!form) return;
-
-    const formData = new FormData(form);
-    const formValue = Object.fromEntries(formData);
-    const editId = form.getAttribute('data-edit-id');
-
-    const customerPayload = {
-      name: formValue.name || '',
-      lastName: formValue.lastName || '',
-      username: formValue.username || '',
-      avatar: formValue.avatar || '',
-      email: formValue.email || '',
-      phoneNumber: formValue.phone || '',
-      job: formValue.job || 'نامشخص',
-      purchases: formValue.purchases || '',
-      inventory: Number(formValue.inventory) || 0,
-      address: formValue.address || 'ثبت نشده',
-      Description: formValue.Description || '',
-      country: formValue.country || 'iran',
-      nationality: formValue.nationality || 'iran',
-      plan: formValue.plan || 'free',
-      maritalStatus: formValue.maritalStatus || 'unspecified',
-    };
-
-    try {
-      if (editId) {
-        const updated = await updateToolItem(TOOL_NAME, editId, customerPayload);
-        customers = customers.map((c) => (String(c.id) === String(editId) ? updated : c));
-        saveLog('UPDATE', `ویرایش مشتری: ${customerPayload.name} ${customerPayload.lastName}`);
-        showToast(`اطلاعات مشتری "${customerPayload.name}" به‌روزرسانی شد.`, 'success');
-      } else {
-        const created = await createToolItem(TOOL_NAME, customerPayload);
-        customers = [created, ...customers];
-        saveLog('CREATE', `افزودن مشتری جدید: ${customerPayload.name} ${customerPayload.lastName}`);
-        triggerConfetti();
-        showToast(`مشتری "${customerPayload.name}" با موفقیت اضافه شد.`, 'success');
+  function startSchedulers() {
+    stopScheduler = startCampaignScheduler(
+      async () => {
+        const raw = await getToolData(TOOL_NAME);
+        return normalizeCustomerList(raw);
+      },
+      {
+        intervalMs: 30_000,
+        persistCustomer: async (customer) => {
+          const index = pageState.customers.findIndex((item) => String(item.id) === String(customer.id));
+          if (index !== -1) {
+            const next = [...pageState.customers];
+            next[index] = normalizeCustomer(customer);
+            pageState.customers = next;
+            await persistAll();
+          }
+        },
       }
-
-      closeModal();
-      renderCustomerShow();
-    } catch (err) {
-      console.error('[CustomerPage] Operation failed:', err);
-      showToast('خطا در برقراری ارتباط و ذخیره داده!', 'error');
-    }
-  }
-
-  async function handleDeleteCustomer(id) {
-    const customer = customers.find((c) => String(c.id) === String(id));
-    const fullName = customer ? `${customer.name} ${customer.lastName}` : 'مشتری';
-
-    if (!confirm(`آیا از حذف "${fullName}" اطمینان دارید؟`)) return;
-
-    try {
-      await deleteToolItem(TOOL_NAME, id);
-      customers = customers.filter((c) => String(c.id) !== String(id));
-      selectedCustomerIds = selectedCustomerIds.filter((x) => String(x) !== String(id));
-
-      if (String(selectedCustomerId) === String(id)) {
-        selectedCustomerId = null;
-      }
-
-      saveLog('DELETE', `حذف مشتری: ${fullName}`);
-      showToast(`مشتری "${fullName}" با موفقیت حذف شد.`, 'success');
-      updateBatchToolbarUI();
-      renderCustomerShow();
-    } catch (err) {
-      console.error('[CustomerPage] Delete failed:', err);
-      showToast('خطا در حذف آیتم مشتری!', 'error');
-    }
-  }
-
-  function handleEditCustomer(id) {
-    const customer = customers.find((c) => String(c.id) === String(id));
-    if (!customer) return;
-
-    const form = document.querySelector('.addCIModal-form');
-    if (!form) return;
-
-    form.name.value = customer.name || '';
-    form.lastName.value = customer.lastName || '';
-    form.avatar.value = customer.avatar || '';
-    form.username.value = customer.username || '';
-    form.email.value = customer.email || '';
-    form.phone.value = customer.phoneNumber || '';
-    form.job.value = customer.job || '';
-    form.purchases.value = customer.purchases || '';
-    form.inventory.value = customer.inventory || 0;
-    form.address.value = customer.address || '';
-    form.Description.value = customer.Description || '';
-    form.country.value = customer.country || 'iran';
-    form.nationality.value = customer.nationality || 'iran';
-    form.plan.value = customer.plan || 'free';
-    form.maritalStatus.value = customer.maritalStatus || 'unspecified';
-
-    form.setAttribute('data-edit-id', id);
-    const titleEl = document.querySelector('.addCIModal-title');
-    if (titleEl) titleEl.textContent = 'ویرایش اطلاعات مشتری';
-
-    openModal();
-  }
-
-  async function handleBatchAction(action) {
-    if (selectedCustomerIds.length === 0) return;
-
-    if (action === 'delete') {
-      if (!confirm(`آیا از حذف گروهی ${selectedCustomerIds.length} مشتری اطمینان دارید؟`)) return;
-
-      try {
-        for (const id of selectedCustomerIds) {
-          await deleteToolItem(TOOL_NAME, id);
-        }
-        customers = customers.filter((c) => !selectedCustomerIds.includes(String(c.id)));
-        saveLog('BATCH_DELETE', `حذف گروهی ${selectedCustomerIds.length} مشتری`);
-        showToast(`${selectedCustomerIds.length} مشتری با موفقیت حذف شدند.`, 'success');
-        selectedCustomerIds = [];
-        updateBatchToolbarUI();
-        renderCustomerShow();
-      } catch (err) {
-        console.error('[CustomerPage] Batch delete failed:', err);
-        showToast('خطا در حذف گروهی مشتریان!', 'error');
-      }
-    } else if (action === 'csv') {
-      const selectedData = customers.filter((c) => selectedCustomerIds.includes(String(c.id)));
-      let csvContent = 'data:text/csv;charset=utf-8,ID,Name,LastName,Username,Email,Phone,Job,Inventory,Plan,Country\n';
-
-      selectedData.forEach((c) => {
-        csvContent += `"${c.id}","${c.name || ''}","${c.lastName || ''}","${c.username || ''}","${c.email || ''}","${c.phoneNumber || ''}","${c.job || ''}","${c.inventory || 0}","${c.plan || 'free'}","${c.country || 'iran'}"\n`;
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `ViXoRa_Customers_${Date.now()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      saveLog('CSV_EXPORT', `خروجی CSV برای ${selectedCustomerIds.length} مشتری`);
-      showToast('فایل CSV با موفقیت تولید شد.', 'success');
-      selectedCustomerIds = [];
-      updateBatchToolbarUI();
-      renderCustomerShow();
-    }
-  }
-
-  // --- مدال و پالت سریع ---
-  function openModal() {
-    const modal = document.querySelector('.addCI-modal');
-    modal?.classList.remove('hidden');
-  }
-
-  function closeModal() {
-    const modal = document.querySelector('.addCI-modal');
-    const form = document.querySelector('.addCIModal-form');
-    const titleEl = document.querySelector('.addCIModal-title');
-    modal?.classList.add('hidden');
-    form?.reset();
-    form?.removeAttribute('data-edit-id');
-    if (titleEl) titleEl.textContent = 'ثبت مشتری جدید';
-  }
-
-  function toggleSpotlight(show) {
-    const spotlight = document.getElementById('vcr-spotlight');
-    const input = document.getElementById('vcr-spotlight-input');
-    const results = document.getElementById('vcr-spotlight-results');
-
-    if (!spotlight) return;
-    if (show) {
-      spotlight.classList.remove('hidden');
-      if (input) {
-        input.value = '';
-        setTimeout(() => input.focus(), 80);
-      }
-      if (results) {
-        results.innerHTML = `<div class="vcr-spotlight-msg">نام، ایمیل، موبایل یا شغل مشتری را تایپ کنید...</div>`;
-      }
-    } else {
-      spotlight.classList.add('hidden');
-    }
-  }
-
-  function handleSpotlightSearch(e) {
-    const query = (e.target.value || '').toLowerCase().trim();
-    const resultsEl = document.getElementById('vcr-spotlight-results');
-    if (!resultsEl) return;
-
-    if (!query) {
-      resultsEl.innerHTML = `<div class="vcr-spotlight-msg">نام، ایمیل، موبایل یا شغل مشتری را تایپ کنید...</div>`;
-      return;
-    }
-
-    const filtered = customers.filter(
-      (c) =>
-        (c.name && c.name.toLowerCase().includes(query)) ||
-        (c.lastName && c.lastName.toLowerCase().includes(query)) ||
-        (c.username && c.username.toLowerCase().includes(query)) ||
-        (c.email && c.email.toLowerCase().includes(query)) ||
-        (c.phoneNumber && c.phoneNumber.includes(query)) ||
-        (c.job && c.job.toLowerCase().includes(query))
     );
 
-    if (filtered.length === 0) {
-      resultsEl.innerHTML = `<div class="vcr-spotlight-msg">هیچ مشتری با این مشخصات یافت نشد.</div>`;
-      return;
-    }
-
-    resultsEl.innerHTML = filtered
-      .map(
-        (c) => `
-        <div class="vcr-spotlight-item" data-id="${c.id}">
-          <div class="vcr-spotlight-item__left">
-            <div class="vcr-spotlight-item__avatar">${(c.name || 'U').charAt(0).toUpperCase()}</div>
-            <div class="vcr-spotlight-item__meta">
-              <span class="vcr-spotlight-item__name">${c.name || ''} ${c.lastName || ''}</span>
-              <span class="vcr-spotlight-item__sub">@${c.username || 'user'} | ${c.job || '---'}</span>
-            </div>
-          </div>
-          <span class="vcr-spotlight-item__inv">${new Intl.NumberFormat('fa-IR').format(c.inventory || 0)} تومان</span>
-        </div>
-      `
-      )
-      .join('');
+    register(() => stopCampaignScheduler());
   }
 
-  // --- رندر ساختار کامل HTML ---
-  function render() {
-    loadLocalData();
+  /* ================================================================== */
+  /* رویدادها                                                           */
+  /* ================================================================== */
 
-    return `
-      <div class="CI-root">
-        <!-- تولبار کنترل کامل -->
-        <section class="vcr-toolbar">
-          <div class="vcr-toolbar__right">
-            <div class="vcr-brand-badge">
-              <h3 class="vcr-brand-badge__title">اطلاعات مشتریان</h3>
-              <span class="vcr-brand-badge__dot"></span>
-            </div>
-            <button class="vcr-btn vcr-btn--neon addCITools-btn" type="button">
-              + مشتری جدید
-            </button>
-          </div>
+  function attachEvents() {
+    register(delegate(refs.root, '[data-action]', 'click', handleActionClick));
+    register(on(refs.root, 'change', handleChange));
+    register(on(refs.root, 'input', handleInput));
+    register(on(refs.root, 'submit', handleSubmit));
+    register(on(refs.root, 'focusout', handleFocusOut));
+    register(on(refs.root, 'keydown', handleInlineKeydown));
 
-          <div class="vcr-toolbar__left">
-            <div class="vcr-kbd-hint">
-              <span>جستجوی سریع:</span>
-              <kbd>Ctrl + K</kbd>
-            </div>
+    register(delegate(refs.root, '.vci-cmdk__item', 'click', (event, item) => {
+      runCommand(item.dataset.commandId);
+    }));
 
-            <div class="vcr-search-box">
-              <svg class="vcr-search-box__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input placeholder="جستجو بین مشتریان..." class="vcr-search-box__input addCISearch-input" type="text" value="${prefs.searchQuery || ''}">
-              
-              <div class="vcr-search-tooltip">
-                <div class="vcr-search-tooltip__header">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                  <span>موتور سرچ هوشمند و وزنی</span>
-                </div>
-                <p class="vcr-search-tooltip__desc">جستجو همزمان بر اساس اولویت وزنی در فیلدهای زیر انجام می‌شود:</p>
-                <ul class="vcr-search-tooltip__list">
-                  <li><span>نام و نام خانوادگی</span> <span class="vcr-badge vcr-badge--gold">ضریب ۱۰۰</span></li>
-                  <li><span>نام کاربری و ایمیل</span> <span class="vcr-badge vcr-badge--silver">ضریب ۸۰</span></li>
-                  <li><span>شماره موبایل و شغل</span> <span class="vcr-badge vcr-badge--bronze">ضریب ۵۰</span></li>
-                  <li><span>آدرس و کشور</span> <span class="vcr-badge">ضریب ۲۰</span></li>
-                </ul>
-              </div>
-            </div>
+    register(delegate(refs.root, '[data-command-overlay]', 'click', (event, overlay) => {
+      if (event.target === overlay) closeCommandPalette();
+    }));
 
-            <select class="vcr-select vcr-sort-select">
-              <option value="alphabetical" ${prefs.sortBy === 'alphabetical' ? 'selected' : ''}>🔤 حروف الفبا (نام خانوادگی)</option>
-              <option value="inventory-desc" ${prefs.sortBy === 'inventory-desc' ? 'selected' : ''}>💰 موجودی (بیشترین)</option>
-              <option value="inventory-asc" ${prefs.sortBy === 'inventory-asc' ? 'selected' : ''}>🪙 موجودی (کمترین)</option>
-              <option value="plan-premium" ${prefs.sortBy === 'plan-premium' ? 'selected' : ''}>👑 سطح پلن (پرایم)</option>
-              <option value="has-avatar" ${prefs.sortBy === 'has-avatar' ? 'selected' : ''}>🖼️ دارای عکس پروفایل</option>
-            </select>
+    register(on(globalThis.window, 'keydown', handleGlobalKeydown));
 
-            <!-- دکمه‌های ۳ گانه تغییر نما -->
-            <div class="vcr-view-toggles">
-              <button class="vcr-view-btn ${prefs.viewMode === 'view-grid' ? 'active' : ''}" data-view="view-grid" title="نمای کارتی (Grid)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              </button>
-              <button class="vcr-view-btn ${prefs.viewMode === 'view-table' ? 'active' : ''}" data-view="view-table" title="نمای جدولی (Table)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              </button>
-              <button class="vcr-view-btn ${prefs.viewMode === 'view-split' ? 'active' : ''}" data-view="view-split" title="نمای اسپلیت (Split View)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- پنل آمار و اینسایت‌های تحلیلی -->
-        <section class="vcr-insights">
-          <div class="vcr-insight-card vcr-insight-card--chart">
-            <div class="vcr-insight-card__info">
-              <span class="vcr-insight-card__title">توزیع پلن‌های کاربری</span>
-              <div id="vcr-chart-legend" class="vcr-chart-legend"></div>
-            </div>
-            <div class="vcr-donut-wrap">
-              <svg class="vcr-donut-svg" width="76" height="76" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.2"></circle>
-                <circle id="vcr-donut-segment" cx="18" cy="18" r="15.915" fill="none" stroke="var(--vcr-neon-cyan)" stroke-width="3.2" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
-              </svg>
-              <div id="vcr-donut-percentage" class="vcr-donut-percentage">۰٪</div>
-            </div>
-          </div>
-
-          <div class="vcr-insight-card">
-            <span class="vcr-insight-card__title">کل سرمایه در چرخه</span>
-            <h4 id="vcr-stat-total" class="vcr-insight-card__val vcr-insight-card__val--cyan">۰ تومان</h4>
-          </div>
-          <div class="vcr-insight-card">
-            <span class="vcr-insight-card__title">میانگین دارایی مشتریان</span>
-            <h4 id="vcr-stat-avg" class="vcr-insight-card__val vcr-insight-card__val--purple">۰ تومان</h4>
-          </div>
-          <div class="vcr-insight-card">
-            <span class="vcr-insight-card__title">نسبت کاربران پرمیوم</span>
-            <h4 id="vcr-stat-premium" class="vcr-insight-card__val vcr-insight-card__val--green">۰٪</h4>
-          </div>
-        </section>
-
-        <!-- تولبار شناور عملیات گروهی -->
-        <div id="vcr-batch-toolbar" class="vcr-batch-toolbar hidden">
-          <span class="vcr-batch-toolbar__text"><strong id="vcr-batch-count">0</strong> مشتری انتخاب شده است</span>
-          <div class="vcr-batch-toolbar__actions">
-            <button id="vcr-batch-del-btn" class="vcr-btn vcr-btn--danger vcr-btn--sm">حذف گروهی</button>
-            <button id="vcr-batch-csv-btn" class="vcr-btn vcr-btn--secondary vcr-btn--sm">خروجی CSV</button>
-            <button id="vcr-batch-cancel-btn" class="vcr-btn vcr-btn--ghost vcr-btn--sm">انصراف</button>
-          </div>
-        </div>
-
-        <!-- Spotlight Command Palette -->
-        <div id="vcr-spotlight" class="vcr-spotlight hidden">
-          <div class="vcr-spotlight__dialog">
-            <div class="vcr-spotlight__header">
-              <span class="vcr-spotlight__icon">🔍</span>
-              <input id="vcr-spotlight-input" class="vcr-spotlight__input" type="text" placeholder="نام، ایمیل یا شماره موبایل را برای جستجوی فوری بنویسید...">
-              <kbd class="vcr-spotlight__kbd">ESC</kbd>
-            </div>
-            <div id="vcr-spotlight-results" class="vcr-spotlight__results"></div>
-          </div>
-        </div>
-
-        <!-- مودال ثبت و ویرایش مشتری -->
-        <section class="addCI-modal hidden">
-          <div class="addCIModal-bg"></div>
-          <div class="addCIModal-card">
-            <div class="addCIModal-header">
-              <h3 class="addCIModal-title">ثبت مشتری جدید</h3>
-              <p class="addCIModal-description">اطلاعات فیلدهای زیر را جهت ذخیره در سامانه وارد نمایید.</p>
-            </div>
-
-            <form class="addCIModal-form">
-              <div class="vcr-form-grid">
-                <div class="vcr-form-group">
-                  <label for="name" class="vcr-form-label">نام مشتری <span class="vcr-req">*</span></label>
-                  <input id="name" class="vcr-input" name="name" type="text" placeholder="مثال: علی" required>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="lastName" class="vcr-form-label">نام خانوادگی <span class="vcr-req">*</span></label>
-                  <input id="lastName" class="vcr-input" name="lastName" type="text" placeholder="مثال: محمدی" required>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="avatar" class="vcr-form-label">لینک آواتار (URL)</label>
-                  <input id="avatar" class="vcr-input" name="avatar" type="url" placeholder="https://example.com/avatar.jpg">
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="username" class="vcr-form-label">نام کاربری <span class="vcr-req">*</span></label>
-                  <input id="username" class="vcr-input" name="username" type="text" placeholder="username" required>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="email" class="vcr-form-label">ایمیل</label>
-                  <input id="email" class="vcr-input" name="email" type="email" placeholder="example@domain.com">
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="phone" class="vcr-form-label">شماره موبایل</label>
-                  <input id="phone" class="vcr-input" name="phone" type="text" placeholder="۰۹۱۲۳۴۵۶۷۸۹">
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="job" class="vcr-form-label">عنوان شغلی</label>
-                  <input id="job" class="vcr-input" name="job" type="text" placeholder="توسعه‌دهنده وب">
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="inventory" class="vcr-form-label">موجودی حساب (تومان)</label>
-                  <input id="inventory" class="vcr-input" name="inventory" type="number" placeholder="15000000">
-                </div>
-
-                <div class="vcr-form-group vcr-form-group--full">
-                  <label for="purchases" class="vcr-form-label">خریدهای مشتری</label>
-                  <input id="purchases" class="vcr-input" name="purchases" type="text" placeholder="مثال: لپ تاپ، مانیتور">
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="CICountry" class="vcr-form-label">کشور</label>
-                  <select class="vcr-select" id="CICountry" name="country">
-                    <option value="iran">ایران</option>
-                    <option value="UAE">امارات</option>
-                    <option value="USA">آمریکا</option>
-                    <option value="Germany">آلمان</option>
-                  </select>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="CInationality" class="vcr-form-label">ملیت</label>
-                  <select class="vcr-select" id="CInationality" name="nationality">
-                    <option value="iran">ایرانی</option>
-                    <option value="UAE">اماراتی</option>
-                    <option value="USA">آمریکایی</option>
-                    <option value="Germany">آلمانی</option>
-                  </select>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="CIPlan" class="vcr-form-label">سطح پلن</label>
-                  <select class="vcr-select" id="CIPlan" name="plan">
-                    <option value="free">free</option>
-                    <option value="eco">eco</option>
-                    <option value="pro">pro</option>
-                    <option value="plus">plus</option>
-                    <option value="gift">gift</option>
-                  </select>
-                </div>
-
-                <div class="vcr-form-group">
-                  <label for="CImaritalStatus" class="vcr-form-label">وضعیت تاهل</label>
-                  <select class="vcr-select" id="CImaritalStatus" name="maritalStatus">
-                    <option value="single">مجرد</option>
-                    <option value="married">متاهل</option>
-                    <option value="unspecified">نامشخص</option>
-                  </select>
-                </div>
-
-                <div class="vcr-form-group vcr-form-group--full">
-                  <label for="address" class="vcr-form-label">آدرس کامل</label>
-                  <textarea placeholder="آدرس دقیق..." id="address" class="vcr-textarea" name="address" rows="2"></textarea>
-                </div>
-
-                <div class="vcr-form-group vcr-form-group--full">
-                  <label for="Description" class="vcr-form-label">جزئیات و یادداشت‌ها</label>
-                  <textarea placeholder="توضیحات تکمیلی..." id="Description" class="vcr-textarea" name="Description" rows="2"></textarea>
-                </div>
-              </div>
-
-              <div class="addCIModal-actions">
-                <button class="vcr-btn vcr-btn--ghost CIModal-formCancelBtn" type="button">انصراف</button>
-                <button class="vcr-btn vcr-btn--neon CIModal-formAddBtn" type="submit">ذخیره مشتری</button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- بخش اصلی نمایش مشتریان -->
-        <section class="CI-show ${prefs.viewMode}"></section>
-      </div>
-    `;
-  }
-
-  // --- بعد از رندر در DOM ---
-  async function afterRender() {
-    loadLocalData();
-
-    try {
-      customers = await getToolData(TOOL_NAME);
-    } catch (err) {
-      console.error('[CustomerPage] Failed to fetch tool data:', err);
-      customers = [];
-    }
-
-    const rootEl = document.querySelector('.CI-root');
-    if (!rootEl) return;
-
-    const addCustomerBtn = rootEl.querySelector('.addCITools-btn');
-    const modalBg = rootEl.querySelector('.addCIModal-bg');
-    const modalCancelBtn = rootEl.querySelector('.CIModal-formCancelBtn');
-    const addForm = rootEl.querySelector('.addCIModal-form');
-    const showSection = rootEl.querySelector('.CI-show');
-    const searchInput = rootEl.querySelector('.addCISearch-input');
-    const sortSelect = rootEl.querySelector('.vcr-sort-select');
-    const spotlightModal = document.getElementById('vcr-spotlight');
-    const spotlightInput = document.getElementById('vcr-spotlight-input');
-    const spotlightResults = document.getElementById('vcr-spotlight-results');
-
-    // ثبت هندلرها
-    boundHandlers.openModal = () => openModal();
-    boundHandlers.closeModal = () => closeModal();
-    boundHandlers.submitForm = (e) => handleAddOrUpdateCustomer(e);
-
-    boundHandlers.handleSearch = (e) => {
-      prefs.searchQuery = e.target.value;
-      savePreferences();
-      renderCustomerShow();
-    };
-
-    boundHandlers.handleSortChange = (e) => {
-      prefs.sortBy = e.target.value;
-      savePreferences();
-      renderCustomerShow();
-    };
-
-    boundHandlers.changeView = (e) => {
-      const btn = e.target.closest('.vcr-view-btn');
-      if (!btn) return;
-      rootEl.querySelectorAll('.vcr-view-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      prefs.viewMode = btn.dataset.view;
-      savePreferences();
-
-      if (showSection) {
-        showSection.className = `CI-show ${prefs.viewMode}`;
+    // بستن منوی ردیف با کلیک بیرون
+    register(on(globalThis.document, 'click', (event) => {
+      if (pageState.rowMenuId && !event.target.closest('[data-row-menu]') && !event.target.closest('[data-action="open-menu"]')) {
+        closeRowMenu();
       }
-      renderCustomerShow();
-    };
+    }));
+  }
 
-    boundHandlers.handleSectionClick = (e) => {
-      const splitItem = e.target.closest("[data-action='select-split']");
-      if (splitItem) {
-        selectedCustomerId = splitItem.dataset.id;
-        renderCustomerShow();
+  /* ---------------- کلیک روی اکشن‌ها ---------------- */
+
+  async function handleActionClick(event, button) {
+    const action = button?.dataset?.action;
+    if (!action) return;
+
+    const customerId = button.dataset.customerId || null;
+
+    switch (action) {
+      /* --- ناوبری نما --- */
+      case 'set-view':
+        setUi({ view: button.dataset.view, page: 1 }, { regions: ['toolbar', 'view'] });
+        return;
+
+      case 'set-bucket':
+        setUi({ bucket: button.dataset.bucket, activeSegmentId: null, page: 1 }, { regions: ['sidebar', 'toolbar', 'view'] });
+        return;
+
+      case 'set-segment': {
+        const segmentId = button.dataset.segmentId;
+        setUi({ activeSegmentId: pageState.ui.activeSegmentId === segmentId ? null : segmentId, bucket: 'all', page: 1 }, { regions: ['sidebar', 'toolbar', 'view'] });
         return;
       }
 
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
+      case 'set-scope':
+        setUi({ queryScope: button.value }, { regions: [] });
+        return;
 
-      const container = btn.closest('[data-id]');
-      if (!container) return;
+      case 'set-sort':
+        setUi({ sort: button.value, page: 1 }, { regions: ['view'] });
+        return;
 
-      const customerId = container.dataset.id;
-      const action = btn.dataset.action;
+      case 'set-group':
+        setUi({ groupBy: button.value }, { regions: ['view'] });
+        return;
 
-      if (action === 'delete') {
-        handleDeleteCustomer(customerId);
-      } else if (action === 'edit') {
-        handleEditCustomer(customerId);
+      case 'toggle-sort-dir':
+        setUi({ sortDirection: pageState.ui.sortDirection === 'asc' ? 'desc' : 'asc' }, { regions: ['toolbar', 'view'] });
+        return;
+
+      case 'sort-column': {
+        const key = columnToSortKey(button.dataset.sortKey);
+        const direction = pageState.ui.sort === key && pageState.ui.sortDirection === 'desc' ? 'asc' : 'desc';
+        setUi({ sort: key, sortDirection: direction, page: 1 }, { regions: ['toolbar', 'view'] });
+        return;
       }
+
+      case 'set-page':
+        setUi({ page: Number(button.dataset.page) || 1 }, { regions: ['view'] });
+        return;
+
+      case 'toggle-filter':
+        setUi({ isFilterOpen: !pageState.ui.isFilterOpen }, { regions: ['toolbar', 'panels'] });
+        return;
+
+      case 'toggle-theme':
+        setUi({ theme: pageState.ui.theme === 'light' ? 'dark' : 'light' }, { regions: [] });
+        refs.root.classList.toggle('theme-light', pageState.ui.theme === 'light');
+        refs.root.classList.toggle('theme-dark', pageState.ui.theme !== 'light');
+        return;
+
+      case 'toggle-sidebar':
+        setUi({ isSidebarOpen: !pageState.ui.isSidebarOpen }, { regions: ['sidebar'] });
+        return;
+
+      case 'reload':
+        await loadCustomers();
+        return;
+
+      /* --- پروفایل --- */
+      case 'open-profile':
+        openProfile(customerId);
+        return;
+
+      case 'close-profile':
+        setUi({ openCustomerId: null }, { regions: ['profile'] });
+        return;
+
+      case 'set-profile-tab':
+        setUi({ profileTab: button.dataset.tab }, { regions: ['profile'] });
+        return;
+
+      case 'edit-section':
+        openSectionEditor(customerId || pageState.ui.openCustomerId, button.dataset.section);
+        return;
+
+      /* --- ویرایش درجا --- */
+      case 'edit-field':
+        startInlineEdit(button);
+        return;
+
+      case 'set-rating': {
+        const fieldKey = button.dataset.fieldKey;
+        const value = Number(button.dataset.value);
+        await applyCustomerChange(button.dataset.customerId, (customer) => ({ ...customer, [fieldKey]: value }), { activity: 'ویرایش امتیاز' });
+        return;
+      }
+
+      /* --- انتخاب --- */
+      case 'toggle-select':
+        // در handleChange مدیریت می‌شود
+        return;
+
+      case 'clear-selection':
+        setUi({ selectedIds: [] }, { regions: ['view'] });
+        return;
+
+      case 'toggle-favorite':
+        await applyCustomerChange(customerId, (customer) => ({ ...customer, favorite: !customer.favorite }), { activity: customer => customer.favorite ? 'ستاره‌دار شد' : 'ستاره برداشته شد' });
+        return;
+
+      case 'toggle-pin':
+        await applyCustomerChange(customerId, (customer) => ({ ...customer, pinned: !customer.pinned }), { activity: 'سنجاق' });
+        return;
+
+      case 'toggle-archive':
+        await applyCustomerChange(customerId, (customer) => ({ ...customer, archived: !customer.archived }), { activity: 'آرشیو' });
+        return;
+
+      case 'trash-customer':
+        await trashCustomer(customerId);
+        return;
+
+      case 'open-menu':
+        openRowMenu(customerId, button);
+        return;
+
+      /* --- اکشن‌های سرصفحه --- */
+      case 'header-action':
+        await runHeaderAction(button.dataset.headerActionId);
+        return;
+
+      case 'new-customer':
+        openCustomerForm(null);
+        return;
+
+      case 'toggle-command':
+        toggleCommandPalette();
+        return;
+
+      /* --- کمپین و پیام --- */
+      case 'campaign':
+      case 'bulk-campaign':
+        openCampaignModal(getSelectedCustomers());
+        return;
+
+      case 'quick-message':
+        openMessageModal(customerId, 'message');
+        return;
+
+      case 'quick-notify':
+        openMessageModal(customerId, 'notify');
+        return;
+
+      case 'schedule-message':
+        openMessageModal(customerId, 'message', { scheduled: true });
+        return;
+
+      /* --- بخش‌ها --- */
+      case 'segments':
+      case 'open-segments':
+        openSegmentsModal();
+        return;
+
+      case 'new-segment':
+        openSegmentEditor(null);
+        return;
+
+      case 'edit-segment':
+        openSegmentEditor(button.dataset.segmentId);
+        return;
+
+      case 'delete-segment':
+        await removeSegment(button.dataset.segmentId);
+        return;
+
+      /* --- ایمپورت/خروجی --- */
+      case 'import':
+      case 'open-import':
+        openImportModal();
+        return;
+
+      case 'export':
+      case 'bulk-export':
+        exportCustomers(getSelectedCustomers().length ? getSelectedCustomers() : getVisibleCustomers());
+        return;
+
+      case 'dashboard':
+      case 'open-dashboard':
+        openDashboardModal();
+        return;
+
+      case 'settings':
+      case 'open-settings':
+        openSettingsModal();
+        return;
+
+      /* --- اقدام گروهی --- */
+      case 'bulk-tag':
+        openBulkTagModal();
+        return;
+
+      case 'bulk-status':
+        openBulkStatusModal();
+        return;
+
+      case 'bulk-trash':
+        await bulkTrash();
+        return;
+
+      /* --- فیلتر --- */
+      case 'add-rule':
+        addQuickRule();
+        return;
+
+      case 'remove-rule':
+        removeQuickRule(Number(button.dataset.ruleIndex));
+        return;
+
+      case 'clear-rules':
+        setUi({ quickRules: [], page: 1 }, { regions: ['panels', 'toolbar', 'view'] });
+        return;
+
+      case 'rule-field':
+      case 'rule-operator':
+      case 'rule-value':
+        // در handleChange مدیریت می‌شود
+        return;
+
+      case 'stop':
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+
+      default:
+        return;
+    }
+  }
+
+  /* ---------------- تغییر select/checkbox ---------------- */
+
+  async function handleChange(event) {
+    const target = event.target;
+    const action = target.dataset?.action;
+
+    // انتخاب ردیف
+    if (target.dataset?.action === 'toggle-select') {
+      const customerId = target.dataset.customerId;
+      const next = toggleSelection(pageState.ui.selectedIds, customerId);
+      setUi({ selectedIds: next }, { regions: ['view'] });
+      return;
+    }
+
+    // فیلد درجا با autosave (select/checkbox)
+    if (target.hasAttribute?.('data-inline-input') && target.hasAttribute?.('data-autosave')) {
+      await commitInlineEdit(target);
+      return;
+    }
+
+    // matcher فیلتر
+    if (action === 'set-matcher') {
+      setUi({ quickMatcher: target.checked ? 'any' : 'all', page: 1 }, { regions: ['view'] });
+      return;
+    }
+
+    // بخش فرم
+    if (action === 'toggle-form-section') {
+      const sectionKey = target.dataset.section;
+      const formSection = target.closest('.vci-formsection');
+      if (formSection) formSection.classList.toggle('is-open', target.checked);
+      return;
+    }
+
+    // scope/sort/group select ها
+    if (action === 'set-scope') {
+      setUi({ queryScope: target.value }, { regions: [] });
+      return;
+    }
+    if (action === 'set-sort') {
+      setUi({ sort: target.value, page: 1 }, { regions: ['view'] });
+      return;
+    }
+    if (action === 'set-group') {
+      setUi({ groupBy: target.value }, { regions: ['view'] });
+      return;
+    }
+
+    // operator قاعدهٔ فیلتر → toggle value input
+    if (action === 'rule-operator') {
+      const index = Number(target.dataset.ruleIndex);
+      const row = target.closest('.vci-rule');
+      const meta = RULE_OPERATORS.find((op) => op.key === target.value);
+      const valueInput = row?.querySelector('.vci-rule__value');
+      if (valueInput) valueInput.disabled = meta?.needsValue === false;
+
+      updateQuickRule(index, { operator: target.value });
+      return;
+    }
+
+    if (action === 'rule-field') {
+      updateQuickRule(Number(target.dataset.ruleIndex), { field: target.value });
+      return;
+    }
+  }
+
+  /* ---------------- ورودی متن ---------------- */
+
+  function handleInput(event) {
+    const target = event.target;
+
+    if (target.dataset?.action === 'search') {
+      debouncedSearch(target.value);
+      return;
+    }
+
+    if (target.dataset?.action === 'command-input') {
+      pageState.commandQuery = target.value;
+      pageState.commandIndex = 0;
+      renderRegion('overlay');
+      const input = refs.overlay?.querySelector('[data-action="command-input"]');
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      return;
+    }
+
+    if (target.dataset?.action === 'rule-value') {
+      updateQuickRule(Number(target.dataset.ruleIndex), { value: target.value }, { rerender: false });
+      return;
+    }
+
+    // پیش‌نمایش کمپین/پیام
+    if (target.dataset?.campaignText !== undefined || target.dataset?.messageText !== undefined) {
+      updateMergePreview(target.closest('form'));
+      return;
+    }
+  }
+
+  const debouncedSearch = debounce((value) => {
+    setUi({ query: value, page: 1 }, { regions: ['toolbar', 'view'] });
+    const input = refs.toolbar?.querySelector('[data-action="search"]');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }, 220);
+
+  /* ---------------- ذخیرهٔ درجا با blur/Enter ---------------- */
+
+  function handleFocusOut(event) {
+    const target = event.target;
+    if (target.hasAttribute?.('data-inline-input') && !target.hasAttribute?.('data-autosave')) {
+      commitInlineEdit(target);
+    }
+  }
+
+  function handleInlineKeydown(event) {
+    const target = event.target;
+    if (!target.hasAttribute?.('data-inline-input')) return;
+
+    if (event.key === 'Enter' && target.tagName !== 'TEXTAREA') {
+      event.preventDefault();
+      commitInlineEdit(target);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelInlineEdit(target);
+    }
+  }
+
+  function startInlineEdit(button) {
+    const fieldKey = button.dataset.fieldKey;
+    const customerId = button.dataset.customerId;
+    const field = CUSTOMER_FIELD_MAP[fieldKey];
+    const customer = findCustomer(customerId);
+    if (!field || !customer) return;
+
+    const fieldEl = button.closest('.vci-field');
+    if (!fieldEl || fieldEl.querySelector('[data-inline-input]')) return;
+
+    const inputHtml = buildInlineInput(field, customer[fieldKey], { customerId });
+    button.style.display = 'none';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'vci-field__editor';
+    wrapper.innerHTML = inputHtml;
+    fieldEl.appendChild(wrapper);
+
+    const input = wrapper.querySelector('[data-inline-input]');
+    if (input) {
+      input.focus();
+      if (input.select) input.select();
+    }
+  }
+
+  async function commitInlineEdit(input) {
+    const fieldKey = input.dataset.fieldKey;
+    const customerId = input.dataset.customerId;
+    const field = CUSTOMER_FIELD_MAP[fieldKey];
+    if (!field) return;
+
+    const value = readInlineValue(field, input);
+    const customer = findCustomer(customerId);
+    if (!customer) return;
+
+    // اگر مقدار عوض نشده، فقط ویرایشگر را ببند
+    if (String(customer[fieldKey] ?? '') === String(value ?? '')) {
+      cancelInlineEdit(input);
+      return;
+    }
+
+    await applyCustomerChange(
+      customerId,
+      (current) => ({ ...current, [fieldKey]: value }),
+      { activity: `ویرایش ${field.label}`, regions: ['view', 'profile', 'sidebar'] }
+    );
+  }
+
+  function cancelInlineEdit(input) {
+    const fieldEl = input.closest('.vci-field');
+    const editor = input.closest('.vci-field__editor');
+    const button = fieldEl?.querySelector('.vci-field__value');
+
+    if (editor) editor.remove();
+    if (button) button.style.display = '';
+  }
+
+  /* ---------------- submit فرم‌ها ---------------- */
+
+  function handleSubmit(event) {
+    event.preventDefault();
+  }
+
+  /* ---------------- کلیدهای سراسری ---------------- */
+
+  function handleGlobalKeydown(event) {
+    const isMac = /mac|iphone|ipad/i.test(globalThis.navigator?.userAgent || '');
+    const modKey = isMac ? event.metaKey : event.ctrlKey;
+
+    if (modKey && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      toggleCommandPalette();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      if (pageState.ui.isCommandOpen) closeCommandPalette();
+      else if (pageState.ui.openCustomerId) setUi({ openCustomerId: null }, { regions: ['profile'] });
+      else if (pageState.rowMenuId) closeRowMenu();
+      return;
+    }
+
+    // میان‌بر N برای مشتری جدید (وقتی فوکوس روی input نیست)
+    if (event.key.toLowerCase() === 'n' && !isTypingTarget(event.target) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      openCustomerForm(null);
+    }
+  }
+
+  function isTypingTarget(target) {
+    return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+  }
+
+  /* ================================================================== */
+  /* پروفایل                                                            */
+  /* ================================================================== */
+
+  function openProfile(customerId) {
+    if (!customerId) return;
+    setUi({ openCustomerId: customerId, profileTab: 'overview' }, { regions: ['profile'] });
+    refs.profile?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ================================================================== */
+  /* منوی ردیف                                                          */
+  /* ================================================================== */
+
+  function openRowMenu(customerId, button) {
+    closeRowMenu();
+
+    const customer = findCustomer(customerId);
+    if (!customer) return;
+
+    const menu = document.createElement('div');
+    menu.innerHTML = renderRowMenu(customer);
+    const menuEl = menu.firstElementChild;
+
+    const rect = button.getBoundingClientRect();
+    menuEl.style.position = 'fixed';
+    menuEl.style.top = `${rect.bottom + 4}px`;
+    menuEl.style.left = `${Math.max(8, rect.right - 200)}px`;
+    menuEl.style.zIndex = '60';
+
+    document.body.appendChild(menuEl);
+    pageState.rowMenuId = customerId;
+    pageState.rowMenuEl = menuEl;
+  }
+
+  function closeRowMenu() {
+    if (pageState.rowMenuEl) {
+      pageState.rowMenuEl.remove();
+      pageState.rowMenuEl = null;
+    }
+    pageState.rowMenuId = null;
+  }
+
+  /* ================================================================== */
+  /* پالت فرمان                                                         */
+  /* ================================================================== */
+
+  function toggleCommandPalette() {
+    setUi({ isCommandOpen: !pageState.ui.isCommandOpen }, { regions: ['overlay'] });
+
+    if (pageState.ui.isCommandOpen) {
+      pageState.commandQuery = '';
+      pageState.commandIndex = 0;
+      setTimeout(() => refs.overlay?.querySelector('[data-action="command-input"]')?.focus(), 30);
+    }
+  }
+
+  function closeCommandPalette() {
+    setUi({ isCommandOpen: false }, { regions: ['overlay'] });
+  }
+
+  function buildCommands() {
+    const commands = [
+      { id: 'new-customer', label: 'مشتری جدید', icon: '＋' },
+      { id: 'open-campaign', label: 'کمپین گروهی', icon: '📣' },
+      { id: 'open-segments', label: 'مدیریت بخش‌ها', icon: '🎯' },
+      { id: 'open-import', label: 'ایمپورت مشتریان', icon: '⬆' },
+      { id: 'open-export', label: 'خروجی CSV', icon: '⬇' },
+      { id: 'open-dashboard', label: 'داشبورد آماری', icon: '📊' },
+      { id: 'open-settings', label: 'تنظیمات', icon: '⚙' },
+      { id: 'toggle-theme', label: 'تغییر پوسته', icon: '🌓' },
+    ];
+
+    for (const bucket of SMART_BUCKETS.slice(0, 12)) {
+      commands.push({ id: `bucket:${bucket.key}`, label: `سطل: ${bucket.label}`, icon: bucket.icon });
+    }
+
+    return commands;
+  }
+
+  function runCommand(commandId) {
+    if (!commandId) return;
+
+    closeCommandPalette();
+
+    if (commandId.startsWith('bucket:')) {
+      setUi({ bucket: commandId.slice(7), activeSegmentId: null, page: 1 }, { regions: ['sidebar', 'toolbar', 'view'] });
+      return;
+    }
+
+    const map = {
+      'new-customer': () => openCustomerForm(null),
+      'open-campaign': () => openCampaignModal(getSelectedCustomers()),
+      'open-segments': () => openSegmentsModal(),
+      'open-import': () => openImportModal(),
+      'open-export': () => exportCustomers(getVisibleCustomers()),
+      'open-dashboard': () => openDashboardModal(),
+      'open-settings': () => openSettingsModal(),
+      'toggle-theme': () => setUi({ theme: pageState.ui.theme === 'light' ? 'dark' : 'light' }, { regions: [] }),
     };
 
-    boundHandlers.handleSectionChange = (e) => {
-      if (e.target.classList.contains('vcr-batch-checkbox')) {
-        const id = String(e.target.value);
-        if (e.target.checked) {
-          if (!selectedCustomerIds.includes(id)) selectedCustomerIds.push(id);
-        } else {
-          selectedCustomerIds = selectedCustomerIds.filter((x) => x !== id);
-        }
-        updateBatchToolbarUI();
-      } else if (e.target.id === 'vcr-select-all') {
-        const currentList = getProcessedCustomers();
-        if (e.target.checked) {
-          selectedCustomerIds = currentList.map((c) => String(c.id));
-        } else {
-          selectedCustomerIds = [];
-        }
-        rootEl.querySelectorAll('.vcr-batch-checkbox').forEach((box) => {
-          box.checked = e.target.checked;
+    map[commandId]?.();
+  }
+
+  async function runHeaderAction(actionId) {
+    const meta = HEADER_ACTION_META[actionId];
+    if (!meta) return;
+
+    await runCommand(meta.command);
+  }
+
+  /* ================================================================== */
+  /* مودال: مشتری جدید / ویرایش کامل                                    */
+  /* ================================================================== */
+
+  function openCustomerForm(customerId) {
+    const customer = customerId ? findCustomer(customerId) : null;
+
+    const modal = createModal({
+      title: customer ? `ویرایش ${getCustomerName(customer)}` : 'مشتری جدید',
+      size: 'wide',
+      bodyHtml: buildSectionForm({ customer, activeSections: pageState.ui.activeFormSections, mode: customer ? 'edit' : 'create' }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'save',
+          label: customer ? 'ذخیره تغییرات' : 'افزودن مشتری',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const form = dialog.querySelector('[data-customer-form]');
+            const draft = readSectionForm(form);
+
+            const validation = validateCustomerDraft(draft);
+            if (!validation.valid) {
+              showFormErrors(form, validation.errors || {});
+              toast.error(validation.message);
+              return false;
+            }
+
+            if (customer) {
+              await applyCustomerChange(customer.id, (current) => normalizeCustomer({ ...current, ...draft }), { activity: 'ویرایش کامل پروفایل' });
+              toast.success('تغییرات ذخیره شد.');
+            } else {
+              const newCustomer = normalizeCustomer(draft);
+              await addCustomers([newCustomer]);
+              toast.success('مشتری اضافه شد.');
+            }
+
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+  }
+
+  function openSectionEditor(customerId, sectionKey) {
+    const customer = findCustomer(customerId);
+    if (!customer) return;
+
+    const section = getFormSections([sectionKey]).find((item) => item.key === sectionKey);
+    if (!section) return;
+
+    const modal = createModal({
+      title: `ویرایش ${section.label}`,
+      size: 'wide',
+      bodyHtml: `<form class="vci-form" data-customer-form><div class="vci-formgrid">${section.fields.map((field) => buildFormFieldHtml(field, customer[field.key])).join('')}</div></form>`,
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'save',
+          label: 'ذخیره',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const form = dialog.querySelector('[data-customer-form]');
+            const draft = {};
+
+            for (const field of section.fields) {
+              const element = form.querySelector(`[name="${field.key}"]`);
+              if (!element) continue;
+              draft[field.key] = field.type === 'checkbox' ? element.checked : readInlineValue(field, element);
+            }
+
+            await applyCustomerChange(customerId, (current) => ({ ...current, ...draft }), { activity: `ویرایش ${section.label}` });
+            toast.success('ذخیره شد.');
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+  }
+
+  // برای ساخت فیلد فرم در مودال بخش (از editor وارد نشده، محلی تعریف می‌شود)
+  function buildFormFieldHtml(field, value) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = buildSectionForm({ customer: createEmptyCustomer({ [field.key]: value }), activeSections: [], mode: 'edit' });
+    const fieldEl = wrapper.querySelector(`.vci-formfield[data-field-key="${field.key}"]`);
+    return fieldEl ? fieldEl.outerHTML : '';
+  }
+
+  /* ================================================================== */
+  /* مودال: کمپین گروهی                                                 */
+  /* ================================================================== */
+
+  function openCampaignModal(customers) {
+    const list = Array.isArray(customers) ? customers : [];
+
+    if (list.length === 0) {
+      toast.warning('اول حداقل یک مشتری انتخاب کنید.');
+      return;
+    }
+
+    const modal = createModal({
+      title: 'کمپین گروهی',
+      size: 'wide',
+      bodyHtml: buildCampaignForm({ customerCount: list.length, customers: list }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'send',
+          label: 'ارسال',
+          variant: 'primary',
+          onClick: async ({ dialog, button }) => {
+            const form = dialog.querySelector('[data-campaign-form]');
+            const channel = form.querySelector('[data-campaign-channel]').value;
+            const subject = form.querySelector('[data-campaign-subject]').value;
+            const text = form.querySelector('[data-campaign-text]').value;
+            const scheduled = form.querySelector('[data-campaign-scheduled]').checked;
+            const scheduledFor = form.querySelector('[data-campaign-schedule-for]').value;
+
+            if (!text.trim()) {
+              toast.error('متن پیام خالی است.');
+              return false;
+            }
+
+            button.disabled = true;
+            button.textContent = 'در حال ارسال…';
+
+            const result = await sendBulkCampaign({
+              customers: list,
+              channel,
+              text,
+              subject,
+              scheduledFor: scheduled && scheduledFor ? new Date(scheduledFor).toISOString() : '',
+              persistCustomer: async (customer) => {
+                const index = pageState.customers.findIndex((item) => String(item.id) === String(customer.id));
+                if (index !== -1) {
+                  const next = [...pageState.customers];
+                  next[index] = normalizeCustomer(customer);
+                  pageState.customers = next;
+                }
+              },
+            });
+
+            await persistAll();
+
+            if (result.scheduled) {
+              toast.success(`کمپین برای ${list.length} مشتری زمان‌بندی شد.`);
+            } else {
+              toast.success(`کمپین ارسال شد: ${result.delivered} موفق${result.failed ? `، ${result.failed} ناموفق` : ''}.`);
+            }
+
+            setUi({ selectedIds: [] }, { regions: ['view'] });
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+    setTimeout(() => updateMergePreview(modal.bodyElement?.querySelector('[data-campaign-form]'), list[0]), 50);
+  }
+
+  function updateMergePreview(form, customer = null) {
+    if (!form) return;
+
+    const previewEl = form.querySelector('[data-preview-text]');
+    const textEl = form.querySelector('[data-campaign-text], [data-message-text]');
+    if (!previewEl || !textEl) return;
+
+    const target = customer || getSelectedCustomers()[0] || pageState.customers[0];
+    if (!target) {
+      previewEl.textContent = textEl.value || '—';
+      return;
+    }
+
+    previewEl.textContent = applyMergeFields(textEl.value || '', target);
+  }
+
+  /* ================================================================== */
+  /* مودال: ارسال پیام شخصی                                             */
+  /* ================================================================== */
+
+  function openMessageModal(customerId, mode = 'message', options = {}) {
+    const customer = findCustomer(customerId);
+    if (!customer) return;
+
+    const modal = createModal({
+      title: mode === 'notify' ? 'ارسال نوتیفیکیشن' : 'ارسال پیام',
+      bodyHtml: buildMessageForm({ customer, mode }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'send',
+          label: 'ارسال',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const form = dialog.querySelector('[data-message-form]');
+            const channel = form.querySelector('[data-message-channel]').value;
+            const subject = form.querySelector('[data-message-subject]').value;
+            const text = form.querySelector('[data-message-text]').value;
+
+            if (!text.trim()) {
+              toast.error('متن پیام خالی است.');
+              return false;
+            }
+
+            const result = await sendCustomerMessage(customer, {
+              channel,
+              subject,
+              text,
+              persistCustomer: async (updated) => {
+                await applyCustomerChange(customer.id, () => normalizeCustomer(updated), { activity: 'ارسال پیام' });
+              },
+            });
+
+            if (result.delivered) toast.success('ارسال شد.');
+            else if (result.queued) toast.info('در صف ارسال قرار گرفت.');
+            else toast.error(result.error || 'ارسال ناموفق بود.');
+
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+
+    if (options.scheduled) {
+      setTimeout(() => {
+        const checkbox = modal.bodyElement?.querySelector('[data-message-scheduled]');
+        if (checkbox) checkbox.checked = true;
+      }, 50);
+    }
+  }
+
+  /* ================================================================== */
+  /* مودال: بخش‌ها                                                      */
+  /* ================================================================== */
+
+  function openSegmentsModal() {
+    const modal = createModal({
+      title: 'مدیریت بخش‌ها',
+      size: 'wide',
+      bodyHtml: buildSegmentsManager({ segments: getSavedSegments() }),
+      actions: [{ id: 'close', label: 'بستن', variant: 'primary' }],
+    });
+
+    modal.open();
+
+    // سیم‌کشی دکمه‌های داخل مودال
+    const body = modal.bodyElement;
+    if (!body) return;
+
+    body.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+
+      const action = button.dataset.action;
+
+      if (action === 'new-segment') {
+        modal.close();
+        openSegmentEditor(null);
+      } else if (action === 'edit-segment') {
+        modal.close();
+        openSegmentEditor(button.dataset.segmentId);
+      } else if (action === 'delete-segment') {
+        removeSegment(button.dataset.segmentId).then(() => {
+          modal.close();
+          openSegmentsModal();
         });
-        updateBatchToolbarUI();
       }
-    };
-
-    boundHandlers.handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        toggleSpotlight(true);
-      } else if (
-        e.key === '/' &&
-        document.activeElement !== searchInput &&
-        document.activeElement !== spotlightInput &&
-        document.activeElement?.tagName !== 'TEXTAREA' &&
-        document.activeElement?.tagName !== 'INPUT'
-      ) {
-        e.preventDefault();
-        toggleSpotlight(true);
-      }
-
-      if (e.key === 'Escape') {
-        toggleSpotlight(false);
-        closeModal();
-      }
-    };
-
-    boundHandlers.handleSpotlightResultsClick = (e) => {
-      const item = e.target.closest('.vcr-spotlight-item');
-      if (!item) return;
-
-      selectedCustomerId = item.dataset.id;
-      prefs.viewMode = 'view-split';
-      savePreferences();
-
-      rootEl.querySelectorAll('.vcr-view-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.view === 'view-split');
-      });
-
-      if (showSection) showSection.className = 'CI-show view-split';
-      toggleSpotlight(false);
-      renderCustomerShow();
-    };
-
-    // اضافه کردن لیسنرها
-    addCustomerBtn?.addEventListener('click', boundHandlers.openModal);
-    modalBg?.addEventListener('click', boundHandlers.closeModal);
-    modalCancelBtn?.addEventListener('click', boundHandlers.closeModal);
-    addForm?.addEventListener('submit', boundHandlers.submitForm);
-    searchInput?.addEventListener('input', boundHandlers.handleSearch);
-    sortSelect?.addEventListener('change', boundHandlers.handleSortChange);
-    showSection?.addEventListener('click', boundHandlers.handleSectionClick);
-    showSection?.addEventListener('change', boundHandlers.handleSectionChange);
-    spotlightInput?.addEventListener('input', handleSpotlightSearch);
-    spotlightResults?.addEventListener('click', boundHandlers.handleSpotlightResultsClick);
-    spotlightModal?.addEventListener('click', (e) => {
-      if (e.target === spotlightModal) toggleSpotlight(false);
     });
-
-    rootEl.querySelectorAll('.vcr-view-btn').forEach((btn) => {
-      btn.addEventListener('click', boundHandlers.changeView);
-    });
-
-    document.getElementById('vcr-batch-del-btn')?.addEventListener('click', () => handleBatchAction('delete'));
-    document.getElementById('vcr-batch-csv-btn')?.addEventListener('click', () => handleBatchAction('csv'));
-    document.getElementById('vcr-batch-cancel-btn')?.addEventListener('click', () => {
-      selectedCustomerIds = [];
-      updateBatchToolbarUI();
-      renderCustomerShow();
-    });
-
-    window.addEventListener('keydown', boundHandlers.handleKeyDown);
-
-    // رندر اولیه
-    renderCustomerShow();
   }
 
-  // --- تخریب کامپوننت و جلوگیری از نشت حافظه ---
+  function openSegmentEditor(segmentId) {
+    const segment = segmentId ? getSavedSegments().find((item) => item.id === segmentId) : null;
+
+    const modal = createModal({
+      title: segment ? 'ویرایش بخش' : 'بخش جدید',
+      size: 'wide',
+      bodyHtml: buildSegmentForm({ segment }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'save',
+          label: 'ذخیره بخش',
+          variant: 'primary',
+          onClick: ({ dialog }) => {
+            const form = dialog.querySelector('[data-segment-form]');
+            const data = readSegmentForm(form);
+
+            if (!data || data.rules.length === 0) {
+              toast.error('حداقل یک شرط اضافه کنید.');
+              return false;
+            }
+
+            saveSegment(data);
+            toast.success('بخش ذخیره شد.');
+            setUi({}, { regions: ['sidebar'] });
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+
+    // سیم‌کشی افزودن/حذف شرط
+    const body = modal.bodyElement;
+    if (!body) return;
+
+    body.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+
+      const rulesHost = body.querySelector('[data-seg-rules]');
+
+      if (button.dataset.action === 'add-seg-rule') {
+        const count = rulesHost.querySelectorAll('.vci-segrule').length;
+        const template = body.querySelector('[data-rule-template]');
+        const clone = document.createElement('div');
+        clone.innerHTML = template.innerHTML.replace(/__INDEX__/g, String(count));
+        rulesHost.appendChild(clone.firstElementChild);
+      } else if (button.dataset.action === 'remove-seg-rule') {
+        button.closest('.vci-segrule')?.remove();
+      }
+    });
+  }
+
+  async function removeSegment(segmentId) {
+    const confirmed = await confirmDialog({ title: 'حذف بخش', message: 'این بخش حذف شود؟', confirmLabel: 'حذف', variant: 'danger' });
+    if (!confirmed) return;
+
+    deleteSegment(segmentId);
+    toast.success('بخش حذف شد.');
+    setUi({ activeSegmentId: null }, { regions: ['sidebar', 'view'] });
+  }
+
+  /* ================================================================== */
+  /* مودال: ایمپورت                                                     */
+  /* ================================================================== */
+
+  function openImportModal() {
+    const modal = createModal({
+      title: 'ایمپورت مشتریان',
+      size: 'wide',
+      bodyHtml: buildImportForm(),
+      actions: [{ id: 'close', label: 'بستن', variant: 'primary' }],
+    });
+
+    modal.open();
+
+    const body = modal.bodyElement;
+    if (!body) return;
+
+    const fileInput = body.querySelector('[data-import-file]');
+    const textArea = body.querySelector('[data-import-text]');
+    const previewHost = body.querySelector('[data-import-preview]');
+    let previewed = [];
+
+    body.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+
+      if (button.dataset.action === 'import-preview') {
+        const text = textArea.value.trim();
+        if (!text) {
+          toast.warning('ابتدا یک فایل انتخاب کنید یا محتوا را بچسبانید.');
+          return;
+        }
+
+        const { rows } = parseCsv(text);
+        const preview = previewImport(rows, pageState.customers);
+        previewed = preview.valid;
+
+        previewHost.innerHTML = `
+          <div class="vci-import__summary">
+            <span class="vci-pill vci-pill--ok">${preview.validCount} معتبر</span>
+            <span class="vci-pill vci-pill--warn">${preview.duplicateCount} تکراری</span>
+            <span class="vci-pill vci-pill--err">${preview.invalidCount} نامعتبر</span>
+          </div>
+          <button class="vci-btn vci-btn--primary" type="button" data-action="import-confirm" ${preview.validCount === 0 ? 'disabled' : ''}>افزودن ${preview.validCount} مشتری</button>
+        `;
+      } else if (button.dataset.action === 'import-confirm') {
+        if (previewed.length === 0) return;
+
+        await addCustomers(previewed);
+        toast.success(`${previewed.length} مشتری اضافه شد.`);
+        modal.close();
+      }
+    });
+
+    fileInput?.addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const text = await file.text();
+      textArea.value = text;
+      toast.info('فایل خوانده شد. روی «پیش‌نمایش» بزنید.');
+    });
+  }
+
+  /* ================================================================== */
+  /* مودال: داشبورد                                                     */
+  /* ================================================================== */
+
+  function openDashboardModal() {
+    const modal = createModal({
+      title: 'داشبورد آماری',
+      size: 'wide',
+      bodyHtml: renderDashboard({ stats: getDashboardStats(pageState.customers) }),
+      actions: [{ id: 'close', label: 'بستن', variant: 'primary' }],
+    });
+
+    modal.open();
+  }
+
+  /* ================================================================== */
+  /* مودال: تنظیمات                                                     */
+  /* ================================================================== */
+
+  function openSettingsModal() {
+    const settings = { ...getOutreachSettings(), pageSize: pageState.ui.pageSize };
+
+    const modal = createModal({
+      title: 'تنظیمات ابزار',
+      bodyHtml: buildSettingsForm({ settings }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'save',
+          label: 'ذخیره',
+          variant: 'primary',
+          onClick: ({ dialog }) => {
+            const form = dialog.querySelector('[data-settings-form]');
+            const data = Object.fromEntries(new FormData(form).entries());
+
+            updateOutreachSettings({
+              brandName: data.brandName || 'ViXoRa',
+              countryCode: data.countryCode || '98',
+              webhookUrl: data.webhookUrl || '',
+              webhookApiKey: data.webhookApiKey || '',
+            });
+
+            const pageSize = Math.max(6, Math.min(200, Number(data.pageSize) || 24));
+            setUi({ pageSize }, { regions: ['view'] });
+
+            toast.success('تنظیمات ذخیره شد.');
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+  }
+
+  /* ================================================================== */
+  /* مودال: نقشه                                                        */
+  /* ================================================================== */
+
+  function openMapModal(customerId) {
+    const customer = findCustomer(customerId);
+    if (!customer) return;
+
+    const modal = createModal({
+      title: 'انتخاب موقعیت روی نقشه',
+      size: 'wide',
+      bodyHtml: buildMapPicker({ lat: customer.lat, lng: customer.lng, address: customer.address }),
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'save',
+          label: 'ذخیره موقعیت',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const lat = dialog.querySelector('[data-map-lat]').value;
+            const lng = dialog.querySelector('[data-map-lng]').value;
+            const address = dialog.querySelector('[data-map-address]').value;
+
+            await applyCustomerChange(customerId, (current) => applyLocation(current, { lat, lng, address, source: 'map' }), { activity: 'به‌روزرسانی موقعیت' });
+            toast.success('موقعیت ذخیره شد.');
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+
+    const body = modal.bodyElement;
+    if (!body) return;
+
+    body.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+
+      const latInput = body.querySelector('[data-map-lat]');
+      const lngInput = body.querySelector('[data-map-lng]');
+      const addrInput = body.querySelector('[data-map-address]');
+      const resultsHost = body.querySelector('[data-map-results]');
+      const canvas = body.querySelector('[data-map-canvas]');
+
+      if (button.dataset.action === 'map-search') {
+        const query = body.querySelector('[data-map-query]').value;
+        resultsHost.innerHTML = '<p class="vci-muted">در حال جستجو…</p>';
+
+        const results = await geocode(query, { limit: 5 });
+        if (results.length === 0) {
+          resultsHost.innerHTML = '<p class="vci-muted">نتیجه‌ای یافت نشد.</p>';
+          return;
+        }
+
+        resultsHost.innerHTML = results
+          .map((result, index) => `<button class="vci-mapresult" type="button" data-action="map-pick" data-index="${index}">${escapeHtml(result.displayName)}</button>`)
+          .join('');
+
+        resultsHost._results = results;
+      } else if (button.dataset.action === 'map-pick') {
+        const index = Number(button.dataset.index);
+        const result = resultsHost._results?.[index];
+        if (!result) return;
+
+        latInput.value = result.lat;
+        lngInput.value = result.lng;
+        addrInput.value = result.displayName;
+        renderMapCanvas(canvas, result.lat, result.lng);
+      } else if (button.dataset.action === 'map-locate') {
+        const position = await getCurrentPosition();
+        if (!position) {
+          toast.warning('دسترسی به موقعیت ممکن نشد.');
+          return;
+        }
+
+        latInput.value = position.lat;
+        lngInput.value = position.lng;
+        renderMapCanvas(canvas, position.lat, position.lng);
+
+        const reverse = await reverseGeocode(position.lat, position.lng);
+        if (reverse) addrInput.value = formatAddressParts(reverse);
+      } else if (button.dataset.action === 'map-apply-coords') {
+        renderMapCanvas(canvas, latInput.value, lngInput.value);
+
+        const reverse = await reverseGeocode(latInput.value, lngInput.value);
+        if (reverse) {
+          addrInput.value = formatAddressParts(reverse);
+          if (reverse.city) {
+            await applyCustomerChange(customerId, (current) => ({ ...current, city: current.city || reverse.city }), { regions: [] });
+          }
+        }
+      }
+    });
+
+    if (customer.lat && customer.lng) {
+      renderMapCanvas(body.querySelector('[data-map-canvas]'), customer.lat, customer.lng);
+    }
+  }
+
+  function renderMapCanvas(canvas, lat, lng) {
+    if (!canvas) return;
+
+    const url = buildOsmEmbedUrl(lat, lng);
+    if (!url) return;
+
+    canvas.innerHTML = `<iframe class="vci-mapframe" src="${escapeHtml(url)}" loading="lazy" title="نقشه"></iframe>`;
+  }
+
+  /* ================================================================== */
+  /* مودال: برچسب/وضعیت گروهی                                          */
+  /* ================================================================== */
+
+  function openBulkTagModal() {
+    const selected = getSelectedCustomers();
+    if (selected.length === 0) {
+      toast.warning('اول مشتری انتخاب کنید.');
+      return;
+    }
+
+    const modal = createModal({
+      title: 'افزودن برچسب گروهی',
+      bodyHtml: `<input class="vci-input" type="text" data-bulk-tag placeholder="برچسب را وارد کنید…">`,
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'apply',
+          label: 'افزودن',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const tag = dialog.querySelector('[data-bulk-tag]').value.trim();
+            if (!tag) return false;
+
+            for (const customer of selected) {
+              await applyCustomerChange(customer.id, (current) => {
+                const tags = new Set(current.tags || []);
+                tags.add(tag);
+                return { ...current, tags: [...tags] };
+              }, { activity: 'افزودن برچسب' });
+            }
+
+            toast.success(`برچسب به ${selected.length} مشتری اضافه شد.`);
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+  }
+
+  function openBulkStatusModal() {
+    const selected = getSelectedCustomers();
+    if (selected.length === 0) {
+      toast.warning('اول مشتری انتخاب کنید.');
+      return;
+    }
+
+    const statuses = ['active', 'inactive', 'lead', 'churned', 'blocked'];
+
+    const modal = createModal({
+      title: 'تغییر وضعیت گروهی',
+      bodyHtml: `<select class="vci-input" data-bulk-status>${statuses.map((status) => `<option value="${status}">${status}</option>`).join('')}</select>`,
+      actions: [
+        { id: 'cancel', label: 'انصراف', variant: 'ghost' },
+        {
+          id: 'apply',
+          label: 'اعمال',
+          variant: 'primary',
+          onClick: async ({ dialog }) => {
+            const status = dialog.querySelector('[data-bulk-status]').value;
+
+            for (const customer of selected) {
+              await applyCustomerChange(customer.id, (current) => ({ ...current, status }), { activity: 'تغییر وضعیت' });
+            }
+
+            toast.success(`وضعیت ${selected.length} مشتری تغییر کرد.`);
+            return true;
+          },
+        },
+      ],
+    });
+
+    modal.open();
+  }
+
+  /* ================================================================== */
+  /* عملیات گروهی                                                       */
+  /* ================================================================== */
+
+  function getSelectedCustomers() {
+    return pageState.customers.filter((customer) => pageState.ui.selectedIds.includes(customer.id));
+  }
+
+  async function trashCustomer(customerId) {
+    const confirmed = await confirmDialog({ title: 'حذف مشتری', message: 'این مشتری به زباله‌دان منتقل شود؟', confirmLabel: 'حذف', variant: 'danger' });
+    if (!confirmed) return;
+
+    await applyCustomerChange(customerId, (customer) => ({ ...customer, trashed: true, deletedAt: new Date().toISOString() }), { activity: 'حذف' });
+    toast.success('به زباله‌دان منتقل شد.');
+  }
+
+  async function bulkTrash() {
+    const selected = getSelectedCustomers();
+    if (selected.length === 0) return;
+
+    const confirmed = await confirmDialog({ title: 'حذف گروهی', message: `${selected.length} مشتری به زباله‌دان منتقل شوند؟`, confirmLabel: 'حذف', variant: 'danger' });
+    if (!confirmed) return;
+
+    for (const customer of selected) {
+      await applyCustomerChange(customer.id, (current) => ({ ...current, trashed: true, deletedAt: new Date().toISOString() }), { activity: 'حذف' });
+    }
+
+    setUi({ selectedIds: [] }, { regions: ['view'] });
+    toast.success(`${selected.length} مشتری حذف شدند.`);
+  }
+
+  async function addCustomers(newCustomers) {
+    const list = Array.isArray(newCustomers) ? newCustomers : [];
+    if (list.length === 0) return;
+
+    for (const customer of list) {
+      const created = await createToolItem(TOOL_NAME, customer, { signal: ctx.signal });
+      pageState.customers = [...pageState.customers, normalizeCustomer(created || customer)];
+    }
+
+    renderAllRegions();
+    await persistAll();
+  }
+
+  function exportCustomers(customers) {
+    const list = Array.isArray(customers) ? customers : [];
+    if (list.length === 0) {
+      toast.warning('چیزی برای خروجی نیست.');
+      return;
+    }
+
+    const csv = customersToCsv(list);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `vixora-customers-${Date.now()}.csv`;
+    link.click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success(`${list.length} مشتری خروجی گرفته شد.`);
+  }
+
+  /* ================================================================== */
+  /* فیلتر سریع                                                         */
+  /* ================================================================== */
+
+  function addQuickRule() {
+    const rules = [...(pageState.ui.quickRules || []), normalizeRule({ field: 'city', operator: 'eq', value: '' })];
+    setUi({ quickRules: rules, page: 1 }, { regions: ['panels', 'toolbar', 'view'] });
+  }
+
+  function removeQuickRule(index) {
+    const rules = (pageState.ui.quickRules || []).filter((_, i) => i !== index);
+    setUi({ quickRules: rules, page: 1 }, { regions: ['panels', 'toolbar', 'view'] });
+  }
+
+  function updateQuickRule(index, patch, { rerender = true } = {}) {
+    const rules = (pageState.ui.quickRules || []).map((rule, i) => (i === index ? { ...rule, ...patch } : rule));
+    pageState.ui.quickRules = rules;
+    persistUi();
+
+    if (rerender) setUi({ page: 1 }, { regions: ['view'] });
+    else renderRegion('view');
+  }
+
+  /* ================================================================== */
+  /* destroy                                                            */
+  /* ================================================================== */
+
   function destroy() {
-    window.removeEventListener('keydown', boundHandlers.handleKeyDown);
-    const spotlightModal = document.getElementById('vcr-spotlight');
-    if (spotlightModal) spotlightModal.remove();
-    const batchToolbar = document.getElementById('vcr-batch-toolbar');
-    if (batchToolbar) batchToolbar.remove();
-    const toast = document.querySelector('.vcr-toast');
-    if (toast) toast.remove();
+    pageState.isDestroyed = true;
+
+    stopCampaignScheduler();
+
+    for (const cleanup of teardown.splice(0)) {
+      try {
+        cleanup();
+      } catch {
+        /* ignore */
+      }
+    }
+
+    debouncedSearch.cancel?.();
+    closeRowMenu();
+
+    if (releaseCss) releaseCss();
+    releaseCss = null;
+
+    for (const key of Object.keys(refs)) refs[key] = null;
   }
 
-  return {
-    render,
-    afterRender,
-    destroy,
-  };
+  return { render, afterRender, destroy };
 }
+
+export default createCustomerInfoPage;

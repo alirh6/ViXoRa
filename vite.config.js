@@ -1,10 +1,11 @@
-// vite.config.js
 import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
-    watch: {
-      ignored: ["**/src/db/**", "**/src/db/db.json", "**/*.json"],
-    },
+    host: "0.0.0.0",
+    port: 5173,
+    allowedHosts: true,
+    watch: { ignored: ["**/db/**", "**/*.json"] },
   },
+  preview: { host: "0.0.0.0", port: 5173, allowedHosts: true },
 });

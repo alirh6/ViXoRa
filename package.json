@@ -14,7 +14,7 @@
     "server": "json-server --watch src/db/db.json --port 3001"
   },
   "devDependencies": {
-    "jsdom": "^25.0.0",
+    "jsdom": "^25.0.1",
     "vite": "^8.2.2"
   }
 }

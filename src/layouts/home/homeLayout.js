@@ -1,437 +1,252 @@
+// src/layouts/home/homeLayout.js
+// لایوت «معـرکه» صفحهٔ خانه — هدر شیشه‌ای متحول‌شونده، مگامنوی ابزارها،
+// سوییچ زبان (i18n)، تم، منوی موبایل و فوتر گرادیانی.
+// قرارداد: createHomeLayout(ctx) -> { render, afterRender, getOutlet, destroy }
+
+import { t, setLang, getLang, getDir, onLangChange, applyLangToDom, LANGUAGES, LANGUAGE_META } from '../../core/i18n/i18n.js';
+import { createLocalStorageAdapter } from '../../utilities/storage.js';
+
+const storage = createLocalStorageAdapter();
+const SETTINGS_KEY = 'ViXoRa:settings';
+
+const LAYOUT_TOOLS = [
+  { key: 'note', icon: '📝', href: '/tools/note', future: false },
+  { key: 'customerInfo', icon: '👥', href: '/tools/customerInfo', future: false },
+  { key: 'bankLoans', icon: '🏦', href: '/tools/bankLoans', future: false },
+  { key: 'music', icon: '🎵', href: '#', future: true },
+  { key: 'vault', icon: '🔐', href: '#', future: true },
+  { key: 'chat', icon: '💬', href: '#', future: true },
+];
+
+function readTheme() {
+  const s = storage.get(SETTINGS_KEY, {}) || {};
+  return s.homeTheme === 'light' ? 'light' : 'dark';
+}
+function writeTheme(v) {
+  const s = storage.get(SETTINGS_KEY, {}) || {};
+  s.homeTheme = v;
+  storage.set(SETTINGS_KEY, s);
+}
+
 export function createHomeLayout(ctx) {
   let outlet = null;
   let layoutRoot = null;
-  let isToolsMenuOpen = false;
+  const cleanups = [];
+  const on = (target, ev, fn, opts) => {
+    target.addEventListener(ev, fn, opts);
+    cleanups.push(() => target.removeEventListener(ev, fn, opts));
+  };
 
-  let handleDocumentClick = null;
-  let handleToolsButtonClick = null;
-  let handleKeyDown = null;
-  let handleLanguageClick = null;
-  console.log(ctx);
-  
-
-  const toolsMenuId = 'hp-tools-menu';
+  const user = ctx?.user || null;
+  let theme = readTheme();
 
   function render() {
-    return /*html*/`
-      <div class="HP-layout" data-dashboard-layout>
-        <header class="HP-header">
-          <a
-            class="HP-aLink__sectionLogo"
-            href="/"
-            data-link
-            aria-label="ViXoRa home"
-          >
-            <section class="HPHeader-siteBrand">
-              <span class="HPHeaderSiteBrand-vixo">ViXo</span>
-              <span class="HPHeaderSiteBrand-ra">Ra</span>
-            </section>
-          </a>
+    const lang = getLang();
+    const megaHtml = LAYOUT_TOOLS.map((tool) => `
+      <a class="HL-mega__card ${tool.future ? 'is-locked' : ''}" href="${tool.future ? '#' : tool.href}" ${tool.future ? 'data-noop' : 'data-link'}>
+        <span class="HL-mega__icon">${tool.icon}</span>
+        <span class="HL-mega__txt">
+          <b data-i18n="tool.${tool.key}.t">${t(`tool.${tool.key}.t`)}</b>
+          <i data-i18n="tool.${tool.key}.d">${t(`tool.${tool.key}.d`)}</i>
+        </span>
+      </a>`).join('');
 
-          <nav
-            class="HPHeader-menu"
-            aria-label="Main navigation"
-          >
-            <ul class="HPHeaderMenu-ul">
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/tools/dashboard"
-                  data-link
-                >
-                  Tools
-                </a>
-              </li>
+    return `
+    <div class="HL" data-hl data-theme="${theme}">
+      <header class="HL-header" data-hl-header>
+        <a class="HL-logo" href="/" data-link aria-label="ViXoRa">
+          <span class="HL-logo__mark">✦</span>
+          <span class="HL-logo__text"><b>ViXo</b><i>Ra</i></span>
+        </a>
 
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/product"
-                  data-link
-                >
-                  Product
-                </a>
-              </li>
+        <nav class="HL-nav" aria-label="Main">
+          <a class="HL-nav__a" href="/tools/dashboard" data-link data-i18n="nav.tools">${t('nav.tools')}</a>
+          <button class="HL-nav__a" type="button" data-scrollto="hm-guide" data-i18n="nav.guide">${t('nav.guide')}</button>
+          <button class="HL-nav__a" type="button" data-scrollto="hm-games" data-i18n="nav.games">${t('nav.games')}</button>
+        </nav>
 
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/tutorials"
-                  data-link
-                >
-                  Tutorials
-                </a>
-              </li>
-
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/landing-pages"
-                  data-link
-                >
-                  Landing Pages
-                </a>
-              </li>
-
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/sitemap"
-                  data-link
-                >
-                  Site Map
-                </a>
-              </li>
-
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/collaboration"
-                  data-link
-                >
-                  Collaboration
-                </a>
-              </li>
-
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/pricing"
-                  data-link
-                >
-                  Pricing
-                </a>
-              </li>
-
-              <li class="HPHeaderMenu-li">
-                <a
-                  class="HPHeaderMenu-a"
-                  href="/contact"
-                  data-link
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </nav>
-
-          <div class="HPHeader-tools" data-tools-container>
-
-          <div class="HPHeader-right-dashboardAndLoginWrapper">
-            ${ctx?.user?.id
-              ? `
-                <a class="HPHeader-dashboardBtn" href="/dashboard">Dashboard</a>
-              `
-              : `<a class="HPHeader-loginBtn" href="/login">login</a>
-              `
-            }
-          </div>
-
-          <div class="HPHeaderRight-ToolsWrapper">
-            <button
-              class="HPHeaderTools-openBtn"
-              type="button"
-              aria-label="باز کردن منوی ابزارها"
-              aria-expanded="false"
-              aria-controls="${toolsMenuId}"
-              data-tools-trigger
-            >
-              <img
-                class="HPHeaderTools-openBtn__text"
-                src="/src/global/stickers/more.svg"
-                alt=""
-                aria-hidden="true"
-              />
+        <div class="HL-actions">
+          <div class="HL-drop" data-hl-langdrop>
+            <button class="HL-iconbtn" type="button" data-hl-langbtn aria-haspopup="true" aria-expanded="false">
+              🌐 <span class="HL-langlabel" data-hl-langlabel>${LANGUAGE_META[lang].label}</span>
             </button>
-
-            <div
-              class="HPHeaderTools-menu"
-              id="${toolsMenuId}"
-              aria-hidden="true"
-              data-tools-menu
-            >
-              <ul class="HPHeaderToolsMenu-list">
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/settings/theme"
-                    data-link
-                  >
-                    <span>Light Theme</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/settings/menu"
-                    data-link
-                  >
-                    <span>Customize Menu</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/support/ticket"
-                    data-link
-                  >
-                    <span>Send Ticket</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/support"
-                    data-link
-                  >
-                    <span>Online Support</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/download"
-                    data-link
-                  >
-                    <span>Download App</span>
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    class="HPHeaderToolsMenu-a"
-                    href="/about"
-                    data-link
-                  >
-                    <span>About ViXoRa</span>
-                  </a>
-                </li>
-
-                <li class="HPHeaderTools-languageLi">
-                  <span class="HPHeaderTools-languageLabel">
-                    Language
-                  </span>
-
-                  <div class="HPHeaderTools-languageList">
-                    <button
-                      type="button"
-                      class="HPHeaderTools-languageBtn"
-                      data-language="fa"
-                      aria-label="فارسی"
-                    >
-                      <img
-                        class="HPHeaderTools-languageSticker"
-                        src="/src/global/stickers/iran.svg"
-                        alt=""
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      class="HPHeaderTools-languageBtn"
-                      data-language="en"
-                      aria-label="English"
-                    >
-                      <img
-                        class="HPHeaderTools-languageSticker"
-                        src="/src/global/stickers/usa.svg"
-                        alt=""
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      class="HPHeaderTools-languageBtn"
-                      data-language="fr"
-                      aria-label="Français"
-                    >
-                      <img
-                        class="HPHeaderTools-languageSticker"
-                        src="/src/global/stickers/france.svg"
-                        alt=""
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      class="HPHeaderTools-languageBtn"
-                      data-language="es"
-                      aria-label="Español"
-                    >
-                      <img
-                        class="HPHeaderTools-languageSticker"
-                        src="/src/global/stickers/spain.svg"
-                        alt=""
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      class="HPHeaderTools-languageBtn"
-                      data-language="ar"
-                      aria-label="العربية"
-                    >
-                      <img
-                        class="HPHeaderTools-languageSticker"
-                        src="/src/global/stickers/saudi_arabia.svg"
-                        alt=""
-                      />
-                    </button>
-                  </div>
-                </li>
-              </ul>
+            <div class="HL-drop__menu" data-hl-langmenu>
+              ${LANGUAGES.map((l) => `
+                <button type="button" class="HL-drop__item ${l === lang ? 'is-active' : ''}" data-lang="${l}">
+                  <span>${LANGUAGE_META[l].flag}</span><span>${LANGUAGE_META[l].label}</span>
+                </button>`).join('')}
             </div>
           </div>
+
+          <button class="HL-iconbtn" type="button" data-hl-theme title="${t('customize.theme')}" aria-label="${t('customize.theme')}">
+            <span data-hl-themeicon>${theme === 'dark' ? '🌙' : '☀️'}</span>
+          </button>
+
+          <div class="HL-drop HL-drop--mega" data-hl-toolsdrop>
+            <button class="HL-toolsbtn" type="button" data-hl-toolsbtn aria-haspopup="true" aria-expanded="false">
+              <span class="HL-toolsbtn__grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <span data-i18n="nav.tools">${t('nav.tools')}</span>
+            </button>
+            <div class="HL-mega" data-hl-mega>
+              <div class="HL-mega__grid">${megaHtml}</div>
+              <a class="HL-mega__all" href="/tools/dashboard" data-link data-i18n="layout.allTools">${t('layout.allTools')} ←</a>
+            </div>
           </div>
-        </header>
 
-        <main
-          class="HP-main HP-outlet"
-          data-router-outlet
-        ></main>
+          ${user?.id
+            ? `<a class="HL-cta" href="/dashboard" data-link data-i18n="nav.dashboard">${t('nav.dashboard')}</a>`
+            : `<a class="HL-cta" href="/login" data-link data-i18n="nav.login">${t('nav.login')}</a>`}
 
-        <footer class="HP-footer"></footer>
+          <button class="HL-burger" type="button" data-hl-burger aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+      </header>
+
+      <div class="HL-drawer" data-hl-drawer aria-hidden="true">
+        <a class="HL-drawer__a" href="/tools/dashboard" data-link data-i18n="nav.tools">${t('nav.tools')}</a>
+        <button class="HL-drawer__a" type="button" data-scrollto="hm-guide" data-i18n="nav.guide">${t('nav.guide')}</button>
+        <button class="HL-drawer__a" type="button" data-scrollto="hm-games" data-i18n="nav.games">${t('nav.games')}</button>
+        <a class="HL-drawer__a" href="${user?.id ? '/dashboard' : '/login'}" data-link>${user?.id ? t('nav.dashboard') : t('nav.login')}</a>
       </div>
-    `;
+
+      <main class="HL-main" data-router-outlet></main>
+
+      <footer class="HL-footer">
+        <div class="HL-footer__grid">
+          <div class="HL-footer__brand">
+            <span class="HL-logo__text HL-logo__text--big"><b>ViXo</b><i>Ra</i></span>
+            <p data-i18n="footer.tagline">${t('footer.tagline')}</p>
+            <div class="HL-footer__social">
+              <a href="#" data-noop aria-label="X">𝕏</a>
+              <a href="#" data-noop aria-label="GitHub">⌥</a>
+              <a href="#" data-noop aria-label="Telegram">✈</a>
+              <a href="#" data-noop aria-label="Instagram">◉</a>
+            </div>
+          </div>
+          <div class="HL-footer__col">
+            <h4 data-i18n="footer.quick">${t('footer.quick')}</h4>
+            <a href="/tools/dashboard" data-link data-i18n="nav.tools">${t('nav.tools')}</a>
+            <button type="button" data-scrollto="hm-guide" data-i18n="nav.guide">${t('nav.guide')}</button>
+            <button type="button" data-scrollto="hm-games" data-i18n="nav.games">${t('nav.games')}</button>
+          </div>
+          <div class="HL-footer__col">
+            <h4 data-i18n="footer.toolst">${t('footer.toolst')}</h4>
+            ${LAYOUT_TOOLS.slice(0, 3).map((tool) => `
+              <a href="${tool.href}" data-link data-i18n="tool.${tool.key}.t">${t(`tool.${tool.key}.t`)}</a>`).join('')}
+          </div>
+          <div class="HL-footer__col">
+            <h4 data-i18n="footer.follow">${t('footer.follow')}</h4>
+            <div class="HL-footer__langs">
+              ${LANGUAGES.map((l) => `<button type="button" data-lang="${l}" class="${l === lang ? 'is-active' : ''}">${LANGUAGE_META[l].flag}</button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="HL-footer__base">
+          <span>© ۲۰۲۶ ViXoRa — <span data-i18n="footer.rights">${t('footer.rights')}</span></span>
+          <span data-i18n="footer.made">${t('footer.made')}</span>
+        </div>
+      </footer>
+
+      <button class="HL-top" type="button" data-hl-top aria-label="${t('layout.top')}">↑</button>
+    </div>`;
   }
 
-  function setToolsMenuState(isOpen) {
-    if (!layoutRoot) {
-      return;
-    }
-
-    const toolsContainer = layoutRoot.querySelector('[data-tools-container]');
-    const toolsMenuButton = layoutRoot.querySelector('[data-tools-trigger]');
-    const toolsMenu = layoutRoot.querySelector('[data-tools-menu]');
-
-    if (!toolsContainer || !toolsMenuButton || !toolsMenu) {
-      return;
-    }
-
-    isToolsMenuOpen = isOpen;
-
-    toolsContainer.classList.toggle('is-open', isToolsMenuOpen);
-    toolsMenuButton.setAttribute('aria-expanded', String(isToolsMenuOpen));
-    toolsMenu.setAttribute('aria-hidden', String(!isToolsMenuOpen));
+  function setDrop(drop, open) {
+    drop.classList.toggle('is-open', open);
+    drop.querySelector('button[aria-haspopup]')?.setAttribute('aria-expanded', String(open));
+  }
+  function closeAllDrops() {
+    layoutRoot?.querySelectorAll('.HL-drop.is-open').forEach((d) => setDrop(d, false));
   }
 
-  function toggleToolsMenu() {
-    setToolsMenuState(!isToolsMenuOpen);
-  }
-
-  function closeToolsMenu() {
-    if (isToolsMenuOpen) {
-      setToolsMenuState(false);
-    }
+  function refreshLang() {
+    if (!layoutRoot) return;
+    const lang = getLang();
+    document.documentElement.dir = getDir(lang);
+    applyLangToDom(layoutRoot);
+    const label = layoutRoot.querySelector('[data-hl-langlabel]');
+    if (label) label.textContent = LANGUAGE_META[lang].label;
+    layoutRoot.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('is-active', b.getAttribute('data-lang') === lang));
   }
 
   function afterRender() {
-    destroyEventListeners();
-
-    layoutRoot = document.querySelector('[data-dashboard-layout]');
+    layoutRoot = document.querySelector('[data-hl]');
     outlet = layoutRoot?.querySelector('[data-router-outlet]');
+    if (!layoutRoot) return;
 
-    document.documentElement.classList.add('homeLayout');
+    document.documentElement.dir = getDir(getLang());
+    applyLangToDom(layoutRoot);
 
-    if (!layoutRoot) {
-      return;
-    }
+    /* هدر متحول با اسکرول + دکمهٔ بالا */
+    const header = layoutRoot.querySelector('[data-hl-header]');
+    const topBtn = layoutRoot.querySelector('[data-hl-top]');
+    const onScroll = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 24);
+      topBtn.classList.toggle('is-show', window.scrollY > 400);
+    };
+    on(window, 'scroll', onScroll, { passive: true });
+    onScroll();
+    on(topBtn, 'click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-    const toolsMenuButton = layoutRoot.querySelector('[data-tools-trigger]');
+    /* دراپ‌داون‌ها (زبان + مگامنو) */
+    on(layoutRoot, 'click', (e) => {
+      const langBtn = layoutRoot.querySelector('[data-hl-langbtn]');
+      const toolsBtn = layoutRoot.querySelector('[data-hl-toolsbtn]');
+      const langDrop = layoutRoot.querySelector('[data-hl-langdrop]');
+      const toolsDrop = layoutRoot.querySelector('[data-hl-toolsdrop]');
 
-    if (toolsMenuButton) {
-      handleToolsButtonClick = (event) => {
-        event.stopPropagation();
-        toggleToolsMenu();
-      };
-      toolsMenuButton.addEventListener('click', handleToolsButtonClick);
-    }
+      if (e.target.closest('[data-hl-langbtn]')) { setDrop(langDrop, !langDrop.classList.contains('is-open')); setDrop(toolsDrop, false); return; }
+      if (e.target.closest('[data-hl-toolsbtn]')) { setDrop(toolsDrop, !toolsDrop.classList.contains('is-open')); setDrop(langDrop, false); return; }
 
-    handleDocumentClick = (event) => {
-      if (!isToolsMenuOpen || !layoutRoot) {
+      const langItem = e.target.closest('[data-lang]');
+      if (langItem) { setLang(langItem.getAttribute('data-lang')); closeAllDrops(); return; }
+
+      const themeBtn = e.target.closest('[data-hl-theme]');
+      if (themeBtn) {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        writeTheme(theme);
+        layoutRoot.dataset.theme = theme;
+        themeBtn.querySelector('[data-hl-themeicon]').textContent = theme === 'dark' ? '🌙' : '☀️';
+        document.querySelector('[data-hm]')?.setAttribute('data-theme', theme);
         return;
       }
 
-      const clickedInsideTools = event.target.closest('[data-tools-container]');
-      if (!clickedInsideTools) {
-        closeToolsMenu();
-      }
-    };
-    document.addEventListener('click', handleDocumentClick);
-
-    handleKeyDown = (event) => {
-      if (event.key === 'Escape' && isToolsMenuOpen) {
-        closeToolsMenu();
-        toolsMenuButton?.focus();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    handleLanguageClick = (event) => {
-      const languageButton = event.target.closest('[data-language]');
-      if (!languageButton || !layoutRoot?.contains(languageButton)) {
+      const burger = e.target.closest('[data-hl-burger]');
+      if (burger) {
+        const drawer = layoutRoot.querySelector('[data-hl-drawer]');
+        const open = !drawer.classList.contains('is-open');
+        drawer.classList.toggle('is-open', open);
+        drawer.setAttribute('aria-hidden', String(!open));
         return;
       }
 
-      const selectedLanguage = languageButton.dataset.language;
-      document.documentElement.lang = selectedLanguage;
+      const scrollBtn = e.target.closest('[data-scrollto]');
+      if (scrollBtn) {
+        const id = scrollBtn.getAttribute('data-scrollto');
+        const target = document.getElementById(id);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        closeAllDrops();
+        layoutRoot.querySelector('[data-hl-drawer]')?.classList.remove('is-open');
+        return;
+      }
 
-      layoutRoot.querySelectorAll('[data-language]').forEach((button) => {
-        button.classList.toggle('is-selected', button === languageButton);
-      });
-    };
-    layoutRoot.addEventListener('click', handleLanguageClick);
+      if (e.target.closest('[data-noop]')) e.preventDefault();
+    });
 
-    setToolsMenuState(false);
+    on(document, 'click', (e) => {
+      if (!e.target.closest('.HL-drop')) closeAllDrops();
+    });
+    on(document, 'keydown', (e) => { if (e.key === 'Escape') closeAllDrops(); });
+
+    cleanups.push(onLangChange(refreshLang));
   }
 
-  function destroyEventListeners() {
-    const toolsMenuButton = layoutRoot?.querySelector('[data-tools-trigger]');
-
-    if (toolsMenuButton && handleToolsButtonClick) {
-      toolsMenuButton.removeEventListener('click', handleToolsButtonClick);
-    }
-
-    if (handleDocumentClick) {
-      document.removeEventListener('click', handleDocumentClick);
-    }
-
-    if (handleKeyDown) {
-      window.removeEventListener('keydown', handleKeyDown);
-    }
-
-    if (layoutRoot && handleLanguageClick) {
-      layoutRoot.removeEventListener('click', handleLanguageClick);
-    }
-
-    handleToolsButtonClick = null;
-    handleDocumentClick = null;
-    handleKeyDown = null;
-    handleLanguageClick = null;
-  }
-
-  function getOutlet() {
-    return outlet;
-  }
+  function getOutlet() { return outlet; }
 
   function destroy() {
-    destroyEventListeners();
-
-    document.documentElement.classList.remove('homeLayout');
-
-    outlet = null;
+    cleanups.splice(0).forEach((fn) => fn());
     layoutRoot = null;
-    isToolsMenuOpen = false;
+    outlet = null;
   }
 
-  return {
-    render,
-    afterRender,
-    getOutlet,
-    destroy
-  };
+  return { render, afterRender, getOutlet, destroy };
 }

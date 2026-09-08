@@ -96,6 +96,12 @@ export function createToolsLayout() {
       title: "شخصی & بهره‌وری",
       items: [
         {
+          title: "موزیک پلیر",
+          link: "/tools/music",
+          icon: "/src/global/img/sticker/header/GameController.svg",
+          badge: "جدید"
+        },
+        {
           title: "ایجاد رزومه",
           link: "/tools/resume",
           icon: "/src/global/img/sticker/header/resume.svg",

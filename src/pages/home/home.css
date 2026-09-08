@@ -1,648 +1,323 @@
-
-
-
-/* !!--------------- */
-    /* ?? main  */
-/* !!-------------- */
-/* هرو سکشن */
-.main-hero {
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between;
-  max-width: 1200px; 
-  margin: 150px auto 0; 
-  padding: 0 2rem;
-  gap: 20px;
-}
-
-.mainHero-left{
-
-}
-
-.mainHero-sub{
-  background:rgba(29,78,216,0.1);
-  color:#60a5fa; 
-  padding:0.5rem 1rem; 
-  border-radius:99px; 
-  display:inline-block; 
-  margin-bottom:1rem; 
-  font-size:0.8rem;
-  font-family: var(--Vazir);
-  line-height: 1.3;
-}
-
-
-.mainHero-title {
-  font-size: 2.5rem; 
-  line-height: 1.1; 
-  font-weight: 800;
-  background: linear-gradient(white 30%, rgba(255,255,255,0.5));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  font-family: var(--iranyekan);
-  text-align: center;
-  min-width: 550px;
-}
-
-.mainHero-caption{
-  color:#94a3b8; 
-  font-size: 1.1rem; 
-  margin: 2rem 0; 
-  max-width: 500px;
-  font-family: var(--iranyekan);
-  direction: rtl;
-  line-height: 1.6;
-  text-align: center;
-  min-width: 540px;
-}
-
-.mainHeroCaption-ltr{
-  direction: ltr;
-  font-family: var(--Pacifico-Regular);
-}
-
-.mainHero-tools{
-  display: flex; 
-  gap: 1rem;
-}
-
-/* دکمه‌های درخشان */
-.btn-premium {
-  background: var(--primary-gradient);
-  padding: 1rem 2rem; 
-  border-radius: 12px;
-  color: white; 
-  text-decoration: none; 
-  font-weight: 600;
-  box-shadow: 0 0 20px rgba(29, 78, 216, 0.4);
-  font-family: var(--Vazir);
-  transition: all 0.2s ease;
-}
-
-.btn-premium:hover{
-  transform: scale(1.04);
-}
-
-.btn-demo{
-  color:white; 
-  padding:1rem 2rem; 
-  border: 1px solid rgba(255,255,255,0.1); 
-  border-radius:12px; 
-  text-decoration:none;
-  font-family: var(--Vazir);
-  transition: all 0.2s ease;
-}
-.btn-demo:hover{
-  transform: scale(1.04); 
-}
-
-
-.mainHero-img {
-  width: 550px; 
-  border-radius: 20px;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: transform 0.5s ease;
-  background: linear-gradient(45deg, #1e293b, #0f172a); 
-  padding: 20px;
-}
-.mainHero-img:hover { 
-  transform: scale(1.02); 
-}
-
-
-
-
-.main-eye{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  text-align: center;
-  margin-top: 180px;
-}
-
-.mainEye-up{
-  flex-basis: 50%;
-  border-radius: 20px;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: transform 0.5s ease;
-  background: linear-gradient(45deg, #1e293b, #0f172a); 
-  padding: 20px;
-}
-
-.mainEye-img{
-  width: 1200px;
-  border-radius: 20px;
-  
-}
-
-.mainEye-down{
-  flex-basis: 50%;
-}
-
-.mainEye-title{
-
-}
-
-.mainEye-description{
-
-}
-
-.mainEye-tools{
-
-}
-
-.mainEyeTools-btn{
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ==========================================================================
-   HERO SECTION (بخش اصلی بالای صفحه)
-   ========================================================================== */
-.main-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1300px;
-  margin: 100px auto 0;
-  padding: 0 2rem;
-  gap: 48px;
-  direction: rtl;
-}
-
-/* ستون متن و توضیحات */
-.hero-content {
-  flex: 1 1 50%;
-  min-width: 0; /* کلید حل باگ جمع شدن متن! */
-  text-align: right;
-}
-
-/* نشان گر یا بج نسخه جدید */
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(96, 165, 250, 0.3);
-  color: #93c5fd;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-family: var(--iranyekan);
-  margin-bottom: 1.5rem;
-}
-
-/* تیتر اصلی */
-.hero-title {
-  font-size: clamp(2.2rem, 3.8vw, 3.2rem); /* ریسپانسیو و روان */
-  line-height: 1.3;
-  font-weight: 900;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-  font-family: var(--iranyekan);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* توضیحات هرو */
-.hero-caption {
-  color: #94a3b8;
-  font-size: 1.1rem;
-  line-height: 1.8;
-  max-width: 580px;
-  margin-bottom: 2.2rem;
-  font-family: var(--iranyekan);
-}
-
-.vixora-brand {
-  font-family: var(--Pacifico-Regular);
-  color: #ffffff;
-  font-size: 1.3rem;
-  padding: 0 4px;
-}
-
-/* دکمه‌ها */
-.hero-actions, .eye-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
-  color: #ffffff;
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-family: var(--iranyekan);
-  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
-  transition: all 0.25s ease;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.6);
-}
-
-.btn-glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f8fafc;
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-family: var(--iranyekan);
-  transition: all 0.25s ease;
-  text-decoration: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-/* ستون تصویر سمت چپ */
-.hero-visual {
-  flex: 1 1 50%;
-  min-width: 0; /* کلید مهار ابعاد تصویر در Flexbox */
-  display: flex;
-  justify-content: center;
-}
-
-.hero-image-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 620px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
-  backdrop-filter: blur(12px);
-  padding: 12px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 50px rgba(59, 130, 246, 0.15);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-}
-
-.hero-image-wrapper:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 0 60px rgba(96, 165, 250, 0.25);
-}
-
-.hero-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
-}
-
-
-/* ==========================================================================
-   THE EYE SECTION (بخش چشم / رصدخانه)
-   ========================================================================== */
-.main-eye {
-  margin-top: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 2rem 100px;
-  direction: rtl;
-}
-
-.eye-header {
-  max-width: 750px;
-  text-align: center;
-  margin-bottom: 48px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.eye-title {
-  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 16px;
-  font-family: var(--iranyekan);
-}
-
-.eye-description {
-  color: #94a3b8;
-  font-size: 1.1rem;
-  line-height: 1.8;
-  margin-bottom: 28px;
-  font-family: var(--iranyekan);
-}
-
-.eye-visual {
-  width: 100%;
-  max-width: 1100px;
-}
-
-.eye-image-wrapper {
-  position: relative;
-  width: 100%;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(59, 130, 246, 0.15);
-  background: #0f172a;
-}
-
-.eye-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.eye-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* انیمیشن نقطه پالس */
-.pulse-icon {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #60a5fa;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #60a5fa;
-  animation: pulse-glow 2s infinite;
-}
-
-@keyframes pulse-glow {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.4; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-
-
-
-
-
-
-
-
-
-/* ==========================================================================
-   BENTO GRID SECTION (بخش اکوسیستم و ماژول‌ها)
-   ========================================================================== */
-.bento-section {
-  max-width: 1300px;
-  margin: 140px auto 0;
-  padding: 0 2rem;
-  direction: rtl;
-  font-family: var(--iranyekan);
-}
-
-.bento-header {
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.bento-badge {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #c084fc;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  margin-bottom: 1.2rem;
-}
-
-.bento-title {
-  font-size: clamp(2rem, 3.5vw, 2.8rem);
-  font-weight: 850;
-  color: #ffffff;
-  margin-bottom: 16px;
-}
-
-.bento-subtitle {
-  color: #94a3b8;
-  font-size: 1.1rem;
-  max-width: 650px;
-  margin: 0 auto;
-  line-height: 1.8;
-}
-
-/* ساختار شبکه بنتو */
-.bento-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 240px;
-  gap: 24px;
-}
-
-/* پایه کارت‌ها */
-.bento-card {
-  position: relative;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 32px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* افکت‌های Hover جذاب و لایت‌باکس */
-.bento-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(96, 165, 250, 0.3);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.08);
-}
-
-.bento-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 255, 255, 0.04), transparent 40%);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* تنظیم چینش المان‌های داخل کارت */
-.bento-card-content {
-  z-index: 2;
-}
-
-.bento-card-footer {
-  z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-}
-
-.bento-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.bento-card-title {
-  color: #ffffff;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.bento-card-text {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-.bento-link {
-  color: #3b82f6;
-  font-weight: 600;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: transform 0.2s ease;
-}
-
-.bento-card:hover .bento-link {
-  color: #60a5fa;
-  transform: translateX(-4px); /* جابجایی ملایم آیکون در هاور به دلیل RTL */
-}
-
-/* اختصاصی‌سازی موقعیت و اندازه کارت‌ها در شبکه */
-.card-financial {
-  grid-column: span 2;
-  grid-row: span 2;
-
-}
-
-.card-financial .bento-icon {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-}
-
-.card-crm {
-  grid-column: span 1;
-  grid-row: span 2;
-}
-
-.card-crm .bento-icon {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-}
-
-.card-project {
-  grid-column: span 1;
-  grid-row: span 1;
-}
-
-.card-project .bento-icon {
-  background: rgba(249, 115, 22, 0.1);
-  border-color: rgba(249, 115, 22, 0.2);
-  color: #fb923c;
-}
-
-.card-engine {
-  grid-column: span 2;
-  grid-row: span 1;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%);
-  border-color: rgba(168, 85, 247, 0.2);
-}
-
-.card-engine .bento-icon {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.3);
-  color: #c084fc;
-}
-
-/* ریسپونسیو سازی کارت‌ها برای تبلت و موبایل */
-@media (max-width: 1024px) {
-  .bento-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 260px;
-  }
-  .card-financial {
-    grid-column: span 2;
-  }
-  .card-crm {
-    grid-column: span 2;
-  }
-  .card-project {
-    grid-column: span 1;
-  }
-  .card-engine {
-    grid-column: span 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .bento-grid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-  .card-financial, .card-crm, .card-project, .card-engine {
-    grid-column: span 1;
-    grid-row: span 1;
-  }
-}
-
-.hidden{
-  display: none;
+/* ==================================================================
+   ViXoRa — صفحهٔ خانهٔ جادویی (hm-)
+   تم / تراکم / پس‌زمینه / حرکت + انیمیشن‌های اسکرول
+   ================================================================== */
+
+.hm-root{
+  --hm-accent:#22d3ee;
+  --hm-accent-2:#a78bfa;
+  --hm-radius:20px;
+  --hm-gap:20px;
+  --hm-pad:24px;
+  --hm-ease:cubic-bezier(.22,.9,.24,1);
+
+  --hm-bg0:#070b16;
+  --hm-bg1:#0b1020;
+  --hm-text:#eef1fb;
+  --hm-dim:#9aa5c4;
+  --hm-surface:rgba(255,255,255,.05);
+  --hm-border:rgba(255,255,255,.10);
+  --hm-glowc:rgba(80,120,255,.16);
+
+  position:relative;
+  min-height:100vh;
+  color:var(--hm-text);
+  background:var(--hm-bg0);
+  overflow-x:hidden;
+  font-family:inherit;
+  isolation:isolate;
+}
+
+/* تم روشن */
+.hm-root[data-theme="light"]{
+  --hm-bg0:#f5f7ff;
+  --hm-bg1:#eaeefb;
+  --hm-text:#0c1226;
+  --hm-dim:#4a5573;
+  --hm-surface:rgba(12,18,48,.05);
+  --hm-border:rgba(12,18,48,.10);
+  --hm-glowc:rgba(80,120,255,.14);
+}
+
+/* تراکم فشرده */
+.hm-root[data-density="compact"]{ --hm-gap:12px; --hm-pad:14px; }
+
+/* پس‌زمینه‌ها */
+.hm-root[data-bg="aurora"]{
+  background:
+    radial-gradient(1100px 600px at 85% -10%, color-mix(in srgb, var(--hm-accent) 14%, transparent), transparent 60%),
+    radial-gradient(900px 520px at 8% 110%, color-mix(in srgb, var(--hm-accent-2) 14%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--hm-bg0), var(--hm-bg1));
+}
+.hm-root[data-bg="grid"]{
+  background:
+    linear-gradient(color-mix(in srgb, var(--hm-text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--hm-text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(180deg, var(--hm-bg0), var(--hm-bg1));
+  background-size:44px 44px, 44px 44px, 100% 100%;
+}
+.hm-root[data-bg="stars"]{
+  background:
+    radial-gradient(1.5px 1.5px at 20% 30%, var(--hm-text) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 60%, var(--hm-text) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 40% 80%, var(--hm-text) 50%, transparent 51%),
+    radial-gradient(1px 1px at 85% 20%, var(--hm-text) 50%, transparent 51%),
+    linear-gradient(180deg, var(--hm-bg0), var(--hm-bg1));
+  background-size:240px 240px,240px 240px,240px 240px,240px 240px,100% 100%;
+}
+
+/* بدون حرکت */
+.hm-root[data-motion="off"] *{ animation:none!important; transition:none!important; }
+
+/* ---------- نوار پیشرفت و نور ماوس ---------- */
+.hm-progress{
+  position:fixed; top:0; left:0; right:0; height:3px; z-index:60;
+  background:linear-gradient(90deg, var(--hm-accent), var(--hm-accent-2));
+  transform-origin:0 50%; transform:scaleX(0);
+}
+.hm-glow{
+  position:fixed; top:0; left:0; width:420px; height:420px; z-index:0;
+  background:radial-gradient(circle, var(--hm-glowc), transparent 62%);
+  pointer-events:none;
+}
+
+/* ---------- متن گرادیانی ---------- */
+.hm-grad{
+  background:linear-gradient(90deg, var(--hm-accent), var(--hm-accent-2), var(--hm-accent));
+  background-size:200% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+  animation:hm-gradmove 5s linear infinite;
+}
+@keyframes hm-gradmove{ to{ background-position:200% 0; } }
+
+/* ---------- HERO ---------- */
+.hm-hero{
+  position:relative; min-height:92vh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; padding:var(--hm-pad);
+}
+.hm-hero__stars{ position:absolute; inset:0; width:100%; height:100%; }
+.hm-hero__orb{ position:absolute; border-radius:50%; filter:blur(40px); opacity:.35; }
+.hm-hero__orb--a{ width:340px; height:340px; background:var(--hm-accent); top:-60px; inset-inline-start:-80px; }
+.hm-hero__orb--b{ width:280px; height:280px; background:var(--hm-accent-2); bottom:-40px; inset-inline-end:-60px; }
+
+.hm-hero__inner{ position:relative; z-index:2; max-width:880px; text-align:center; }
+.hm-hero__badge{
+  display:inline-block; padding:8px 16px; border-radius:999px;
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+  color:var(--hm-dim); font-size:13px; margin-bottom:22px;
+}
+.hm-hero__title{ font-size:clamp(30px, 5vw, 56px); font-weight:800; line-height:1.25; margin:0 0 18px; }
+.hm-hero__t2{ display:inline-block; }
+.hm-hero__caption{ color:var(--hm-dim); font-size:clamp(14px,1.6vw,18px); line-height:2; max-width:640px; margin:0 auto 30px; }
+.hm-hero__actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+
+.hm-hero__scrollhint{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); }
+.hm-hero__scrollhint span{
+  display:block; width:24px; height:40px; border:2px solid var(--hm-dim);
+  border-radius:14px; position:relative;
+}
+.hm-hero__scrollhint span::after{
+  content:""; position:absolute; top:6px; left:50%; width:4px; height:8px;
+  margin-left:-2px; border-radius:2px; background:var(--hm-accent);
+  animation:hm-scroll 1.6s infinite;
+}
+@keyframes hm-scroll{ 0%{opacity:1; transform:translateY(0);} 80%{opacity:0; transform:translateY(14px);} 100%{opacity:0;} }
+
+/* ---------- دکمه‌ها ---------- */
+.hm-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 26px; border-radius:14px; border:1px solid transparent;
+  font-size:15px; font-weight:700; cursor:pointer; text-decoration:none;
+  transition:transform .25s var(--hm-ease), box-shadow .25s var(--hm-ease);
+  will-change:transform;
+}
+.hm-btn--primary{
+  color:#04101c; background:linear-gradient(90deg, var(--hm-accent), var(--hm-accent-2));
+  box-shadow:0 8px 26px color-mix(in srgb, var(--hm-accent) 36%, transparent);
+}
+.hm-btn--primary:hover{ transform:translateY(-3px); }
+.hm-btn--glass{
+  color:var(--hm-text); background:var(--hm-surface); border-color:var(--hm-border);
+}
+.hm-btn--glass:hover{ transform:translateY(-3px); border-color:var(--hm-accent); }
+.hm-btn--big{ padding:16px 40px; font-size:17px; }
+
+/* ---------- MARQUEE ---------- */
+.hm-marquee{ overflow:hidden; border-block:1px solid var(--hm-border); background:var(--hm-surface); direction:ltr; }
+.hm-marquee__track{ display:flex; width:max-content; animation:hm-marq 22s linear infinite; }
+.hm-marquee__group{ display:flex; }
+.hm-marquee__item{
+  padding:14px 30px; color:var(--hm-dim); font-size:15px; font-weight:600; white-space:nowrap;
+}
+.hm-marquee__item i{ color:var(--hm-accent); font-style:normal; margin-left:26px; }
+@keyframes hm-marq{ to{ transform:translateX(-50%); } }
+
+/* ---------- عنوان بخش‌ها ---------- */
+.hm-sec-title{ text-align:center; font-size:clamp(24px,3.4vw,40px); font-weight:800; margin:0 0 8px; }
+.hm-sec-sub{ text-align:center; color:var(--hm-dim); margin:0 auto 40px; max-width:620px; line-height:1.9; }
+
+/* ---------- STATS ---------- */
+.hm-stats{ padding:70px var(--hm-pad) 30px; }
+.hm-stats__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:var(--hm-gap); max-width:1000px; margin:0 auto; }
+.hm-stat{
+  text-align:center; padding:26px 12px; border-radius:var(--hm-radius);
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+}
+.hm-stat b{ display:block; font-size:34px; font-weight:800; color:var(--hm-accent); }
+.hm-stat span{ color:var(--hm-dim); font-size:14px; }
+
+/* ---------- FEATURES ---------- */
+.hm-features{ padding:60px var(--hm-pad); max-width:1160px; margin:0 auto; }
+.hm-features__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:var(--hm-gap); }
+.hm-feature{
+  position:relative; padding:26px; border-radius:var(--hm-radius); overflow:hidden;
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+  transition:transform .3s var(--hm-ease), border-color .3s; will-change:transform;
+}
+.hm-feature:hover{ border-color:var(--hm-accent); }
+.hm-feature__glow{
+  position:absolute; inset:0; opacity:0; transition:opacity .3s;
+  background:radial-gradient(240px 160px at var(--gx,50%) var(--gy,50%), color-mix(in srgb, var(--hm-accent) 22%, transparent), transparent 70%);
+}
+.hm-feature:hover .hm-feature__glow{ opacity:1; }
+.hm-feature h3{ margin:0 0 10px; font-size:19px; color:var(--hm-text); }
+.hm-feature p{ margin:0; color:var(--hm-dim); line-height:1.9; font-size:14px; }
+
+/* ---------- TOOLS ---------- */
+.hm-tools{ padding:60px var(--hm-pad); max-width:1160px; margin:0 auto; }
+.hm-tools__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--hm-gap); }
+.hm-tool{
+  display:flex; flex-direction:column; align-items:center; gap:10px; padding:26px 12px;
+  border-radius:var(--hm-radius); background:var(--hm-surface); border:1px solid var(--hm-border);
+  text-decoration:none; color:var(--hm-text); transition:transform .3s var(--hm-ease), border-color .3s;
+  will-change:transform;
+}
+.hm-tool:hover{ transform:translateY(-6px); border-color:var(--hm-accent); }
+.hm-tool__icon{ font-size:34px; }
+.hm-tool__name{ font-weight:700; font-size:15px; }
+.hm-tool__tag{ font-size:11px; color:var(--hm-dim); background:var(--hm-bg0); padding:3px 10px; border-radius:999px; border:1px solid var(--hm-border); }
+.hm-tool.is-mine{ border-color:color-mix(in srgb, var(--hm-accent) 55%, transparent); }
+.hm-tool.is-mine .hm-tool__tag{ color:var(--hm-accent); }
+.hm-tool.is-locked{ opacity:.55; }
+
+/* ---------- GUIDE ---------- */
+.hm-guide{ padding:60px var(--hm-pad); max-width:1100px; margin:0 auto; }
+.hm-guide__steps{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--hm-gap); counter-reset:step; }
+.hm-step{
+  position:relative; padding:26px 20px 22px; border-radius:var(--hm-radius);
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+}
+.hm-step__num{
+  position:absolute; top:-16px; inset-inline-start:18px; width:34px; height:34px;
+  display:grid; place-items:center; border-radius:12px; font-weight:800; color:#04101c;
+  background:linear-gradient(135deg, var(--hm-accent), var(--hm-accent-2));
+}
+.hm-step h3{ margin:8px 0 8px; font-size:17px; }
+.hm-step p{ margin:0; color:var(--hm-dim); font-size:13.5px; line-height:1.9; }
+
+/* ---------- SHORTCUTS ---------- */
+.hm-shortcuts{ padding:60px var(--hm-pad); max-width:900px; margin:0 auto; }
+.hm-shortcuts__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+.hm-key{
+  display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px;
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+}
+.hm-key span{ color:var(--hm-dim); font-size:13.5px; }
+kbd{
+  min-width:30px; text-align:center; padding:4px 8px; border-radius:8px; font-family:inherit;
+  background:var(--hm-bg0); border:1px solid var(--hm-border); border-bottom-width:3px;
+  color:var(--hm-accent); font-weight:700; font-size:13px;
+}
+
+/* ---------- GAMES ---------- */
+.hm-games{ padding:60px var(--hm-pad); max-width:1100px; margin:0 auto; }
+.hm-games__grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:var(--hm-gap); }
+.hm-game{
+  display:flex; flex-direction:column; gap:14px; padding:20px; border-radius:var(--hm-radius);
+  background:var(--hm-surface); border:1px solid var(--hm-border);
+}
+.hm-game header h3{ margin:0 0 4px; font-size:18px; }
+.hm-game header p{ margin:0; color:var(--hm-dim); font-size:13px; }
+.hm-game__canvas{ width:100%; height:220px; border-radius:14px; background:var(--hm-bg0); border:1px solid var(--hm-border); cursor:crosshair; }
+.hm-game footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.hm-game__score{ color:var(--hm-dim); font-size:14px; }
+.hm-game__score b{ color:var(--hm-accent); }
+.hm-pads{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.hm-pads button{
+  height:92px; border-radius:16px; border:1px solid var(--hm-border);
+  background:var(--hm-bg0); cursor:pointer; transition:background .15s, box-shadow .15s;
+}
+
+/* ---------- CTA ---------- */
+.hm-cta{ padding:80px var(--hm-pad); }
+.hm-cta__box{
+  max-width:760px; margin:0 auto; text-align:center; padding:56px 28px; border-radius:28px;
+  background:linear-gradient(135deg, color-mix(in srgb, var(--hm-accent) 14%, var(--hm-surface)), color-mix(in srgb, var(--hm-accent-2) 14%, var(--hm-surface)));
+  border:1px solid var(--hm-border);
+}
+.hm-cta__box h2{ margin:0 0 10px; font-size:clamp(24px,3vw,34px); }
+.hm-cta__box p{ color:var(--hm-dim); margin:0 0 26px; }
+
+/* ---------- FOOTER ---------- */
+.hm-footer{ text-align:center; padding:30px; color:var(--hm-dim); border-top:1px solid var(--hm-border); font-size:14px; }
+
+/* ---------- شناور: زبان + شخصی‌سازی ---------- */
+.hm-float{ position:fixed; bottom:20px; inset-inline-end:20px; z-index:70; display:flex; flex-direction:column; gap:10px; align-items:center; }
+.hm-float__langs{ display:flex; flex-direction:column; gap:6px; background:var(--hm-surface); border:1px solid var(--hm-border); padding:6px; border-radius:14px; }
+.hm-lang{ border:none; background:transparent; font-size:17px; cursor:pointer; padding:4px; border-radius:8px; opacity:.6; transition:opacity .2s, transform .2s; }
+.hm-lang.is-active{ opacity:1; transform:scale(1.15); }
+.hm-float__customize{
+  width:52px; height:52px; border-radius:16px; border:1px solid var(--hm-border); cursor:pointer;
+  background:linear-gradient(135deg, var(--hm-accent), var(--hm-accent-2)); font-size:22px;
+  box-shadow:0 8px 24px color-mix(in srgb, var(--hm-accent) 40%, transparent);
+  transition:transform .25s var(--hm-ease);
+}
+.hm-float__customize:hover{ transform:rotate(20deg) scale(1.06); }
+
+/* ---------- PANEL شخصی‌سازی ---------- */
+.hm-panel{
+  position:fixed; top:0; bottom:0; right:0; left:auto; width:min(320px, 90vw); z-index:80;
+  background:var(--hm-bg1);
+  border-left:1px solid var(--hm-border); padding:24px 20px;
+  transform:translateX(105%); transition:transform .4s var(--hm-ease);
+  display:flex; flex-direction:column; gap:18px; overflow-y:auto;
+}
+.hm-panel.is-open{ transform:translateX(0); }
+.hm-panel h3{ margin:0; font-size:18px; }
+.hm-panel__row{ display:flex; flex-direction:column; gap:10px; }
+.hm-panel__row>span{ color:var(--hm-dim); font-size:13.5px; }
+.hm-seg{ display:flex; gap:6px; background:var(--hm-bg0); padding:5px; border-radius:12px; border:1px solid var(--hm-border); }
+.hm-seg button{ flex:1; border:none; background:transparent; color:var(--hm-dim); padding:8px; border-radius:9px; cursor:pointer; font-size:13px; transition:all .2s; }
+.hm-seg button.is-on{ background:linear-gradient(90deg, var(--hm-accent), var(--hm-accent-2)); color:#04101c; font-weight:700; }
+.hm-swatches{ display:flex; gap:8px; }
+.hm-swatches button{ width:30px; height:30px; border-radius:10px; border:2px solid transparent; background:var(--sw); cursor:pointer; transition:transform .2s; }
+.hm-swatches button.is-on{ border-color:var(--hm-text); transform:scale(1.12); }
+
+/* ---------- OVERLAY شورتکات‌ها ---------- */
+.hm-overlay{
+  position:fixed; inset:0; z-index:90; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--hm-bg0) 70%, transparent);
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.hm-overlay.is-open{ opacity:1; pointer-events:auto; }
+.hm-overlay__box{ width:min(420px,90vw); background:var(--hm-bg1); border:1px solid var(--hm-border); border-radius:20px; padding:24px; }
+.hm-overlay__box h3{ margin:0 0 16px; }
+.hm-overlay__box ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+.hm-overlay__box li{ display:flex; justify-content:space-between; align-items:center; color:var(--hm-dim); font-size:14px; }
+
+/* ---------- KONAMI ---------- */
+.hm-konami{ position:fixed; top:20%; left:50%; transform:translateX(-50%); font-size:60px; z-index:95; animation:hm-pop 2.5s var(--hm-ease); }
+@keyframes hm-pop{ 0%{transform:translateX(-50%) scale(0);} 20%{transform:translateX(-50%) scale(1.3);} 40%{transform:translateX(-50%) scale(1);} 100%{opacity:0;} }
+.hm-root.is-konami{ filter:hue-rotate(40deg); }
+
+/* ---------- ظهور با اسکرول ---------- */
+[data-fx-reveal]{ opacity:0; transform:translateY(34px); transition:opacity .7s var(--hm-ease) var(--d,0ms), transform .7s var(--hm-ease) var(--d,0ms); }
+[data-fx-reveal].is-in{ opacity:1; transform:none; }
+
+/* ---------- واکنش‌گرا ---------- */
+@media (max-width:720px){
+  .hm-hero{ min-height:80vh; }
+  .hm-float{ bottom:14px; inset-inline-end:14px; }
 }

@@ -65,7 +65,7 @@ const SEED_USERS = [
     memberSince: '2026-01-11T09:00:00.000Z',
     createdAt: '2026-01-11T09:00:00.000Z',
     profileIsComplete: false,
-    tools: { notes: [], todos: [], customerInfo: [] },
+    tools: { notes: [], todos: [], customerInfo: [], music: [] },
   },
   {
     id: '2',
@@ -79,7 +79,7 @@ const SEED_USERS = [
     avatar: '',
     createdAt: '2026-02-02T09:00:00.000Z',
     profileIsComplete: false,
-    tools: { notes: [], todos: [], customerInfo: [] },
+    tools: { notes: [], todos: [], customerInfo: [], music: [] },
   },
 ];
 
@@ -206,9 +206,10 @@ export function normalizeUserRecord(rawUser = {}) {
           notes: Array.isArray(user.tools.notes) ? user.tools.notes : [],
           todos: Array.isArray(user.tools.todos) ? user.tools.todos : [],
           customerInfo: Array.isArray(user.tools.customerInfo) ? user.tools.customerInfo : [],
+          music: Array.isArray(user.tools.music) ? user.tools.music : [],
           ...user.tools,
         }
-      : { notes: [], todos: [], customerInfo: [] };
+      : { notes: [], todos: [], customerInfo: [], music: [] };
 
   user.createdAt = typeof user.createdAt === 'string' && user.createdAt
     ? user.createdAt
