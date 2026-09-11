@@ -180,8 +180,10 @@ export function createHomeLayout(ctx) {
     const header = layoutRoot.querySelector('[data-hl-header]');
     const topBtn = layoutRoot.querySelector('[data-hl-top]');
     const onScroll = () => {
-      header.classList.toggle('is-scrolled', window.scrollY > 24);
+      const sc = window.scrollY > 24;
+      header.classList.toggle('is-scrolled', sc);
       topBtn.classList.toggle('is-show', window.scrollY > 400);
+      layoutRoot.style.setProperty('--hl-header-h', sc ? '60px' : '74px');
     };
     on(window, 'scroll', onScroll, { passive: true });
     onScroll();

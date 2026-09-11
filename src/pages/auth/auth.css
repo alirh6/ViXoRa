@@ -64,3 +64,10 @@
 .form-message[data-type='success'] {
   color: #16a34a;
 }
+
+/* ---------- واکنش‌گرا ---------- */
+@media (max-width:560px){
+  .auth-page{ padding:16px; }
+  .auth-card{ padding:24px 20px; border-radius:14px; }
+  .auth-card button{ min-height:48px; }
+}

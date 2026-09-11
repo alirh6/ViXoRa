@@ -163,6 +163,15 @@ let eqNodes = [];
 let pannerNode = null;
 let analyserNode = null;
 let masterGain = null;
+let preampNode = null;
+let eqTailNode = null;
+let postEqHeadNode = null;
+let monoSplitter = null;
+let monoGainL = null;
+let monoGainR = null;
+let monoMerger = null;
+let monoEnabled = false;
+let preampDb = 0;
 
 let shuffleHistory = [];
 let consecutiveErrors = 0;
@@ -192,6 +201,18 @@ function applyRate() {
   if (elDirect) elDirect.playbackRate = state.rate;
 }
 
+let pitchLocked = true;
+function applyPitchLock() {
+  for (const el of [elGraph, elDirect]) {
+    if (!el) continue;
+    try {
+      el.preservesPitch = pitchLocked;
+      el.mozPreservesPitch = pitchLocked;
+      el.webkitPreservesPitch = pitchLocked;
+    } catch { /* ignore */ }
+  }
+}
+
 function applyEqToNodes() {
   if (!eqNodes.length || !audioCtx) return;
   const bands = state.eqEnabled ? state.eqBands : [0, 0, 0, 0, 0];
@@ -202,6 +223,29 @@ function applyEqToNodes() {
       /* ignore */
     }
   });
+}
+
+function applyMonoRouting(silent) {
+  try {
+    if (!eqTailNode || !postEqHeadNode) return;
+    eqTailNode.disconnect();
+    if (monoEnabled && monoSplitter && monoMerger) {
+      eqTailNode.connect(monoSplitter);
+      monoMerger.disconnect();
+      monoMerger.connect(postEqHeadNode);
+    } else {
+      try { if (monoMerger) monoMerger.disconnect(); } catch { /* ignore */ }
+      eqTailNode.connect(postEqHeadNode);
+    }
+  } catch (error) {
+    if (!silent) console.warn('[MusicPlayer] mono routing failed:', error?.message);
+  }
+}
+
+function applyPreampToNode() {
+  if (preampNode && preampNode.gain) {
+    preampNode.gain.setTargetAtTime(Math.pow(10, preampDb / 20), audioCtx.currentTime, 0.02);
+  }
 }
 
 function applyBalanceToNode() {
@@ -247,6 +291,7 @@ function ensureElements() {
 
   applyOutputLevels();
   applyRate();
+  applyPitchLock();
   activeEl = elDirect;
 }
 
@@ -272,11 +317,28 @@ function ensureGraph() {
       head = filter;
       return filter;
     });
+    preampNode = audioCtx.createGain();
+    preampNode.gain.value = Math.pow(10, preampDb / 20);
+    head.connect(preampNode);
+    head = preampNode;
+    eqTailNode = preampNode;
     pannerNode = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
     if (pannerNode) {
       head.connect(pannerNode);
       head = pannerNode;
     }
+    // زنجیره مونو: (L+R)/2 روی هر دو کانال
+    try {
+      monoSplitter = audioCtx.createChannelSplitter(2);
+      monoGainL = audioCtx.createGain(); monoGainL.gain.value = 0.5;
+      monoGainR = audioCtx.createGain(); monoGainR.gain.value = 0.5;
+      monoMerger = audioCtx.createChannelMerger(2);
+      monoSplitter.connect(monoGainL, 0); monoSplitter.connect(monoGainR, 1);
+      monoGainL.connect(monoMerger, 0, 0); monoGainL.connect(monoMerger, 0, 1);
+      monoGainR.connect(monoMerger, 0, 0); monoGainR.connect(monoMerger, 0, 1);
+    } catch { monoSplitter = null; monoMerger = null; }
+    postEqHeadNode = head;
+    applyMonoRouting(true);
     analyserNode = audioCtx.createAnalyser();
     analyserNode.fftSize = 256;
     analyserNode.smoothingTimeConstant = 0.82;
@@ -995,6 +1057,29 @@ export function toggleEq() {
   savePrefs();
   emit('state');
   return state.eqEnabled;
+}
+
+export function setPreamp(db) {
+  preampDb = Math.max(-12, Math.min(12, Number(db) || 0));
+  applyPreampToNode();
+  emit('fx');
+}
+
+export function setMono(on) {
+  monoEnabled = !!on;
+  applyMonoRouting();
+  emit('fx');
+}
+
+export function setPitchLock(on) {
+  pitchLocked = on !== false;
+  ensureElements();
+  applyPitchLock();
+  emit('fx');
+}
+
+export function getFxState() {
+  return { preampDb, mono: monoEnabled, pitchLock: pitchLocked };
 }
 
 export function setBalance(value) {

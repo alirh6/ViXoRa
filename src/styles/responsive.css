@@ -1,0 +1,72 @@
+/* ==================================================================
+   ViXoRa — بنیاد واکنش‌گرایی سراسری (responsive.css)
+   این لایه بعد از global.css بارگذاری می‌شود و روی همهٔ صفحات اثر دارد.
+   نقطه‌های شکست استاندارد پروژه:
+     ≤560px  موبایل کوچک · ≤768px موبایل و تبلت کوچک · ≤1180px تبلت/لپ‌تاپ
+   ================================================================== */
+
+:root{
+  --vx-bp-sm:560px;
+  --vx-bp-md:768px;
+  --vx-bp-lg:1180px;
+  /* حاشیه امن دستگاه (ناچ/ژست‌بار) */
+  --vx-safe-t:env(safe-area-inset-top,0px);
+  --vx-safe-b:env(safe-area-inset-bottom,0px);
+  --vx-safe-l:env(safe-area-inset-left,0px);
+  --vx-safe-r:env(safe-area-inset-right,0px);
+  /* حداقل هدف لمسی پیشنهادی */
+  --vx-tap:44px;
+  /* ارتفاع نوبار پایین موبایل در کابین ابزارها */
+  --vx-bottomnav-h:66px;
+}
+
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+
+/* نگهبان ویژگی hidden (اگر لایوتی آن را بازنویسی کرده باشد) */
+[hidden]{ display:none !important; }
+
+/* رسانه‌ها هرگز از ظرف خود بیرون نمی‌زنند */
+img, video{ max-width:100%; height:auto; }
+canvas{ max-width:100%; }
+svg{ max-width:100%; }
+
+/* فوکوس قابل مشاهده برای کیبورد (دسترس‌پذیری) */
+:focus-visible{
+  outline:2px solid #22d3ee;
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* اسکرول افقی نرم برای جدول‌ها و نوارهای عریض */
+.vx-scroll-x{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+.vx-scroll-x::-webkit-scrollbar{ height:6px; }
+
+/* ابزارک نمایش شرطی */
+.vx-only-mobile{ display:none !important; }
+@media (max-width:768px){
+  .vx-only-mobile{ display:revert !important; }
+  .vx-only-desktop{ display:none !important; }
+}
+
+/* دستگاه‌های لمسی: جلوگیری از زوم خودکار iOS روی ورودی‌ها + حذف هایلایت ضربه */
+@media (pointer:coarse){
+  input, select, textarea{ font-size:max(16px,1em); }
+  a, button{ -webkit-tap-highlight-color:transparent; }
+}
+
+/* احترام سراسری به کاهش حرکت */
+@media (prefers-reduced-motion:reduce){
+  *, *::before, *::after{
+    animation-duration:1ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:1ms !important;
+    scroll-behavior:auto !important;
+  }
+}

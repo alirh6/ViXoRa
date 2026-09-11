@@ -15,6 +15,7 @@ import { routes } from './core/router/routes.js';
 import { restoreSession } from './core/services/auth-service.js';
 import { ensureDatabaseReady } from './core/storage/db-client.js';
 import { selectTheme } from './core/state/selectors.js';
+import { mountGlobalMiniPlayer } from './pages/tools/music/music-mini-player.js';
 
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;

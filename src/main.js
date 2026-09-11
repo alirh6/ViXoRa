@@ -5,6 +5,7 @@ import { bootstrap } from './app.js';
 import './styles/reset.css';
 import './styles/font.css';
 import './styles/global.css';
+import './styles/responsive.css';
 import './layouts/home/homeLayout.css';
 import './layouts/tools/toolsLayout.css';
 import './layouts/dashboard/dashboardLayout.css';

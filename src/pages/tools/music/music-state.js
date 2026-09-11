@@ -18,6 +18,10 @@ export const MUSIC_TABS = [
   { id: 'queue', label: 'صف پخش', icon: '⏭️' },
   { id: 'history', label: 'تاریخچه', icon: '🕘' },
   { id: 'stats', label: 'آمار', icon: '📊' },
+  { id: 'lyrics', label: 'شعر', icon: '🎤' },
+  { id: 'lab', label: 'آزمایشگاه', icon: '🧪' },
+  { id: 'radio', label: 'رادیو', icon: '📻' },
+  { id: 'studio', label: 'استودیو', icon: '🎛' },
 ];
 
 export function createDefaultUiState() {

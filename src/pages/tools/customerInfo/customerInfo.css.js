@@ -1225,6 +1225,18 @@ export const customerInfoCss = /* css */ `
 @media (prefers-reduced-motion: reduce){
   .vci-ws *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }
+
+/* ---------- واکنش‌گرای تکمیلی: موبایل کوچک ---------- */
+@media (max-width:560px){
+  .vci-header__actions{flex-wrap:wrap}
+  .vci-header__title{font-size:16px}
+  .vci-rule,.vci-segrule{grid-template-columns:1fr}
+  .vci-compactrow{grid-template-columns:auto 1fr auto}
+  .vci-bulkbar{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  .vci-fab{bottom:calc(88px + env(safe-area-inset-bottom,0px));left:16px;width:52px;height:52px}
+  .vci-cmdk{padding-top:6vh}
+  .vci-profile__content{padding:14px 14px 90px}
+}
 `;
 
 export default customerInfoCss;

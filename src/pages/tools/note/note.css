@@ -1950,3 +1950,11 @@
     max-inline-size: none;
   }
 }
+/* ---------- واکنش‌گرای تکمیلی: موبایل کوچک ---------- */
+@media (max-width: 560px) {
+  .note-shell{ padding:8px; border-radius:14px; }
+  .note-modal-body{ padding:12px; }
+  .note-header-bottom{ gap:8px; }
+  .note-modal{ width:calc(100vw - 20px); max-height:92dvh; }
+  .note-modal-overlay{ padding:10px; }
+}

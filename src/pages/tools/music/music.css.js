@@ -349,4 +349,123 @@ padding:9px;font-size:13px;font-weight:700;cursor:pointer}
 .mx-bar-row{grid-template-columns:1fr;gap:4px}
 .mx-detail{flex-direction:column;text-align:center}
 }
+
+/* ---------- واکنش‌گرای تکمیلی موبایل ---------- */
+@media (max-width:560px){
+.mx-form__inline{flex-wrap:wrap}
+.mx-coverrow{flex-wrap:wrap}
+.mx-drop__box{padding:26px 20px;font-size:15px;border-radius:18px}
+.mx-im__core{width:min(560px,94vw);gap:8px}
+.mx-im__close{top:12px;left:12px;padding:8px 14px}
+.mx-bar{bottom:calc(84px + env(safe-area-inset-bottom,0px));gap:8px}
+}
+@media (max-width:420px){
+.mx-cards{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.mx-stats-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+}
+
+/* ================= ماژول‌های توسعه: شعر/آزمایشگاه/رادیو/استودیو ================= */
+.mx-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.mx-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media (max-width:900px){.mx-grid-2{grid-template-columns:1fr}}
+.mx-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:10px 0}
+.mx-form-grid label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--mx-dim)}
+.mx-form-grid input,.mx-form-grid select,.mx-form-grid textarea{background:rgba(0,0,0,.3);border:1px solid var(--mx-border);color:var(--mx-text);border-radius:10px;padding:9px 10px;font-size:13px;font-family:inherit}
+.mx-form-grid input:focus,.mx-form-grid select:focus,.mx-form-grid textarea:focus{border-color:var(--mx-accent);outline:0;box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+input.mx-search{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--mx-border);color:var(--mx-text);border-radius:12px;padding:10px 14px;font-size:13.5px;font-family:inherit;display:block}
+input.mx-search:focus{border-color:var(--mx-accent);outline:0}
+.mx-secbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.mx-hint-inline{font-size:12.5px;color:var(--mx-dim)}
+.mx-inline{display:flex;align-items:center;gap:8px}
+.mx-inline input[type="range"]{flex:1;accent-color:var(--mx-accent)}
+.mx-hidden{display:none!important}
+.mx-progress{height:10px;background:rgba(0,0,0,.35);border-radius:99px;overflow:hidden;margin:10px 0;border:1px solid var(--mx-border)}
+.mx-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mx-accent),var(--mx-accent2));transition:width .25s}
+.mx-tips{margin:8px 0;padding-right:18px;line-height:2.1;font-size:13px}
+.mx-num{font-variant-numeric:tabular-nums;color:var(--mx-accent2);font-weight:800;min-width:34px;text-align:center}
+.mx-badge{font-size:11.5px;background:var(--mx-card2);border:1px solid var(--mx-border);padding:3px 10px;border-radius:99px;white-space:nowrap}
+.mx-badge.mx-ok{border-color:rgba(52,211,153,.5);color:#6ee7b7}
+.mx-badge.mx-bad{border-color:rgba(244,63,94,.5);color:#fda4af}
+.mx-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.mx-chip{cursor:pointer;transition:all .15s;color:var(--mx-text)}
+.mx-chip:hover{border-color:var(--mx-accent);transform:translateY(-1px)}
+.mx-chip.is-on{background:linear-gradient(135deg,var(--mx-accent),var(--mx-accent2));border:0;box-shadow:0 6px 18px -6px var(--mx-glow)}
+.mx-chip-custom{border-style:dashed}
+.mx-stats-row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.mx-stats-row .mx-stat{flex:1;min-width:110px;padding:10px 8px;font-size:12.5px}
+.mx-panel h4{margin:14px 0 8px;font-size:14px}
+.mx-panel h4:first-child{margin-top:0}
+
+/* ---- ردیف‌های آزمایشگاه ---- */
+.mx-lab-list{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;margin-top:8px}
+.mx-lab-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid var(--mx-border);border-radius:12px;padding:8px 12px;font-size:13px}
+.mx-lab-row.is-sel{border-color:var(--mx-accent);background:rgba(139,92,246,.12)}
+.mx-lab-row input[type="checkbox"]{width:17px;height:17px;accent-color:var(--mx-accent);flex:0 0 auto}
+.mx-lab-title{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-lab-sub{color:var(--mx-dim);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-lab-plays{color:var(--mx-dim);font-size:12px;white-space:nowrap}
+
+/* ---- تکراری ---- */
+.mx-dup-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:8px;border-bottom:1px dashed var(--mx-border);flex-wrap:wrap}
+.mx-dup-row span:first-child{font-weight:700;flex:1;min-width:180px}
+.mx-dup-meta{color:var(--mx-dim);font-size:11.5px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- نواقص ---- */
+.mx-miss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:12px 0}
+.mx-miss-card{background:var(--mx-card);border:1px solid var(--mx-border);border-radius:16px;padding:14px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;color:var(--mx-text);cursor:pointer;transition:all .15s}
+.mx-miss-card:hover{transform:translateY(-2px);border-color:var(--mx-accent)}
+.mx-miss-card b{font-size:22px;color:var(--mx-accent2)}
+.mx-miss-card span{font-size:12px;color:var(--mx-dim)}
+
+/* ---- کاور ---- */
+.mx-cover-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px}
+.mx-cover-card{background:var(--mx-card);border:1px solid var(--mx-border);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.mx-cover-card b{font-size:12.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-cover-card span{font-size:11.5px;color:var(--mx-dim)}
+.mx-cover-box{width:100%;aspect-ratio:1;border-radius:12px;display:grid;place-items:center;font-size:34px;background:linear-gradient(135deg,rgba(139,92,246,.35),rgba(236,72,153,.25));background-size:cover;background-position:center;border:1px solid var(--mx-border)}
+.mx-cover-box.has-img{font-size:0}
+
+/* ---- کشف ---- */
+.mx-discover-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
+.mx-discover{background:var(--mx-card);border:1px solid var(--mx-border);border-radius:16px;padding:14px 10px;display:flex;flex-direction:column;gap:4px;align-items:center;color:var(--mx-text);cursor:pointer;font-size:24px;transition:all .15s}
+.mx-discover:hover{transform:translateY(-2px) scale(1.02);border-color:var(--mx-accent2)}
+.mx-discover b{font-size:13px}
+.mx-discover span{font-size:11px;color:var(--mx-dim)}
+
+/* ---- شعر ---- */
+.mx-lx-now{font-size:14px;line-height:2.4;text-align:center}
+.mx-lx-line{padding:8px 10px;border-radius:12px;transition:all .25s;color:var(--mx-text);opacity:.85}
+.mx-lx-line.is-active{background:linear-gradient(135deg,rgba(139,92,246,.35),rgba(236,72,153,.25));border:1px solid var(--mx-accent);font-weight:800;font-size:16px;opacity:1;box-shadow:0 8px 24px -8px var(--mx-glow)}
+.mx-lx-line.is-past{opacity:.45}
+.mx-lx-line .mx-t{font-size:10.5px;color:var(--mx-dim);margin-left:8px;font-variant-numeric:tabular-nums}
+.mx-lx-line.is-due{border-color:var(--mx-accent2)}
+.mx-karaoke-fonts{display:flex;gap:6px;align-items:center}
+.mx-lx-editor{width:100%;min-height:220px;background:rgba(0,0,0,.35);border:1px solid var(--mx-border);color:var(--mx-text);border-radius:14px;padding:14px;font-size:14px;line-height:2.1;font-family:inherit;resize:vertical}
+.mx-lx-editor:focus{border-color:var(--mx-accent);outline:0}
+.mx-star-btn{background:none;border:0;font-size:22px;cursor:pointer;opacity:.35;transition:all .12s;padding:2px 4px}
+.mx-star-btn.on{opacity:1;transform:scale(1.15);text-shadow:0 0 12px #facc15}
+.mx-ab-a{border-color:rgba(52,211,153,.6)!important}
+.mx-ab-b{border-color:rgba(244,63,94,.6)!important}
+
+/* ---- همگام‌ساز ---- */
+.mx-sync-stage{text-align:center}
+.mx-sync-current{font-size:22px;font-weight:800;min-height:64px;display:grid;place-items:center;background:rgba(0,0,0,.3);border:1px solid var(--mx-accent);border-radius:16px;padding:14px;margin:10px 0}
+.mx-sync-next{color:var(--mx-dim);font-size:13px;min-height:22px}
+.mx-sync-tap{font-size:18px!important;padding:14px 40px!important}
+.mx-sync-list{max-height:200px;overflow:auto;margin-top:10px}
+.mx-sync-line{display:flex;gap:10px;align-items:center;font-size:12.5px;padding:6px 10px;border-bottom:1px dashed var(--mx-border)}
+.mx-sync-line.is-cur{background:rgba(139,92,246,.15);border-radius:8px}
+.mx-sync-line .mx-t{font-variant-numeric:tabular-nums;color:var(--mx-accent2);min-width:44px}
+.mx-sync-line button{margin-right:auto}
+
+/* ---- استودیو ---- */
+.mx-eq-row{display:flex;gap:6px;justify-content:space-between;margin:12px 0}
+.mx-eq-band{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--mx-border);border-radius:12px;padding:10px 4px}
+.mx-eq-band input[type="range"]{writing-mode:vertical-lr;direction:rtl;width:22px;height:110px;accent-color:var(--mx-accent);cursor:pointer}
+.mx-eq-band b{font-size:12px;color:var(--mx-accent2);font-variant-numeric:tabular-nums}
+.mx-eq-band span{font-size:11px;color:var(--mx-dim)}
+.mx-visual{height:180px}
+.mx-input{flex:1;min-width:140px}
+canvas[data-rd="goal-chart"]{width:100%;height:120px;background:rgba(0,0,0,.25);border:1px solid var(--mx-border);border-radius:14px}
+canvas[data-lab="gauge"]{width:100%;height:150px}
 `;

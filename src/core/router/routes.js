@@ -65,12 +65,20 @@ export const routes = [
   },
 
   {
-      path: '/tools/music',
-      layout: createToolsLayout,
-      layoutKey: 'tools-layout',
-      component: () => import('../../pages/tools/music/music.js'),
-      meta: { requiresAuth: true, title: 'موزیک پلیر' },
-    },
+    path: '/tools/music',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/music/music.js'),
+    meta: { requiresAuth: true, title: 'موزیک پلیر' },
+  },
+
+  {
+    path: '/tools/invoices',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/invoices/invoices.js'),
+    meta: { requiresAuth: true, title: 'سوپراپ مالی' },
+  },
 
   {
       path: '/tools/customerInfo',
@@ -80,7 +88,39 @@ export const routes = [
       meta: { requiresAuth: true, title: 'اطلاعات مشتریان' },
     },
 
-{ 
+  {
+    path: '/tools/building',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/building/building.js'),
+    meta: { requiresAuth: true, title: 'مدیریت ساختمان' },
+  },
+
+  {
+    path: '/tools/savingsCircle',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/savingsCircle/savingsCircle.js'),
+    meta: { requiresAuth: true, title: 'صندوق‌های خانگی' },
+  },
+
+  {
+    path: '/tools/entertainment',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/entertainment/entertainment.js'),
+    meta: { requiresAuth: true, title: 'سرگرمی' },
+  },
+
+  {
+    path: '/tools/resume',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/resume/resume.js'),
+    meta: { requiresAuth: true, title: 'رزومه‌ساز هوشمند' },
+  },
+
+{
     path: '/404',
     component: () => ({
       render: () => `

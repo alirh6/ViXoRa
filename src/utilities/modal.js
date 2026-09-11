@@ -35,6 +35,7 @@ const MODAL_CSS = `
 .vx-modal__btn--danger:hover{background:rgba(255,93,122,.24)}
 .vx-modal__btn[disabled]{opacity:.55;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){.vx-modal,.vx-modal-overlay{animation:none}}
+@media (max-width:560px){.vx-modal-overlay{padding:10px;place-items:end center}.vx-modal{width:100%;max-height:92dvh;border-radius:18px 18px 14px 14px}.vx-modal__body{padding:14px}.vx-modal__footer{flex-wrap:wrap}.vx-modal__footer .vx-modal__btn{flex:1 1 auto;min-height:44px}.vx-modal__close{width:40px;height:40px}}
 `;
 
 const FOCUSABLE =

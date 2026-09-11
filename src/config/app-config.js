@@ -50,6 +50,8 @@ export const TOOL_NAMES = [
   'notes',
   'todos',
   'customerInfo',
+  'music',
+  'invoices',
 ];
 
 /** نقش‌های معتبر سیستم */

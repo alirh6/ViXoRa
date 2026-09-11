@@ -4,7 +4,8 @@
 
 import { t, setLang, getLang, getDir, onLangChange, applyLangToDom, LANGUAGES, LANGUAGE_META } from '../../core/i18n/i18n.js';
 import { createHomeFx, createKonami } from './fx/homeFx.js';
-import { mountStarCatch, mountMemoryPulse } from './games/homeGames.js';
+import { createModal } from '../../utilities/modal.js';
+import { GAMES, gameById, gameTitle, gameDesc, getBest, pnum } from '../tools/entertainment/arcade.js';
 import { createLocalStorageAdapter } from '../../utilities/storage.js';
 
 const storage = createLocalStorageAdapter();
@@ -53,11 +54,26 @@ function writeHomeCustom(c) {
   storage.set(SETTINGS_KEY, s);
 }
 
+const HOME_GAMES_KEY = 'ViXoRa:home-games';
+const HOME_GAME_DEFAULTS = ['subway-run', 'neon-survivors'];
+
+function readHomeGames() {
+  const v = storage.get(HOME_GAMES_KEY, null);
+  const arr = Array.isArray(v) ? v.filter((id) => gameById(id)) : [];
+  const out = [];
+  for (const id of arr) if (!out.includes(id)) out.push(id);
+  for (const d of HOME_GAME_DEFAULTS) if (out.length < 2 && !out.includes(d)) out.push(d);
+  for (const g of GAMES) if (out.length < 2 && !out.includes(g.id)) out.push(g.id);
+  return out.slice(0, 2);
+}
+
+function writeHomeGames(ids) {
+  storage.set(HOME_GAMES_KEY, ids.slice(0, 2));
+}
+
 export function createHomePage(ctx) {
   let root = null;
   let fx = null;
-  let starCtl = null;
-  let memCtl = null;
   const cleanups = [];
   let custom = readHomeCustom();
   const user = ctx?.user || null;
@@ -86,6 +102,26 @@ export function createHomePage(ctx) {
     }).join('');
 
     const greeting = user ? `${t('hero.welcomeBack')}, ${user.name || user.username} 👋` : t('hero.badge');
+
+    const homeGameIds = readHomeGames();
+    const homeGamesHtml = homeGameIds.map((id, slot) => {
+      const g = gameById(id) || GAMES[0];
+      return `
+          <div class="hm-game hm-game--arcade" data-fx-reveal style="--gh:${g.hue}">
+            <header><h3>${g.icon} ${gameTitle(g, lang)}</h3><p>${gameDesc(g, lang)}</p></header>
+            <button type="button" class="hm-arcade__art" data-play="${g.id}" aria-label="${gameTitle(g, lang)}">
+              <span class="hm-arcade__icon">${g.icon}</span>
+              <span class="hm-arcade__go">${t('games.playNow')}</span>
+            </button>
+            <footer>
+              <span class="hm-game__score">${t('games.best')}: <b data-best-for="${g.id}">${pnum(getBest(g.id))}</b></span>
+              <span class="hm-arcade__btns">
+                <button class="hm-btn hm-btn--primary" type="button" data-play="${g.id}">${t('games.playNow')}</button>
+                <button class="hm-btn hm-btn--glass hm-btn--sm" type="button" data-change="${slot}">✏️ ${t('games.change')}</button>
+              </span>
+            </footer>
+          </div>`;
+    }).join('');
 
     return `
     <div class="hm-root" data-hm
@@ -180,25 +216,10 @@ export function createHomePage(ctx) {
         <h2 class="hm-sec-title" data-fx-reveal data-i18n="games.title">${t('games.title')}</h2>
         <p class="hm-sec-sub" data-fx-reveal data-i18n="games.sub">${t('games.sub')}</p>
         <div class="hm-games__grid">
-          <div class="hm-game" data-fx-reveal>
-            <header><h3 data-i18n="games.star.t">${t('games.star.t')}</h3><p data-i18n="games.star.d">${t('games.star.d')}</p></header>
-            <canvas class="hm-game__canvas" data-game-star></canvas>
-            <footer>
-              <span class="hm-game__score"><span data-i18n="games.score">${t('games.score')}</span>: <b data-star-score>۰</b> · ⏱ <b data-star-time>۳۰</b></span>
-              <button class="hm-btn hm-btn--primary" type="button" data-star-start data-i18n="games.start">${t('games.start')}</button>
-            </footer>
-          </div>
-          <div class="hm-game" data-fx-reveal>
-            <header><h3 data-i18n="games.mem.t">${t('games.mem.t')}</h3><p data-i18n="games.mem.d">${t('games.mem.d')}</p></header>
-            <div class="hm-pads" data-game-mem>
-              <button type="button" data-pad></button><button type="button" data-pad></button>
-              <button type="button" data-pad></button><button type="button" data-pad></button>
-            </div>
-            <footer>
-              <span class="hm-game__score"><span data-i18n="games.score">${t('games.score')}</span>: <b data-mem-level>۰</b></span>
-              <button class="hm-btn hm-btn--primary" type="button" data-mem-start data-i18n="games.start">${t('games.start')}</button>
-            </footer>
-          </div>
+${homeGamesHtml}
+        </div>
+        <div class="hm-games__more">
+          <a class="hm-btn hm-btn--glass" href="/tools/entertainment" data-link>${t('games.all')}</a>
         </div>
       </section>
 
@@ -295,6 +316,33 @@ export function createHomePage(ctx) {
     panel.setAttribute('aria-hidden', String(!panel.classList.contains('is-open')));
   }
 
+  function refreshHomeBest() {
+    if (!root) return;
+    root.querySelectorAll('[data-best-for]').forEach((b) => {
+      b.textContent = pnum(getBest(b.getAttribute('data-best-for')));
+    });
+  }
+
+  function openGamePicker(slot) {
+    const lang = getLang();
+    const node = document.createElement('div');
+    node.className = 'hm-pickgrid';
+    node.innerHTML = '<p class="hm-pickgrid__hint">' + t('games.pickHint') + '</p>' +
+      GAMES.map((g) => '<button type="button" class="hm-pick" data-pick="' + g.id + '" style="--gh:' + g.hue + '">' +
+        '<span class="hm-pick__i">' + g.icon + '</span><span class="hm-pick__t">' + gameTitle(g, lang) + '</span></button>').join('');
+    const modal = createModal({ title: t('games.pick'), contentNode: node, size: 'wide' });
+    node.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-pick]');
+      if (!b) return;
+      const ids = readHomeGames();
+      ids[slot] = b.getAttribute('data-pick');
+      writeHomeGames(ids);
+      modal.close('picked');
+      rebuild();
+    });
+    modal.open();
+  }
+
   function cycleLang() {
     const idx = LANGUAGES.indexOf(getLang());
     setLang(LANGUAGES[(idx + 1) % LANGUAGES.length]);
@@ -313,29 +361,8 @@ export function createHomePage(ctx) {
     fx.initAll();
     cleanups.push(() => fx?.destroy());
 
-    const starCanvas = root.querySelector('[data-game-star]');
-    const starScore = root.querySelector('[data-star-score]');
-    const starTime = root.querySelector('[data-star-time]');
-    starCtl = mountStarCatch(starCanvas, {
-      onScore: (s, tm) => {
-        if (starScore) starScore.textContent = s.toLocaleString('fa-IR');
-        if (starTime) starTime.textContent = tm.toLocaleString('fa-IR');
-      },
-      onEnd: (s) => { if (starScore) starScore.textContent = s.toLocaleString('fa-IR'); },
-    });
-    cleanups.push(() => starCtl?.destroy());
-    const starStart = root.querySelector('[data-star-start]');
-    if (starStart) on(starStart, 'click', () => starCtl.start());
-
-    const memBox = root.querySelector('[data-game-mem]');
-    const memLevel = root.querySelector('[data-mem-level]');
-    memCtl = mountMemoryPulse(memBox, {
-      onLevel: (l) => { if (memLevel) memLevel.textContent = l.toLocaleString('fa-IR'); },
-      onEnd: () => {},
-    });
-    cleanups.push(() => memCtl?.destroy());
-    const memStart = root.querySelector('[data-mem-start]');
-    if (memStart) on(memStart, 'click', () => memCtl.start());
+    // رکورد کارت‌ها بعد از بستن بازی تازه شود
+    on(window, 'vixora:arcade-closed', refreshHomeBest);
 
     on(document, 'keydown', (e) => {
       if (e.target.matches?.('input,textarea')) return;
@@ -364,6 +391,14 @@ export function createHomePage(ctx) {
 
       if (e.target.closest('[data-customize]')) { togglePanel(); return; }
 
+      const playBtn = e.target.closest('[data-play]');
+      if (playBtn) {
+        void import('../tools/entertainment/launch.js').then((m) => m.openArcadeGame(playBtn.getAttribute('data-play')));
+        return;
+      }
+      const changeBtn = e.target.closest('[data-change]');
+      if (changeBtn) { openGamePicker(Number(changeBtn.getAttribute('data-change'))); return; }
+
       const segBtn = e.target.closest('[data-seg] button');
       if (segBtn) {
         const key = segBtn.closest('[data-seg]').getAttribute('data-seg');
@@ -385,7 +420,7 @@ export function createHomePage(ctx) {
 
   function unbind() {
     cleanups.splice(0).forEach((fn) => fn());
-    fx = null; starCtl = null; memCtl = null;
+    fx = null;
   }
 
   function rebuild() {

@@ -13,6 +13,10 @@ import { musicCss } from './music.css.js';
 import { loadPersistedMusicUi, persistMusicUi } from './music-state.js';
 import * as R from './music-renderers.js';
 import * as E from './music-editor.js';
+import { renderLyricsView, afterLyricsRender, handleLyricsAction, startLyricsTicker, stopLyricsTicker, openLrcSync } from './music-lyrics.js';
+import { renderLabView, afterLabRender, handleLabAction, handleLabCoverFile, handleLabInput } from './music-lab.js';
+import { renderRadioView, afterRadioRender, handleRadioAction, startSession, noteSessionPlay, endSession, getLiveSession, scheduleAlarmCheck, clearAlarmTimer, noteTrackAdvanced } from './music-radio.js';
+import { renderStudioView, afterStudioRender, handleStudioAction, handleStudioInput, startStudioTick, stopStudioTick, stopVisualizer } from './music-studio.js';
 
 import {
   normalizeSong,
@@ -78,6 +82,13 @@ export function createMusicPage(ctx) {
   let destroyed = false;
 
   let ui = loadPersistedMusicUi();
+  try {
+    const deep = sessionStorage.getItem('vixora:music-tab');
+    if (deep) {
+      sessionStorage.removeItem('vixora:music-tab');
+      ui.tab = deep;
+    }
+  } catch { /* ignore */ }
   let lib = { songs: [], playlists: [], albums: [], smart: [] };
   let songMap = new Map();
   let historyEntries = [];
@@ -88,6 +99,7 @@ export function createMusicPage(ctx) {
   let simData = new Array(VISUAL_BINS).fill(0);
   let simTarget = new Array(VISUAL_BINS).fill(0);
   let searchTimer = null;
+  let lastTrackStamp = 0;
   let dropDepth = 0;
   let immersiveEl = null; // المنت سطح-body حالت فراگیر
 
@@ -201,6 +213,24 @@ export function createMusicPage(ctx) {
         els.content.innerHTML =
           R.renderStatsView(stats()) +
           `<div class="mx-secbar"><h3>🎨 تم پلیر</h3></div><div class="mx-panel"><div class="mx-themes">${R.themeButtonsHtml(snap.theme)}</div></div>`;
+        break;
+      case 'lyrics':
+        stopLyricsTicker();
+        els.content.innerHTML = renderLyricsView(lib, snap, ui);
+        afterLyricsRender(els.content, snap);
+        startLyricsTicker(els.content);
+        break;
+      case 'lab':
+        els.content.innerHTML = renderLabView(lib);
+        afterLabRender(els.content, lib);
+        break;
+      case 'radio':
+        els.content.innerHTML = renderRadioView(lib, snap, modApi());
+        afterRadioRender(els.content);
+        break;
+      case 'studio':
+        els.content.innerHTML = renderStudioView(lib, snap);
+        afterStudioRender(els.content);
         break;
       case 'now':
       default:
@@ -647,6 +677,43 @@ export function createMusicPage(ctx) {
     );
   }
 
+  /* ---------- API مشترک ماژول‌های توسعه (شعر/آزمایشگاه/رادیو/استودیو) ---------- */
+  function modApi() {
+    return {
+      lib, root, toast, snap,
+      refreshLibrary,
+      renderContent,
+      renderTabs,
+      playSong: (id, context) => playContextSong(id, context || 'songs'),
+      gotoTab: (tab) => {
+        stopLyricsTicker();
+        stopVisualizer();
+        ui.tab = tab;
+        ui.selectedPlaylistId = null;
+        ui.selectedAlbumId = null;
+        ui = persistMusicUi({ tab });
+        renderTabs();
+        renderContent();
+      },
+    };
+  }
+
+  async function handleModuleClick(action, actionEl) {
+    const api = modApi();
+    if (action.startsWith('lx-')) {
+      if (action === 'lx-sync-open') {
+        const { getLrcLines } = await import('./music-lyrics.js');
+        openLrcSync(actionEl.dataset.id, getLrcLines(lib.songs.find((s) => String(s.id) === String(actionEl.dataset.id))), api);
+        return true;
+      }
+      return handleLyricsAction(action, actionEl, api);
+    }
+    if (action.startsWith('lab-')) return handleLabAction(action, actionEl, api);
+    if (action.startsWith('rd-')) return handleRadioAction(action, actionEl, api);
+    if (action.startsWith('st-')) return handleStudioAction(action, actionEl, api);
+    return false;
+  }
+
   /* ---------- رویداد کلیک (delegation) ---------- */
 
   async function handleClick(event) {
@@ -656,6 +723,11 @@ export function createMusicPage(ctx) {
     const action = actionEl.dataset.action;
     const id = actionEl.dataset.id;
 
+    if (action.startsWith('lx-') || action.startsWith('lab-') || action.startsWith('rd-') || action.startsWith('st-')) {
+      const handled = await handleModuleClick(action, actionEl).catch(() => false);
+      if (handled) return;
+    }
+
     // جلوگیری از پخش ناخواسته وقتی روی دکمه‌های داخل ردیف کلیک می‌شود
     const row = event.target.closest('[data-song-row]');
     if (row && actionEl !== row && (action === 'play-song' ? false : true)) {
@@ -664,6 +736,8 @@ export function createMusicPage(ctx) {
 
     switch (action) {
       case 'tab': {
+        stopLyricsTicker();
+        stopVisualizer();
         ui.tab = actionEl.dataset.tab || 'now';
         ui.selectedPlaylistId = null;
         ui.selectedAlbumId = null;
@@ -1034,6 +1108,16 @@ export function createMusicPage(ctx) {
   /* ---------- ورودی‌ها ---------- */
 
   function handleInput(event) {
+    const lab = event.target.closest('[data-lab]');
+    if (lab && (lab.dataset.lab === 'q' || lab.dataset.lab === 'sel')) {
+      handleLabInput(lab, modApi());
+      return;
+    }
+    const st = event.target.closest('[data-st]');
+    if (st && !event.target.closest('[data-mx]')) {
+      handleStudioInput(event.target.closest('[data-st]') || st, modApi()).catch(() => null);
+      return;
+    }
     const q = event.target.closest('[data-mx="q"]');
     if (q) {
       clearTimeout(searchTimer);
@@ -1074,6 +1158,16 @@ export function createMusicPage(ctx) {
     if (event.target === els.file) {
       handleUploadFiles(event.target.files);
       event.target.value = '';
+      return;
+    }
+    if (event.target.matches && event.target.matches('[data-lab="cover-file"]')) {
+      const file = event.target.files?.[0];
+      if (file) handleLabCoverFile(file, modApi()).catch(() => toast.error('ثبت کاور ناموفق بود.'));
+      event.target.value = '';
+      return;
+    }
+    if (event.target.matches && event.target.matches('[data-st="eq-on"], [data-st="mono"], [data-st="pitch"], [data-st="mirror"]')) {
+      handleStudioInput(event.target, modApi()).catch(() => null);
       return;
     }
     if (event.target === els.m3ufile) {
@@ -1317,8 +1411,19 @@ export function createMusicPage(ctx) {
       renderBar();
       updateBarDynamic();
       updateProgress();
+      try {
+        if (getLiveSession() && nextSnap.song) {
+          const now = Date.now();
+          const gap = lastTrackStamp ? Math.min(600, Math.max(0, (now - lastTrackStamp) / 1000)) : 0;
+          lastTrackStamp = now;
+          noteSessionPlay(nextSnap.song.id, gap);
+        } else {
+          lastTrackStamp = Date.now();
+        }
+        if (noteTrackAdvanced()) toast.info('🛑 توقف هوشمند: پخش متوقف شد.');
+      } catch { /* ignore */ }
       // اگر آهنگ جدید لایک/آمارش عوض شده، کش را تازه کن
-      if (['now', 'queue', 'songs', 'playlists', 'albums', 'history'].includes(ui.tab)) {
+      if (['now', 'queue', 'songs', 'playlists', 'albums', 'history', 'lyrics'].includes(ui.tab)) {
         renderContent();
       }
       if (ui.immersive && immersiveEl && snap.song) {
@@ -1370,6 +1475,46 @@ export function createMusicPage(ctx) {
 
     unsubPlayer = subscribeMusicPlayer(handlePlayerEvent);
     startDropWatchdog();
+    try {
+      startStudioTick();
+      // بازگردانی افکت‌های ذخیره‌شده استودیو
+      try {
+        const stUi = JSON.parse(localStorage.getItem('ViXoRa:music-studio-ui') || '{}');
+        import('../../../core/services/music-player-service.js').then((P) => {
+          if (Number.isFinite(stUi.preamp) && stUi.preamp) P.setPreamp?.(stUi.preamp);
+          if (stUi.mono) P.setMono?.(true);
+          if (stUi.pitchLock === false) P.setPitchLock?.(false);
+        }).catch(() => null);
+      } catch { /* ignore */ }
+      scheduleAlarmCheck((alarm) => {
+        (async () => {
+          try {
+            const songs = lib.songs || [];
+            if (!songs.length) return;
+            if (alarm.src === 'liked') {
+              const liked = songs.filter((s) => s.liked);
+              if (liked.length) await playSongs(liked, 0);
+            } else if (alarm.src === 'mix') {
+              const mix = [...songs].sort(() => Math.random() - 0.5).slice(0, 30);
+              await playSongs(mix, 0);
+            } else {
+              const snapNow = getPlayerState();
+              if (snapNow.queue?.length) playIndex(Math.max(0, snapNow.index));
+              else await playSongs(songs, 0);
+            }
+            // زیاد شدن تدریجی صدا برای بیداری ملایم
+            setVolume(0.05);
+            let v = 0.05;
+            const ramp = setInterval(() => {
+              v = Math.min(0.8, v + 0.08);
+              setVolume(v);
+              if (v >= 0.8) clearInterval(ramp);
+            }, 4000);
+            toast.success('🔔 صبح بخیر! آلارم موزیک اجرا شد.');
+          } catch { /* ignore */ }
+        })();
+      });
+    } catch { /* ignore */ }
 
     refreshLibrary().then(() => {
       renderBar();
@@ -1383,6 +1528,12 @@ export function createMusicPage(ctx) {
   function destroy() {
     destroyed = true;
     ui.immersive = false;
+    try {
+      stopLyricsTicker();
+      stopVisualizer();
+      stopStudioTick();
+      clearAlarmTimer();
+    } catch { /* ignore */ }
     closeImmersiveEl();
     clearTimeout(searchTimer);
     stopDropWatchdog();

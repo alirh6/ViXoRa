@@ -1538,6 +1538,12 @@ export const notePageCss = /* css */ `
   .vx-nw{padding:0;background:#fff;color:#000}
   .vx-note-card{break-inside:avoid;box-shadow:none;border-color:#ccc}
 }
+
+/* ---------- واکنش‌گرای تکمیلی: نوبار پایین کابین ---------- */
+@media (max-width:768px){
+  .vx-fab{bottom:calc(90px + env(safe-area-inset-bottom,0px));inset-inline-end:16px}
+  .vx-nw{padding-bottom:96px}
+}
 `;
 
 export default notePageCss;

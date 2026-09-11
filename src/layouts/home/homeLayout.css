@@ -203,10 +203,17 @@
 @media (max-width:960px){
   .HL-nav{ display:none; }
   .HL-burger{ display:flex; }
+  .HL-header{ gap:12px; padding:0 14px; }
+  .HL-actions{ gap:8px; }
+  .HL-cta{ display:none; }
+  .HL-toolsbtn{ padding:10px 12px; }
+  .HL-toolsbtn span[data-i18n]{ display:none; }
   .HL-footer__grid{ grid-template-columns:1fr 1fr; }
 }
 @media (max-width:560px){
   .HL-langlabel{ display:none; }
-  .HL-toolsbtn span[data-i18n]{ display:none; }
+  .HL-iconbtn{ padding:8px 10px; }
+  .HL-logo__text{ font-size:18px; }
+  .HL-logo__mark{ width:34px; height:34px; font-size:16px; }
   .HL-footer__grid{ grid-template-columns:1fr; }
 }
