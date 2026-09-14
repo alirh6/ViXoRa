@@ -113,6 +113,22 @@ export const routes = [
   },
 
   {
+    path: '/tools/kitchen',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/kitchen/kitchen.js'),
+    meta: { requiresAuth: true, title: 'آشپزخونه هوشمند' },
+  },
+
+  {
+    path: '/tools/closet',
+    layout: createToolsLayout,
+    layoutKey: 'tools-layout',
+    component: () => import('../../pages/tools/closet/closet.js'),
+    meta: { requiresAuth: true, title: 'کمد هوشمند' },
+  },
+
+  {
     path: '/tools/resume',
     layout: createToolsLayout,
     layoutKey: 'tools-layout',

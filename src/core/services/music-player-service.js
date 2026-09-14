@@ -183,6 +183,16 @@ let fadeTimer = null;
 let sleepTimer = null;
 let resumePosition = 0;
 
+/* ── سپر ضد فلیکر ──
+ * روی بعضی دستگاه‌ها (مخصوصاً کروم موبایل/مدیاسشن) رویداد pause کاذب
+ * از سمت المنت صوتی می‌آید در حالی که پخش واقعاً ادامه دارد؛ این باعث
+ * می‌شد آیکون پلیر مدام بین ▶/⏸ بپرد. با «نیت پخش» (wantPlaying) و
+ * راستی‌آزمایی با تأخیر، فقط توقفِ واقعی در UI منعکس می‌شود.
+ */
+let wantPlaying = false;
+let pauseGraceTimer = null;
+let toggleBusy = false;
+
 function applyOutputLevels() {
   const level = state.muted ? 0 : state.volume;
   if (masterGain) {
@@ -273,6 +283,10 @@ function ensureElements() {
     el.addEventListener('ended', handleEnded);
     el.addEventListener('error', () => handleElementError(el));
     el.addEventListener('play', () => {
+      if (pauseGraceTimer) {
+        clearTimeout(pauseGraceTimer);
+        pauseGraceTimer = null;
+      }
       if (el === activeEl && state.status !== 'playing') {
         state.status = 'playing';
         updateMediaSessionPlayback();
@@ -280,12 +294,30 @@ function ensureElements() {
       }
     });
     el.addEventListener('pause', () => {
-      if (el === activeEl && state.status === 'playing') {
-        state.status = 'paused';
-        persistPosition();
-        updateMediaSessionPlayback();
-        emit('state');
+      if (el !== activeEl) return;
+      // بدون نیت پخش: توقف واقعی است (خود کاربر/کد ما pause کرده)
+      if (!wantPlaying) {
+        if (state.status === 'playing') {
+          state.status = 'paused';
+          persistPosition();
+          updateMediaSessionPlayback();
+          emit('state');
+        }
+        return;
       }
+      // با نیت پخش: احتمالاً pause کاذب دستگاهی است؛ صبر و راستی‌آزمایی
+      if (pauseGraceTimer) clearTimeout(pauseGraceTimer);
+      pauseGraceTimer = setTimeout(() => {
+        pauseGraceTimer = null;
+        if (wantPlaying && activeEl && activeEl.paused && state.status === 'playing') {
+          // واقعاً متوقف شده و پخشی هم برنگشته → توقف واقعی (فوکوس صوتی و…)
+          wantPlaying = false;
+          state.status = 'paused';
+          persistPosition();
+          updateMediaSessionPlayback();
+          emit('state');
+        }
+      }, 450);
     });
   }
 
@@ -403,6 +435,7 @@ function handleLoadedMetadata(event) {
 }
 
 function handleEnded() {
+  wantPlaying = false;
   if (state.sleepEndOfTrack) {
     clearSleepTimer();
     pausePlayback(false);
@@ -642,6 +675,7 @@ export async function loadTrack(song, { autoplay = true, startAt = null } = {}) 
         if (!usingGraph && elDirect) elDirect.volume = 0.0001;
       }
       await activeEl.play();
+      wantPlaying = true;
       state.status = 'playing';
       state.currentTime = Number(activeEl.currentTime) || start;
       beginListenClock();
@@ -653,6 +687,7 @@ export async function loadTrack(song, { autoplay = true, startAt = null } = {}) 
       emit('state');
       return true;
     } catch (error) {
+      wantPlaying = false;
       state.status = 'paused';
       emit('state');
       return false;
@@ -673,19 +708,23 @@ export async function playPlayback() {
     return false;
   }
   if (!activeEl.src) {
-    return loadTrack(state.song, { autoplay: true });
+    // بعد از بازیابی از اسنپ‌شات: دقیقاً از همان ثانیه‌ای که قبلاً بودیم ادامه بده
+    const resumeAt = state.currentTime > 5 ? state.currentTime : null;
+    return loadTrack(state.song, { autoplay: true, startAt: resumeAt });
   }
   try {
     if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume().catch(() => null);
     const target = state.muted ? 0 : state.volume;
     if (state.fade && target > 0 && activeEl.paused) rampLevel(0.0001, target, 400);
     await activeEl.play();
+    wantPlaying = true;
     state.status = 'playing';
     beginListenClock();
     updateMediaSessionPlayback();
     emit('state');
     return true;
   } catch {
+    wantPlaying = false;
     state.status = 'paused';
     emit('state');
     return false;
@@ -695,8 +734,16 @@ export async function playPlayback() {
 export function pausePlayback(withFade = true) {
   ensureElements();
   if (!activeEl) return;
+  wantPlaying = false;
   pauseListenClock();
   persistPosition();
+  // UI خوش‌بینانه: وضعیت بلافاصله paused شود تا دوبار-تپ/کلیک دوبله
+  // موجب برق گرفتن آیکون بین ▶/⏸ نشود (فید صدا جداگانه پایین می‌آید)
+  if (state.status === 'playing' || state.status === 'loading') {
+    state.status = 'paused';
+    updateMediaSessionPlayback();
+    emit('state');
+  }
   const doPause = () => {
     try {
       activeEl.pause();
@@ -709,22 +756,31 @@ export function pausePlayback(withFade = true) {
     emit('state');
   };
   if (withFade && state.fade && !activeEl.paused) {
-    rampLevel(state.muted ? 0 : state.volume, 0.0001, 300, doPause);
+    rampLevel(state.muted ? 0 : state.volume, 0.0001, 280, doPause);
   } else {
     doPause();
   }
 }
 
 export async function togglePlayback() {
-  if (state.status === 'playing') {
-    pausePlayback(true);
-    return false;
+  if (toggleBusy) return state.status !== 'playing';
+  toggleBusy = true;
+  try {
+    if (state.status === 'playing') {
+      pausePlayback(true);
+      return false;
+    }
+    return await playPlayback();
+  } finally {
+    setTimeout(() => {
+      toggleBusy = false;
+    }, 240);
   }
-  return playPlayback();
 }
 
 /** بستن کامل پلیر (مینی‌پلیر هم مخفی می‌شود تا پخش بعدی) */
 export function closePlayer() {
+  wantPlaying = false;
   pauseListenClock();
   persistPosition();
   try {
@@ -1274,9 +1330,21 @@ export function restoreQueueSnapshot() {
     if (!snap || !Array.isArray(snap.queue) || !snap.queue.length) return false;
     state.queue = snap.queue.map(toSnapshot).filter((s) => s.id);
     if (!state.queue.length) return false;
-    state.index = Math.min(Math.max(0, Number(snap.index) || 0), state.queue.length - 1);
-    state.song = { ...state.queue[state.index] };
-    state.currentTime = Number(snap.time) || 0;
+    // اگر songId ذخیره شده می‌توان دقیق‌تر نشست (زمانی که index جابه‌جا شده باشد)
+    let idx = Math.min(Math.max(0, Number(snap.index) || 0), state.queue.length - 1);
+    if (snap.songId) {
+      const hit = state.queue.findIndex((s) => s.id === snap.songId);
+      if (hit >= 0) idx = hit;
+    }
+    state.index = idx;
+    const t = Number(snap.time) || 0;
+    state.song = { ...state.queue[idx] };
+    // مهر زدن lastPosition روی آهنگ و صف تا loadTrack از همان نقطه ادامه بدهد
+    if (t > 5) {
+      state.song.lastPosition = t;
+      state.queue[idx] = { ...state.queue[idx], lastPosition: t };
+    }
+    state.currentTime = t;
     state.duration = state.song.duration || 0;
     state.status = 'paused';
     resumePosition = state.currentTime > 5 ? state.currentTime : 0;

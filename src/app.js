@@ -15,6 +15,7 @@ import { routes } from './core/router/routes.js';
 import { restoreSession } from './core/services/auth-service.js';
 import { ensureDatabaseReady } from './core/storage/db-client.js';
 import { selectTheme } from './core/state/selectors.js';
+import * as musicPlayerService from './core/services/music-player-service.js';
 import { mountGlobalMiniPlayer } from './pages/tools/music/music-mini-player.js';
 
 function applyTheme(theme) {
@@ -62,8 +63,18 @@ export async function bootstrap() {
 
   globalThis.appRouter = router;
   globalThis.appStore = appStore;
+  // مرجع سراسری موتور پخش (دیباگ/واحد-سنجی؛ همان سینگلتون هدر است)
+  globalThis.vxMusicPlayer = musicPlayerService;
 
   router.start();
+
+  // ۶) مینی‌پلیر سراسری + حافظهٔ پخش: آخرین آهنگِ پخش‌شده بازیابی می‌شود
+  // (بدون پخش خودکار؛ با اولین ضربه روی ▶ از همان ثانیه ادامه می‌دهد)
+  try {
+    mountGlobalMiniPlayer();
+  } catch (error) {
+    console.warn('[App] Global mini player failed to mount:', error);
+  }
 
   return { router, store: appStore };
 }

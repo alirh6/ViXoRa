@@ -1,73 +1,507 @@
-.auth-page {
+/* ==================================================================
+   ViXoRa Auth — صحنهٔ ورود/ثبت‌نام سینمایی
+   ------------------------------------------------------------------
+   ▸ اورورا + شبکه + نویز + اورب‌های شناور
+   ▸ کارت گلس با حاشیهٔ گرادیان چرخان + تیلت سه‌بعدی
+   ▸ لیبل شناور، حلقهٔ فوکوس گرادیانی، سنجش قدرت رمز
+   ▸ کاملاً ریسپانسیو: 320px تا 4K • RTL/LTR • کاهش‌حرکت
+   ================================================================== */
+
+.au-scene {
+  --au-a1: #7c5cff;
+  --au-a2: #4f8cff;
+  --au-a3: #2ce0ba;
+  --au-warm: #ffb46b;
+  --au-ink: #eef2ff;
+  --au-ink-2: rgba(238, 242, 255, 0.66);
+  --au-ink-3: rgba(238, 242, 255, 0.42);
+  --au-line: rgba(255, 255, 255, 0.12);
+  --au-glass: rgba(255, 255, 255, 0.055);
+  --au-glass-2: rgba(255, 255, 255, 0.1);
+  --au-danger: #fb7185;
+  --au-ok: #34d399;
+  --au-r: 26px;
+
+  position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: clamp(14px, 3vw, 44px);
+  padding-top: max(clamp(14px, 3vw, 44px), env(safe-area-inset-top));
+  padding-bottom: max(clamp(14px, 3vw, 44px), env(safe-area-inset-bottom));
+  overflow: clip;
+  background:
+    radial-gradient(1200px 800px at 85% -10%, rgba(124, 92, 255, 0.16), transparent 60%),
+    radial-gradient(1000px 700px at -10% 110%, rgba(44, 224, 186, 0.12), transparent 55%),
+    linear-gradient(165deg, #050816 0%, #0a1024 55%, #070b1a 100%);
+  color: var(--au-ink);
+  font-family: inherit;
+  isolation: isolate;
 }
 
-.auth-card {
-  width: min(100%, 420px);
-  padding: 32px;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 12px 35px rgb(0 0 0 / 8%);
+/* ─────────────── پس‌زمینهٔ زنده ─────────────── */
+.au-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+
+.au-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.au-orb--1 {
+  width: 46vmax; height: 46vmax; top: -18vmax; inset-inline-start: -12vmax;
+  background: radial-gradient(circle at 35% 35%, rgba(124, 92, 255, 0.55), transparent 65%);
+  animation: au-drift1 26s ease-in-out infinite alternate;
+}
+.au-orb--2 {
+  width: 38vmax; height: 38vmax; bottom: -16vmax; inset-inline-end: -10vmax;
+  background: radial-gradient(circle at 60% 40%, rgba(79, 140, 255, 0.5), transparent 65%);
+  animation: au-drift2 22s ease-in-out infinite alternate;
+}
+.au-orb--3 {
+  width: 24vmax; height: 24vmax; top: 40%; inset-inline-end: 16%;
+  background: radial-gradient(circle at 50% 50%, rgba(44, 224, 186, 0.38), transparent 62%);
+  animation: au-drift3 19s ease-in-out infinite alternate;
+}
+@keyframes au-drift1 { to { transform: translate(9vmax, 7vmax) scale(1.12); } }
+@keyframes au-drift2 { to { transform: translate(-8vmax, -6vmax) scale(1.08); } }
+@keyframes au-drift3 { to { transform: translate(-6vmax, 5vmax) scale(0.9); } }
+
+.au-gridlines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, #000 30%, transparent 78%);
+}
+.au-noise {
+  position: absolute; inset: 0; opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
 }
 
-.auth-card h1 {
-  margin-bottom: 24px;
-}
-
-.auth-card form {
+/* ─────────────── پوستهٔ دو‌ستونی ─────────────── */
+.au-shell {
+  position: relative;
+  width: min(1150px, 100%);
   display: grid;
-  gap: 16px;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: clamp(28px, 5vw, 72px);
 }
 
-.auth-card label {
-  display: grid;
-  gap: 8px;
-  font-weight: 600;
+/* ─────────────── هیرو (سمت برند) ─────────────── */
+.au-hero { position: relative; padding-inline: 8px; }
+.au-hero > * { animation: au-rise 0.75s cubic-bezier(0.22, 0.9, 0.24, 1) backwards; }
+.au-hero__badge { --i: 0; }
+.au-hero__logo { --i: 1; }
+.au-hero__title { --i: 2; }
+.au-hero__sub { --i: 3; }
+.au-feats li:nth-child(1) { --i: 4; }
+.au-feats li:nth-child(2) { --i: 5; }
+.au-feats li:nth-child(3) { --i: 6; }
+.au-stats { --i: 7; }
+
+.au-hero__badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  background: rgba(124, 92, 255, 0.12);
+  color: #cabfff; font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+}
+.au-hero__badge i {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--au-a3);
+  box-shadow: 0 0 10px var(--au-a3);
+  animation: au-pulse 2.2s ease-in-out infinite;
+}
+@keyframes au-pulse { 50% { opacity: 0.35; transform: scale(0.8); } }
+
+.au-hero__title {
+  margin: 18px 0 10px;
+  font-size: clamp(44px, 6vw, 76px);
+  font-weight: 900; line-height: 1.04; letter-spacing: -1px;
+  background: linear-gradient(115deg, #fff 20%, #b9a8ff 55%, #6ee7d8 90%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.au-hero__title span {
+  background: linear-gradient(120deg, var(--au-a1), var(--au-a2));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.au-hero__sub { margin: 0 0 30px; color: var(--au-ink-2); font-size: clamp(15px, 1.6vw, 17.5px); }
+
+.au-feats { list-style: none; margin: 0 0 30px; padding: 0; display: grid; gap: 16px; }
+.au-feats li {
+  display: flex; align-items: flex-start; gap: 14px;
+  animation: au-rise 0.75s cubic-bezier(0.22, 0.9, 0.24, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+.au-feats__ico {
+  flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center;
+  font-size: 20px; border-radius: 14px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--au-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.au-feats b { display: block; font-size: 14.5px; }
+.au-feats small { color: var(--au-ink-2); font-size: 12.5px; line-height: 1.7; }
+
+.au-stats { display: flex; flex-wrap: wrap; gap: 10px; }
+.au-stats span {
+  padding: 9px 14px; border-radius: 14px; font-size: 12px; color: var(--au-ink-2);
+  background: var(--au-glass); border: 1px solid var(--au-line);
+}
+.au-stats b { color: var(--au-ink); font-size: 13px; }
+
+/* لوگوی بزرگ و کوچک */
+.au-logo-fx, .au-mini-logo { position: relative; display: grid; place-items: center; }
+.au-logo-fx { width: 84px; height: 84px; }
+.au-mini-logo { width: 58px; height: 58px; margin-inline: auto; }
+.au-ring {
+  position: absolute; inset: 0; border-radius: 26%;
+  background: conic-gradient(from 0deg, var(--au-a1), var(--au-a3), transparent 42%, var(--au-a1) 62%, var(--au-a2), var(--au-a1));
+  animation: au-spin 7s linear infinite;
+  opacity: 0.9;
+}
+.au-core {
+  position: relative; width: 86%; height: 86%; border-radius: 22%;
+  display: grid; place-items: center;
+  font-weight: 900; font-size: clamp(22px, 3vw, 34px); color: #fff;
+  background: radial-gradient(22px 22px at 32% 28%, rgba(124, 92, 255, 0.75), transparent 65%), linear-gradient(150deg, #131b30, #0a0f1e);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 40px rgba(124, 92, 255, 0.35);
+}
+@keyframes au-spin { to { transform: rotate(360deg); } }
+
+/* چیپ‌های شناور تزئینی */
+.au-float {
+  position: absolute; display: grid; place-items: center;
+  width: 52px; height: 52px; font-size: 22px; border-radius: 16px;
+  background: var(--au-glass-2); border: 1px solid var(--au-line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
+  animation: au-floaty 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.au-float--1 { top: -8px; inset-inline-end: 6%; animation-delay: 0s; }
+.au-float--2 { bottom: 16%; inset-inline-end: -14px; animation-delay: -2.4s; }
+.au-float--3 { top: 34%; inset-inline-start: -20px; animation-delay: -4.4s; }
+@keyframes au-floaty { to { transform: translateY(-16px) rotate(6deg); } }
+
+/* ─────────────── کارت گلس ─────────────── */
+.au-card {
+  --au-ry: 0deg; --au-rx: 0deg;
+  position: relative;
+  width: min(460px, 100%);
+  margin-inline: auto;
+  padding: clamp(26px, 4vw, 40px);
+  border-radius: var(--au-r);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.035));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow: 0 40px 90px rgba(2, 5, 16, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: perspective(1200px) rotateX(var(--au-rx)) rotateY(var(--au-ry));
+  transition: transform 0.35s cubic-bezier(0.22, 0.9, 0.24, 1), box-shadow 0.35s;
+  animation: au-rise 0.8s 0.15s cubic-bezier(0.22, 0.9, 0.24, 1) backwards;
+}
+.au-card:hover { box-shadow: 0 50px 110px rgba(2, 5, 16, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12); }
+.au-card::before {
+  content: '';
+  position: absolute; inset: -1.5px; z-index: -1;
+  border-radius: calc(var(--au-r) + 1.5px);
+  padding: 1.5px;
+  background: conic-gradient(from var(--au-ang, 0deg), transparent 12%, rgba(124, 92, 255, 0.85) 22%, rgba(44, 224, 186, 0.7) 33%, transparent 46%, transparent 62%, rgba(79, 140, 255, 0.75) 74%, transparent 88%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.55;
+  animation: au-ang 9s linear infinite;
+  pointer-events: none;
+}
+.au-card:focus-within::before { opacity: 1; }
+@property --au-ang { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes au-ang { to { --au-ang: 360deg; } }
+
+.au-card.is-shake { animation: au-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+@keyframes au-shake {
+  10%, 90% { transform: perspective(1200px) translateX(-1px); }
+  20%, 80% { transform: perspective(1200px) translateX(2px); }
+  30%, 50%, 70% { transform: perspective(1200px) translateX(-4px); }
+  40%, 60% { transform: perspective(1200px) translateX(4px); }
 }
 
-.auth-card input {
+/* ─────────────── سر کارت ─────────────── */
+.au-langrow { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+.au-langs { display: inline-flex; gap: 5px; padding: 5px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--au-line); }
+.au-langpill {
+  width: 34px; height: 28px; display: grid; place-items: center;
+  font-size: 15px; border-radius: 999px; cursor: pointer;
+  border: 1px solid transparent; background: transparent; filter: grayscale(0.65); opacity: 0.7;
+  transition: all 0.2s;
+}
+.au-langpill:hover { opacity: 1; transform: translateY(-1px); }
+.au-langpill.is-active { background: rgba(124, 92, 255, 0.28); border-color: rgba(124, 92, 255, 0.55); filter: none; opacity: 1; }
+
+.au-title { margin: 14px 0 6px; font-size: clamp(21px, 2.6vw, 26px); font-weight: 900; text-align: center; }
+.au-sub { margin: 0 0 24px; color: var(--au-ink-2); font-size: 13.5px; text-align: center; }
+
+/* ─────────────── فرم و فیلدها ─────────────── */
+.au-form { display: grid; gap: 15px; }
+.au-form--2col { grid-template-columns: 1fr 1fr; }
+.au-form--2col .au-fld--wide { grid-column: 1 / -1; }
+
+.au-fld { position: relative; }
+.au-fld input {
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font: inherit;
+  padding: 24px 46px 9px 46px;
+  font: inherit; font-size: 14px; color: var(--au-ink);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1.5px solid var(--au-line);
+  border-radius: 15px;
+  outline: none;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+[dir='ltr'] .au-fld input { padding: 24px 46px 9px 44px; }
+.au-fld input::placeholder { color: transparent; }
+.au-fld input:hover { border-color: rgba(255, 255, 255, 0.22); }
+.au-fld input:focus {
+  border-color: rgba(124, 92, 255, 0.75);
+  background: rgba(124, 92, 255, 0.07);
+  box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.16);
 }
 
-.auth-card button {
-  padding: 12px;
-  border: 0;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  font: inherit;
-  cursor: pointer;
+.au-fld__ico {
+  position: absolute; top: 19px; inset-inline-start: 15px;
+  color: var(--au-ink-3); pointer-events: none;
+  transition: color 0.25s;
+}
+.au-fld:focus-within .au-fld__ico { color: #a996ff; }
+
+.au-fld label {
+  position: absolute; top: 17px; inset-inline-start: 46px;
+  color: var(--au-ink-3); font-size: 14px; pointer-events: none;
+  transform-origin: inset-inline-start;
+  transition: all 0.22s cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.au-fld input:focus + .au-fld__ico + label,
+.au-fld input:not(:placeholder-shown) + .au-fld__ico + label {
+  top: 7px; font-size: 10.5px; font-weight: 700; color: #a996ff; letter-spacing: 0.3px;
 }
 
-.auth-card button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.au-eye {
+  position: absolute; top: 13px; inset-inline-end: 10px;
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border: 0; border-radius: 10px; cursor: pointer;
+  background: transparent; color: var(--au-ink-3);
+  transition: all 0.2s;
+}
+.au-eye:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+.au-caps {
+  position: absolute; top: -9px; inset-inline-end: 12px;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; color: #ffc866;
+  background: rgba(255, 180, 107, 0.14); border: 1px solid rgba(255, 180, 107, 0.4);
+  opacity: 0; transform: translateY(4px); pointer-events: none;
+  transition: all 0.25s;
+}
+.au-caps.is-show { opacity: 1; transform: none; }
+
+.au-fld__msg {
+  display: block; max-height: 0; overflow: hidden; margin: 4px 6px 0;
+  color: var(--au-danger); font-size: 11px; font-weight: 600;
+  opacity: 0; transform: translateY(-3px);
+  transition: all 0.25s;
+}
+.au-fld.is-err .au-fld__msg { max-height: 34px; opacity: 1; transform: none; }
+.au-fld.is-err input { border-color: rgba(251, 113, 133, 0.65); box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.12); }
+.au-fld.is-err .au-fld__ico { color: var(--au-danger); }
+
+/* قدرت رمز */
+.au-meter { display: grid; gap: 7px; margin: -3px 2px 1px; }
+.au-meter__bars { display: flex; gap: 5px; }
+.au-meter__bars i {
+  flex: 1; height: 5px; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.09);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.au-meter[data-score='1'] i:nth-child(1),
+.au-meter[data-score='2'] i:nth-child(-n + 2),
+.au-meter[data-score='3'] i:nth-child(-n + 3),
+.au-meter[data-score='4'] i:nth-child(-n + 4),
+.au-meter[data-score='5'] i:nth-child(-n + 5) {
+  background: linear-gradient(90deg, var(--au-m1, #fb7185), var(--au-m2, #fb7185));
+  box-shadow: 0 0 12px var(--au-m2, #fb7185);
+}
+.au-meter[data-score='1'], .au-meter[data-score='2'] { --au-m1: #fb7185; --au-m2: #f43f5e; }
+.au-meter[data-score='3'] { --au-m1: #fb923c; --au-m2: #f59e0b; }
+.au-meter[data-score='4'] { --au-m1: #fbbf24; --au-m2: #34d399; }
+.au-meter[data-score='5'] { --au-m1: #34d399; --au-m2: #2ce0ba; }
+.au-meter__row { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--au-ink-3); }
+.au-meter__val { font-weight: 800; color: var(--au-ink-2); }
+
+/* چک‌لیست رمز */
+.au-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.au-checks span {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; color: var(--au-ink-3);
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--au-line);
+  transition: all 0.25s;
+}
+.au-checks span::before { content: '○'; font-size: 9px; }
+.au-checks span.is-ok {
+  color: #6ee7d8; background: rgba(44, 224, 186, 0.1); border-color: rgba(44, 224, 186, 0.35);
+}
+.au-checks span.is-ok::before { content: '✓'; }
+
+/* پیام کلی فرم */
+.au-msg {
+  min-height: 20px; margin: 0; font-size: 12.5px; font-weight: 600;
+  color: var(--au-danger); text-align: center;
+  transition: color 0.25s;
+}
+.au-msg[data-type='success'] { color: var(--au-ok); }
+
+/* ─────────────── دکمهٔ CTA ─────────────── */
+.au-cta {
+  position: relative; overflow: hidden;
+  width: 100%; min-height: 52px; margin-top: 4px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 16px; cursor: pointer;
+  font: inherit; font-size: 15px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--au-a1) 0%, var(--au-a2) 100%);
+  box-shadow: 0 14px 34px rgba(124, 92, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.22s cubic-bezier(0.22, 0.9, 0.24, 1), box-shadow 0.25s, filter 0.25s;
+}
+.au-cta::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 45%;
+  inset-inline-start: -60%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  transition: inset-inline-start 0.6s ease;
+}
+.au-cta:hover { transform: translateY(-2px); box-shadow: 0 20px 44px rgba(124, 92, 255, 0.52); filter: saturate(1.1); }
+.au-cta:hover::after { inset-inline-start: 115%; }
+.au-cta:active { transform: translateY(0) scale(0.985); }
+.au-cta:disabled { cursor: wait; filter: saturate(0.7); }
+
+.au-cta__spin {
+  position: absolute; width: 22px; height: 22px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3); border-top-color: #fff;
+  border-radius: 50%; opacity: 0;
+  animation: au-rot 0.8s linear infinite;
+}
+@keyframes au-rot { to { transform: rotate(360deg); } }
+.au-cta.is-loading .au-cta__txt { opacity: 0.35; }
+.au-cta.is-loading .au-cta__spin { opacity: 1; }
+.au-cta__done {
+  position: absolute; display: grid; place-items: center;
+  color: #fff; opacity: 0; transform: scale(0.3);
+}
+.au-cta.is-done { background: linear-gradient(135deg, #10b981, #2ce0ba); box-shadow: 0 14px 34px rgba(16, 185, 129, 0.45); }
+.au-cta.is-done .au-cta__txt { opacity: 0; }
+.au-cta.is-done .au-cta__done { animation: au-pop 0.45s cubic-bezier(0.22, 1.4, 0.36, 1) forwards; }
+@keyframes au-pop { to { opacity: 1; transform: scale(1); } }
+
+/* ─────────────── پایین کارت ─────────────── */
+.au-switch { margin: 18px 0 0; text-align: center; font-size: 13px; color: var(--au-ink-2); }
+.au-switch a {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-inline-start: 6px; font-weight: 800; color: #a996ff;
+  transition: gap 0.2s, color 0.2s;
+}
+.au-switch a::after { content: '←'; font-size: 14px; transition: transform 0.2s; }
+[dir='ltr'] .au-switch a::after { content: '→'; }
+.au-switch a:hover { color: #cabfff; }
+.au-switch a:hover::after { transform: translateX(-3px); }
+[dir='ltr'] .au-switch a:hover::after { transform: translateX(3px); }
+
+.au-secure {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 14px 0 0; color: var(--au-ink-3); font-size: 10.5px;
+}
+.au-back {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 14px; width: 100%;
+  padding: 11px; border-radius: 13px;
+  font-size: 12.5px; font-weight: 700; color: var(--au-ink-2);
+  background: rgba(255, 255, 255, 0.045); border: 1px solid var(--au-line);
+  transition: all 0.2s;
+}
+.au-back:hover { color: #fff; background: rgba(255, 255, 255, 0.09); transform: translateY(-1px); }
+
+/* ─────────────── انیمیشن ورود ─────────────── */
+@keyframes au-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.985); }
+  to { opacity: 1; transform: none; }
 }
 
-.form-message {
-  min-height: 24px;
-  margin: 0;
+/* ─────────────── ریسپانسیو ─────────────── */
+@media (max-width: 1023px) {
+  .au-shell { grid-template-columns: 1fr; gap: 22px; width: min(560px, 100%); }
+  .au-hero {
+    display: grid; grid-template-columns: auto 1fr; align-items: center;
+    column-gap: 18px; padding-inline: 6px;
+  }
+  .au-hero__logo { width: 62px; height: 62px; grid-row: 1 / 4; }
+  .au-hero__badge { display: none; }
+  .au-hero__title { margin: 0; font-size: clamp(30px, 7vw, 40px); }
+  .au-hero__sub { margin: 4px 0 0; font-size: 13px; }
+  .au-feats, .au-stats, .au-float { display: none; }
+  .au-card { width: 100%; }
 }
 
-.form-message[data-type='error'] {
-  color: #dc2626;
+@media (max-width: 620px) {
+  .au-scene { padding: 12px; }
+  .au-shell { gap: 14px; }
+  .au-card {
+    padding: 24px 18px;
+    border-radius: 21px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .au-form { gap: 13px; }
+  .au-fld input { padding-block: 22px 8px; font-size: 16px; }
+  .au-fld__ico { top: 17px; }
+  .au-fld label { top: 15px; }
+  .au-cta { min-height: 50px; }
+  .au-hero__title { font-size: 27px; }
+  .au-mini-logo { width: 52px; height: 52px; }
 }
 
-.form-message[data-type='success'] {
-  color: #16a34a;
+/* موبایل‌های خیلی باریک */
+@media (max-width: 350px) {
+  .au-form--2col { grid-template-columns: 1fr; }
+  .au-card { padding: 20px 14px; }
 }
 
-/* ---------- واکنش‌گرا ---------- */
-@media (max-width:560px){
-  .auth-page{ padding:16px; }
-  .auth-card{ padding:24px 20px; border-radius:14px; }
-  .auth-card button{ min-height:48px; }
+/* موبایل افقی: کارت جمع و جور */
+@media (max-height: 620px) and (orientation: landscape) {
+  .au-scene { place-items: start center; }
+  .au-hero { display: none; }
+  .au-card { margin-top: 8px; padding: 18px 22px; }
+  .au-mini-logo { display: none; }
+  .au-title { margin-top: 4px; }
+  .au-sub { margin-bottom: 12px; }
+}
+
+/* صفحه‌های خیلی بزرگ */
+@media (min-width: 1600px) {
+  .au-shell { width: min(1250px, 100%); gap: 90px; }
+}
+
+/* کاهش حرکت */
+@media (prefers-reduced-motion: reduce) {
+  .au-scene *, .au-scene *::before, .au-scene *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+  .au-card { transform: none !important; }
 }

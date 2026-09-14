@@ -629,4 +629,103 @@ width:48px;height:48px;cursor:pointer;transition:all .15s}
 .dash-wc-pack small{color:var(--d-dim);font-size:11px}
 .dash-wc-pack.on{border-color:var(--d-c1);background:var(--d-card2)}
 @media(max-width:500px){.dash-wc-packs{grid-template-columns:1fr}}
+
+/* ================= ⚡ ViXoRa LIVE — پوست زنده ================= */
+/* ورود پلکانی ویجت‌ها */
+.dash-grid .dash-widget:nth-child(5){animation-delay:.1s}
+.dash-grid .dash-widget:nth-child(6){animation-delay:.13s}
+.dash-grid .dash-widget:nth-child(7){animation-delay:.16s}
+.dash-grid .dash-widget:nth-child(8){animation-delay:.19s}
+.dash-grid .dash-widget:nth-child(9){animation-delay:.22s}
+.dash-grid .dash-widget:nth-child(n+10){animation-delay:.25s}
+/* ورود نما */
+@keyframes dash-view-in{from{opacity:0;transform:translateY(10px) scale(.995)}to{opacity:1;transform:none}}
+[data-dash="body"]{animation:dash-view-in .3s both}
+/* پس‌زمینه زنده: شفق + بافت */
+.dash-bg::before{content:'';position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 40%,rgba(139,92,246,.1) 50%,transparent 60% 100%);animation:dash-spin 26s linear infinite}
+@keyframes dash-spin{to{transform:rotate(360deg)}}
+.dash-bg::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1.5px);background-size:26px 26px;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 75%)}
+/* هدر شیشه‌ای چسبان */
+.dash-header{position:sticky;top:0;z-index:50;background:rgba(15,10,35,.8);background:color-mix(in srgb,var(--d-bg1) 72%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:10px 14px;margin:-8px -8px 14px;border-radius:18px;border:1px solid var(--d-border)}
+.dash-logo{transition:transform .3s}
+.dash-logo:hover{transform:rotate(-10deg) scale(1.08)}
+.dash-title h1{background:linear-gradient(90deg,var(--d-text),var(--d-c2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* دکمه‌ها: شناور + برق + فشرده‌شدن */
+.dash-btn,.dash-view-btn,.dash-icon-btn,.dash-chip,.dash-qa,.dash-link{transition:transform .16s,box-shadow .2s,background .2s,border-color .2s}
+.dash-btn:hover,.dash-view-btn:hover,.dash-chip:hover{transform:translateY(-2px);box-shadow:0 8px 22px -8px var(--d-c1)}
+.dash-btn:active,.dash-view-btn:active,.dash-icon-btn:active{transform:scale(.94)}
+.dash-btn:focus-visible,.dash-view-btn:focus-visible,.dash-icon-btn:focus-visible,.dash-chip:focus-visible{outline:2px solid var(--d-c2);outline-offset:2px}
+.dash-btn-primary,.dash-view-btn.is-on{position:relative;overflow:hidden;background-size:150% 150%;animation:dash-grad-pan 5s ease-in-out infinite alternate}
+@keyframes dash-grad-pan{from{background-position:0% 20%}to{background-position:100% 80%}}
+.dash-btn-primary::after{content:'';position:absolute;top:0;bottom:0;width:45%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:dash-sheen 3.4s ease-in-out infinite}
+@keyframes dash-sheen{0%,55%{left:-60%}100%{left:130%}}
+.dash-icon-btn:hover{transform:scale(1.12);border-color:var(--d-c1)}
+.dash-view-btn.is-on{animation:dash-grad-pan 5s ease-in-out infinite alternate,dash-glow 3s infinite}
+/* ویجت: شناور + نمایش عملیات هنگام هاور */
+.dash-widget{transition:transform .2s,box-shadow .25s,border-color .25s}
+.dash-grid .dash-widget:hover{transform:translateY(-3px);border-color:var(--d-c1);box-shadow:0 22px 50px -18px rgba(0,0,0,.75),0 0 0 1px var(--d-c1)}
+@media(hover:hover){.dash-w-ops{opacity:.35;transition:opacity .2s}.dash-widget:hover .dash-w-ops{opacity:1}}
+/* پنل‌ها و کارت‌ها */
+.dash-panel,.dash-guide-sec,.dash-recipe,.dash-gloss,.dash-gal-card,.dash-theme-card,.dash-xp-card,.dash-ac-card,.dash-in-card{transition:transform .2s,border-color .25s,box-shadow .25s}
+.dash-gal-card:hover,.dash-xp-card:hover,.dash-in-card:hover{transform:translateY(-3px);border-color:var(--d-c1)}
+.dash-theme-card:hover{transform:translateY(-3px) scale(1.03)}
+.dash-kpi:hover,.dash-stats>div:hover{border-color:var(--d-c1);transform:translateY(-2px)}
+.dash-kpi,.dash-stats>div{transition:transform .18s,border-color .2s}
+/* مودال/فرمان‌یاب/تور: پاپ */
+@keyframes dash-pop-in{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+.dash-modal-panel,.dash-cmdk-panel,.dash-focus-panel{animation:dash-pop-in .28s cubic-bezier(.2,.9,.3,1.2)}
+.dash-tour-card{animation:dash-pop-in .3s cubic-bezier(.2,.9,.3,1.15)}
+.dash-tour-mask{animation:dash-fade .25s}
+.dash-tour-x{position:absolute;top:8px;left:8px}
+@keyframes dash-hl-pulse{0%,100%{box-shadow:0 0 0 3px var(--d-c1),0 0 24px var(--d-c1)}50%{box-shadow:0 0 0 6px var(--d-c1),0 0 54px var(--d-c2)}}
+.dash-tour-hl{animation:dash-hl-pulse 1.6s ease-in-out infinite}
+.dash-cmdk-item{transition:background .12s,transform .12s}
+.dash-cmdk-item.is-sel{transform:translateX(-3px)}
+/* تست */
+[data-dash="toast"]>div{animation:dash-toast-in .3s}
+@keyframes dash-toast-pop{0%{transform:scale(.7)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.dash-notify-badge{animation:dash-toast-pop .35s}
+/* سوئیچ و انتخاب‌ها */
+.dash-switch i{transition:right .22s cubic-bezier(.3,1.4,.5,1)}
+.dash-mood:active{transform:scale(.85)}
+.dash-j-pick,.dash-j-day,.dash-cal-day{transition:transform .15s,border-color .2s,box-shadow .2s}
+.dash-j-pick:hover,.dash-j-day:hover{transform:translateY(-2px)}
+.dash-j-pick.on{animation:dash-toast-pop .3s}
+@keyframes dash-day-pop{0%{transform:scale(.6)}100%{transform:scale(1)}}
+.dash-cal-day.on{animation:dash-day-pop .25s}
+.dash-cal-day.today b{position:relative}
+.dash-cal-day.today b::after{content:'';position:absolute;right:-4px;top:2px;width:7px;height:7px;border-radius:50%;background:var(--d-c2);animation:dash-blink 1.6s infinite}
+.dash-hb-map i.on{animation:dash-day-pop .3s}
+/* نوار پیشرفت راه‌راه متحرک */
+.dash-bar{position:relative}
+.dash-bar i{position:relative;overflow:hidden}
+.dash-bar i::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,rgba(255,255,255,.22) 0 8px,transparent 8px 16px);animation:dash-stripes 1.1s linear infinite}
+@keyframes dash-stripes{to{transform:translateX(22px)}}
+/* اعلان‌ها: ورود پلکانی */
+.dash-notify-item{animation:dash-in .3s both}
+.dash-notify-list .dash-notify-item:nth-child(2){animation-delay:.05s}
+.dash-notify-list .dash-notify-item:nth-child(3){animation-delay:.1s}
+.dash-notify-list .dash-notify-item:nth-child(n+4){animation-delay:.15s}
+.dash-notify-badge{font-variant-numeric:tabular-nums}
+/* راهنما */
+.dash-guide-link{transition:transform .15s,background .2s,padding .2s}
+.dash-guide-link:hover{transform:translateX(-4px)}
+.dash-recipe:hover{border-color:var(--d-c1)}
+/* ویزارد */
+.dash-wc-pack:hover{transform:translateY(-2px);border-color:var(--d-c1)}
+.dash-wc-pack.on{animation:dash-toast-pop .3s}
+/* جزئیات */
+.dash-root ::selection{background:var(--d-c1);color:#fff}
+.dash-root{scrollbar-color:rgba(139,92,246,.5) transparent}
+kbd:active{transform:translateY(1px);border-bottom-width:1px}
+.dash-empty{animation:dash-fade .4s}
+.dash-footer button:hover{text-shadow:0 0 12px var(--d-c2)}
+.dash-clock b{text-shadow:0 0 26px var(--d-c1)}
+.dash-rm-cover{transition:transform .3s}
+.dash-rm-cover:hover{transform:scale(1.03)}
+/* احترام به کاهش حرکت + کلید anim */
+@media (prefers-reduced-motion:reduce){
+.dash-root *,.dash-root *::before,.dash-root *::after{animation:none!important;transition:none!important}
+}
+.dash-root[data-anim="off"] *,.dash-root[data-anim="off"] *::before,.dash-root[data-anim="off"] *::after{animation:none!important;transition:none!important}
 `;

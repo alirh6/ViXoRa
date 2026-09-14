@@ -4,6 +4,7 @@
 
 import { t, setLang, getLang, getDir, onLangChange, applyLangToDom, LANGUAGES, LANGUAGE_META } from '../../core/i18n/i18n.js';
 import { createHomeFx, createKonami } from './fx/homeFx.js';
+import { createHomeFilm } from './fx/homeFilm.js';
 import { createModal } from '../../utilities/modal.js';
 import { GAMES, gameById, gameTitle, gameDesc, getBest, pnum } from '../tools/entertainment/arcade.js';
 import { createLocalStorageAdapter } from '../../utilities/storage.js';
@@ -74,6 +75,7 @@ function writeHomeGames(ids) {
 export function createHomePage(ctx) {
   let root = null;
   let fx = null;
+  let film = null;
   const cleanups = [];
   let custom = readHomeCustom();
   const user = ctx?.user || null;
@@ -151,6 +153,14 @@ export function createHomePage(ctx) {
         </div>
         <div class="hm-hero__scrollhint" aria-hidden="true"><span></span></div>
       </section>
+      <div class="hm-film" data-hm-film aria-hidden="true">
+        <canvas class="hm-film__canvas" data-hm-film-canvas></canvas>
+        <div class="hm-film__hud">
+          <span class="hm-film__caption" data-hm-film-caption></span>
+          <span class="hm-film__count" data-hm-film-count>۰۰</span>
+        </div>
+        <span class="hm-film__prog"><i data-hm-film-prog></i></span>
+      </div>
 
       <div class="hm-marquee" aria-hidden="true">
         <div class="hm-marquee__track">
@@ -360,6 +370,11 @@ ${homeGamesHtml}
     fx = createHomeFx(root, { motionEnabled: () => custom.motion !== 'off' });
     fx.initAll();
     cleanups.push(() => fx?.destroy());
+
+    // سکانس سینمایی اسکرول‌محور (کانواس واقعی)
+    film = createHomeFilm(root, { motionEnabled: () => custom.motion !== 'off' });
+    film.start();
+    cleanups.push(() => film?.stop());
 
     // رکورد کارت‌ها بعد از بستن بازی تازه شود
     on(window, 'vixora:arcade-closed', refreshHomeBest);

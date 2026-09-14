@@ -11,6 +11,9 @@ import './layouts/tools/toolsLayout.css';
 import './layouts/dashboard/dashboardLayout.css';
 import './pages/home/home.css';
 import './pages/auth/auth.css';
+import './styles/visual-overhaul.css';
+// ⭐ آخرین لایهٔ زنجیره: ترمیمات ریسپانسیو (همیشه در تزاحم برنده است)
+import './styles/responsive-fix.css';
 
 /**
  * راه‌اندازی امن برنامه با Fallback UI در صورت خطای بحرانی

@@ -2091,9 +2091,6 @@ button.vcr-popover-link {
   .vcr-brand-sub {
     display: none;
   }
-  .vcr-datetime-card {
-    display: none;
-  }
   .vcr-cmd-btn kbd {
     display: none;
   }
@@ -2147,8 +2144,6 @@ button.vcr-popover-link {
   .vcr-burger{ display:inline-flex; }
   .vcr-header__center{ order:0; flex:1 1 auto; flex-basis:auto; min-width:0; gap:8px; }
   .vcr-header__actions{ gap:8px; margin-inline-start:auto; }
-  .vcr-status-pill, .vcr-datetime-card,
-  #vcrSideCycle, #vcrFocusBtn, #vcrCustBtn, #vcrHelpBtn{ display:none; }
   .vcr-user-info{ display:none; }
   .vcr-user-pill{ padding:4px; }
   /* دکمه پالت: فقط آیکون */
@@ -2259,3 +2254,83 @@ button.vcr-popover-link {
 
 /* لیبل نوبار: تک‌خط و خوانا */
 .vcr-bottomnav__lbl{ line-height:1.2; white-space:nowrap; }
+
+/* ==================================================================
+   هدر Priority+ — منوی «بیشتر» (⋯)
+   با کم‌شدن عرض، آیتم‌های کم‌اولویت یکی‌یکی داخل این منو می‌روند.
+   جا باز شد؟ همین‌طور یکی‌یکی برمی‌گردند. (تصمیم با fitHeader در JS)
+   ================================================================== */
+.vcr-hpark{ display:none !important; }
+
+/* در هدر: فقط ناحیهٔ وسط (سرچ+موزیک‌بار) حق له‌شدن دارد؛ بقیه ثابت */
+.vcr-header{ flex-wrap:nowrap; }
+.vcr-header__brand{ flex-shrink:0; }
+.vcr-header__center{ flex-shrink:1; min-width:0; }
+.vcr-cmd-btn{ flex-shrink:1; min-width:46px; overflow:hidden; }
+.vcr-musicbar{ flex-shrink:1; min-width:0; }
+.vcr-header__actions{ flex-shrink:0; flex-wrap:nowrap; }
+.vcr-header__actions > *{ flex-shrink:0; }
+
+.vcr-more-wrap{ position:relative; }
+.vcr-more-wrap.is-empty{ display:none; }
+.vcr-more-btn{ position:relative; color:#c9d4e8; transition:color .2s, border-color .2s, transform .2s; }
+.vcr-more-btn:hover, .vcr-more-wrap.is-open .vcr-more-btn{
+  color:#fff; border-color:rgba(var(--vcr-accent-rgb,34,211,238),.55);
+  background:rgba(var(--vcr-accent-rgb,34,211,238),.12);
+}
+.vcr-more-wrap.is-open .vcr-more-btn{ transform:rotate(90deg); }
+.vcr-more-count{
+  position:absolute; top:-6px; inset-inline-end:-6px;
+  min-width:18px; height:18px; padding:0 5px; border-radius:9px;
+  display:grid; place-items:center;
+  font-size:10.5px; font-weight:800; color:#04070f;
+  background:linear-gradient(135deg, var(--vcr-accent,#22d3ee), var(--vcr-accent-2,#a78bfa));
+  box-shadow:0 4px 14px rgba(var(--vcr-accent-rgb,34,211,238),.5);
+}
+.vcr-more-pop{
+  width:min(340px, calc(100vw - 24px));
+  max-height:min(560px, calc(100dvh - 110px));
+  overflow:visible; padding:0;
+}
+.vcr-more-head{ border-bottom:1px solid var(--vcr-border); padding:12px 14px 9px; }
+.vcr-more-list{
+  display:flex; flex-direction:column; gap:3px;
+  padding:10px; overflow-y:auto;
+  max-height:min(480px, calc(100dvh - 180px));
+}
+.vcr-more-item{
+  display:flex; align-items:center; gap:10px;
+  padding:6px 10px; border-radius:12px;
+  border:1px solid transparent;
+  animation:vcr-more-in .3s cubic-bezier(.22,.9,.24,1) backwards;
+  transition:background .18s, border-color .18s;
+}
+.vcr-more-item:hover{ background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.09); }
+.vcr-more-lbl{
+  flex:1; min-width:0; font-size:12.5px; font-weight:600; color:#aeb9cf;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:color .18s;
+}
+.vcr-more-item:hover .vcr-more-lbl{ color:#fff; }
+/* مهمان‌های داخل منو: همان دکمه‌های واقعی هدرند (آیدی‌ها زنده می‌مانند) */
+.vcr-more-pop .vcr-action-icon-btn{ width:38px; height:38px; flex:0 0 auto; }
+.vcr-more-pop .vcr-status-pill{ flex:0 0 auto; }
+.vcr-more-pop .vcr-datetime-card{ display:flex; transform:scale(.94); transform-origin:center; }
+.vcr-more-pop .vcr-musicbar{ width:100%; max-width:none; flex:1 1 auto; }
+.vcr-more-pop .vcr-music-meta{ flex:1 1 auto; min-width:0; }
+.vcr-more-pop .vcr-music-title{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vcr-more-pop .vcr-dropdown-wrapper{ display:flex; }
+.vcr-more-pop .vcr-popover--lang,
+.vcr-more-pop .vcr-popover--notif{ z-index:6; }
+@keyframes vcr-more-in{
+  from{ opacity:0; transform:translateY(-7px) scale(.97); }
+  to{ opacity:1; transform:none; }
+}
+@media (max-width:900px){
+  .vcr-more-pop{
+    position:fixed; inset-inline:10px; width:auto;
+    top:calc(var(--vcr-header-h, 62px) + 6px);
+  }
+  .vcr-more-pop .vcr-popover--lang,
+  .vcr-more-pop .vcr-popover--notif{ position:absolute; inset-inline:8px; width:auto; }
+}

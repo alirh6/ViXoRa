@@ -1,6 +1,6 @@
 // 👋 ViXoRa Welcome Wizard — راه‌اندازی ۶۰ ثانیه‌ای برای تازه‌واردها
 // src/pages/tools/dashboard/dash-welcome.js
-import { esc, saveDashUi } from './dash-state.js';
+import { esc, saveDashUi, tourDone } from './dash-state.js';
 
 const SEEN_KEY = 'vixora:welcome-seen';
 
@@ -72,11 +72,13 @@ export async function handleWelcomeAction(action, el, api) {
       closeWelcome(api.root);
       api.toast(`🎉 کاکپیت «${pack[1]}» ساخته شد!`);
       setTimeout(() => api.reload(), 100);
+      if (!tourDone()) setTimeout(() => { try { api.startTour(); } catch { /* ignore */ } }, 900);
       return true;
     }
     case 'wc-close':
       markWelcomeSeen();
       closeWelcome(api.root);
+      if (!tourDone()) setTimeout(() => { try { api.startTour(); } catch { /* ignore */ } }, 900);
       return true;
     default: return false;
   }

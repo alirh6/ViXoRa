@@ -24,7 +24,7 @@ import { WIDGETS_META_12, renderWidgets12, afterWidgets12Render } from './dash-w
 import { renderGoals } from './dash-goals.js';
 import { renderReview } from './dash-review.js';
 import { renderChangelog, hasUnseen, markSeen } from './dash-changelog.js';
-import { maybeWelcome, handleWelcomeAction, closeWelcome } from './dash-welcome.js';
+import { maybeWelcome, handleWelcomeAction, closeWelcome, welcomeSeen } from './dash-welcome.js';
 import { renderInsights } from './dash-insights.js';
 import { renderAchievements, checkAchievements, celebrateFresh } from './dash-achieve.js';
 import { maybeDigest } from './dash-digest.js';
@@ -512,9 +512,10 @@ export function createToolsDashboardPage(ctx = {}) {
       return;
     }
     if (e.key === 'Escape') {
+      if (root.querySelector('[data-close-welcome]')) { handleWelcomeAction('wc-close', root.querySelector('[data-close-welcome]'), api()); return; }
       if (root.querySelector('[data-close-gallery]')) { closeGallery(); return; }
       if (ui.focusWidget) { ui = saveDashUi({ focusWidget: '' }); rerenderShell(); return; }
-      if (isTourActive()) { stopTour(root); return; }
+      if (isTourActive() || document.querySelector('[data-tour-overlay]')) { stopTour(root); return; }
     }
     // ورودی‌های ویجت
     if (handleWidgetKeydown(e, api())) return;
@@ -536,6 +537,15 @@ export function createToolsDashboardPage(ctx = {}) {
     if (e.key.toLowerCase() === 'r' && ui.view === 'cockpit') { reload(); return; }
   }
 
+  /* ---------- تور ایمنی: اورلی‌های بیرون از root ---------- */
+  function onDocClick(e) {
+    if (!root || root.contains(e.target)) return;
+    const el = e.target.closest?.('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+    if (action.startsWith('tour-')) { handleTourAction(action, root, api()); }
+  }
+
   /* ---------- درگ‌اندراپ ---------- */
   function onDragStart(e) {
     const handle = e.target.closest?.('.dash-w-drag');
@@ -546,11 +556,27 @@ export function createToolsDashboardPage(ctx = {}) {
     card.classList.add('dragging');
     try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); } catch { /* ignore */ }
   }
+  function autoScrollWhileDrag(e) {
+    const y = e.clientY;
+    const edge = 88;
+    const panel = document.querySelector('.vcr-panel-content');
+    const speed = (dist) => Math.max(8, Math.min(36, Math.round((edge - dist) / 2)));
+    if (y < edge) window.scrollBy({ top: -speed(y), behavior: 'instant' });
+    else if (y > window.innerHeight - edge) window.scrollBy({ top: speed(window.innerHeight - y), behavior: 'instant' });
+    if (panel) {
+      const r = panel.getBoundingClientRect();
+      if (y < r.top + edge) panel.scrollTop -= speed(Math.max(0, y - r.top));
+      else if (y > r.bottom - edge) panel.scrollTop += speed(Math.max(0, r.bottom - y));
+    }
+  }
   function onDragOver(e) {
     if (!dragId) return;
+    e.preventDefault();
+    autoScrollWhileDrag(e);
+    root.querySelectorAll('.drop-target').forEach((el) => el.classList.remove('drop-target'));
     const card = e.target.closest?.('[data-widget]');
     if (!card || card.dataset.widget === dragId) return;
-    e.preventDefault();
+    card.classList.add('drop-target');
     try { e.dataTransfer.dropEffect = 'move'; } catch { /* ignore */ }
   }
   function onDrop(e) {
@@ -571,7 +597,10 @@ export function createToolsDashboardPage(ctx = {}) {
   }
   function onDragEnd() {
     dragId = null;
-    root.querySelectorAll('.dragging').forEach((el) => el.classList.remove('dragging'));
+    root.querySelectorAll('.dragging, .drop-target').forEach((el) => {
+      el.classList.remove('dragging');
+      el.classList.remove('drop-target');
+    });
   }
 
   /* ================= afterRender / destroy ================= */
@@ -589,8 +618,10 @@ export function createToolsDashboardPage(ctx = {}) {
     document.addEventListener('keydown', onKeydown);
     root.addEventListener('dragstart', onDragStart);
     root.addEventListener('dragover', onDragOver);
+    document.addEventListener('dragover', onDragOver);
     root.addEventListener('drop', onDrop);
     root.addEventListener('dragend', onDragEnd);
+    document.addEventListener('click', onDocClick);
     // دستگیره‌ها draggable
     const markDraggable = () => root.querySelectorAll('.dash-w-drag').forEach((h) => { h.setAttribute('draggable', 'true'); });
     const mo = new MutationObserver(markDraggable);
@@ -613,7 +644,7 @@ export function createToolsDashboardPage(ctx = {}) {
     logActivity('🛩', 'ورود به کاکپیت');
     try { localStorage.setItem('vixora:dash-visits', String(+(localStorage.getItem('vixora:dash-visits') || 0) + 1)); } catch { /* ignore */ }
     try { maybeWelcome(root); } catch { /* ignore */ }
-    if (!tourDone()) {
+    if (!tourDone() && welcomeSeen()) {
       setTimeout(() => { if (!destroyed) startTour(root, api()); }, 600);
     }
   }
@@ -638,6 +669,7 @@ export function createToolsDashboardPage(ctx = {}) {
       root.removeEventListener('dragend', onDragEnd);
     }
     document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('click', onDocClick);
     if (releaseCss) releaseCss();
   }
 

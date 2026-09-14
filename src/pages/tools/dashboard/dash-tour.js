@@ -8,8 +8,8 @@ export const TOUR_STEPS = [
     body: 'اینجا اتاق فرمان همه ابزارهای ViXoRaست. بذار ۶۰ ثانیه‌ای نشونت بدم چه خبره!',
   },
   {
-    sel: '[data-tour="views"]', title: '🧭 ۱۷ نما',
-    body: 'کاکپیت، راهنما (۳۴ فصل!)، گزارش (هفته/ماه/سال)، اعلان‌ها، ژورنال، تمرکز، تقویم، عادت‌ها، ریموت موزیک، تحلیل، تم، خروجی، خودکارها، بینش‌ها، دستاوردها، اهداف و تنظیمات. یک شهر کامل! 🏙',
+    sel: '[data-tour="views"]', title: '🧭 ۱۹ نما',
+    body: 'کاکپیت، راهنما (۴۵ فصل!)، گزارش (هفته/ماه/سال)، اعلان‌ها، ژورنال، تمرکز، تقویم، عادت‌ها، ریموت موزیک، تحلیل، تم، خروجی، خودکارها، بینش‌ها، دستاوردها، اهداف و تنظیمات. یک شهر کامل! 🏙',
   },
   {
     sel: '[data-tour="cmdk"]', title: '⌨️ فرمان‌یاب',
@@ -34,7 +34,7 @@ export const TOUR_STEPS = [
   },
   {
     sel: '[data-tour="views"]', title: '📖 راهنما و 📰 گزارش',
-    body: 'نمای راهنما را حتماً ببین (۴۳ فصل کامل!). نمای گزارش هم کارنامه هفته/ماه/سال را می‌دهد.',
+    body: 'نمای راهنما را حتماً ببین (۴۵ فصل کامل!). نمای گزارش هم کارنامه هفته/ماه/سال را می‌دهد.',
   },
   {
     sel: '[data-widget="backup"]', title: '🛟 بکاپ بگیر!',
@@ -88,7 +88,7 @@ export const TOUR_STEPS = [
   },
   {
     sel: '[data-v="achieve"]', title: '🏆 دستاوردها',
-    body: '۲۸ مدال در ۴ خانواده. هر ورود بررسی می‌شود — برو و همه را جمع کن!',
+    body: '۳۲ مدال در ۴ خانواده. هر ورود بررسی می‌شود — برو و همه را جمع کن!',
     optional: true,
   },
   {
@@ -129,13 +129,15 @@ export function startTour(root, api) {
 
 export function stopTour(root) {
   tourActive = false;
-  root.querySelector('[data-tour-overlay]')?.remove();
-  root.querySelectorAll('.dash-tour-hl').forEach((el) => el.classList.remove('dash-tour-hl'));
+  // حذف سراسری: هرجای DOM که باشد (ریشه‌ای/قدیمی) پاک شود تا هرگز قفل نکند
+  try { document.querySelectorAll('[data-tour-overlay]').forEach((el) => el.remove()); } catch { /* ignore */ }
+  try { root?.querySelectorAll?.('.dash-tour-hl').forEach((el) => el.classList.remove('dash-tour-hl')); } catch { /* ignore */ }
+  document.querySelectorAll('.dash-tour-hl').forEach((el) => el.classList.remove('dash-tour-hl'));
   setTourDone();
 }
 
 function showStep(root, api) {
-  root.querySelector('[data-tour-overlay]')?.remove();
+  try { document.querySelectorAll('[data-tour-overlay]').forEach((el) => el.remove()); } catch { /* ignore */ }
   root.querySelectorAll('.dash-tour-hl').forEach((el) => el.classList.remove('dash-tour-hl'));
   if (tourIdx >= TOUR_STEPS.length) { stopTour(root); api.toast('🎉 تور تمام شد!'); return; }
   const step = TOUR_STEPS[tourIdx];
@@ -153,13 +155,14 @@ function showStep(root, api) {
       <div class="dash-tour-progress">${faDigits(String(tourIdx + 1))} از ${faDigits(String(TOUR_STEPS.length))}</div>
       <h4>${esc(step.title)}</h4>
       <p>${esc(step.body)}</p>
+      <button class="dash-icon-btn dash-tour-x" data-action="tour-skip" title="بستن تور (Esc)">✕</button>
       <div class="dash-row">
         ${tourIdx > 0 ? '<button class="dash-btn dash-btn-sm" data-action="tour-prev">→ قبلی</button>' : ''}
         <button class="dash-btn dash-btn-sm dash-btn-primary" data-action="tour-next">${tourIdx === TOUR_STEPS.length - 1 ? '🎉 پایان' : 'بعدی ←'}</button>
-        <button class="dash-btn dash-btn-sm" data-action="tour-skip">رد کردن ✕</button>
+        <button class="dash-btn dash-btn-sm" data-action="tour-skip">رد کردن</button>
       </div>
     </div>`;
-  document.body.appendChild(overlay);
+  (root || document.body).appendChild(overlay);
 }
 
 export function handleTourAction(action, root, api) {

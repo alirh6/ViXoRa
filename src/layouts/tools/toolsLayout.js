@@ -71,7 +71,7 @@ const MENU = [
     title: { fa: 'مدیریت و مالی', en: 'Manage & Finance', ar: 'الإدارة والمالية', fr: 'Gestion & finance' },
     items: [
       { link: '/tools/building', emoji: '🏢', icon: '/src/global/img/sticker/header/apartment.svg', badge: null, title: { fa: 'مدیریت ساختمان', en: 'Building', ar: 'إدارة المبنى', fr: 'Immeuble' } },
-      { link: '/tools/savingsCircle', emoji: '🏠', icon: '/src/global/img/sticker/header/interior.svg', badge: null, title: { fa: 'وام‌های خانگی', en: 'Home loans', ar: 'قروض منزلية', fr: 'Prêts maison' } },
+      { link: '/tools/savingsCircle', emoji: '🤝', icon: '/src/global/img/sticker/header/interior.svg', badge: null, title: { fa: 'صندوق خانگی (کمیته)', en: 'Savings Circles', ar: 'صندوق التوفير', fr: 'Tontine' } },
       { link: '/tools/bankLoans', emoji: '🏦', icon: '/src/global/img/sticker/header/bank.svg', badge: null, title: { fa: 'وام‌های بانکی', en: 'Bank loans', ar: 'قروض بنكية', fr: 'Prêts bancaires' } },
       { link: '/tools/financial-goals', emoji: '🎯', icon: '/src/global/img/sticker/header/combo_chart.svg', badge: 'new', title: { fa: 'اهداف مالی', en: 'Money goals', ar: 'أهداف مالية', fr: 'Objectifs' } },
     ],
@@ -86,6 +86,8 @@ const MENU = [
       { link: '/tools/task', emoji: '✅', icon: '/src/global/img/sticker/header/task.svg', badge: '۵', title: { fa: 'وظایف', en: 'Tasks', ar: 'المهام', fr: 'Tâches' } },
       { link: '/tools/habits', emoji: '🔥', icon: '/src/global/img/sticker/header/no_celery.svg', badge: null, title: { fa: 'عادت‌ها', en: 'Habits', ar: 'العادات', fr: 'Habitudes' } },
       { link: '/tools/entertainment', emoji: '🎮', icon: '/src/global/img/sticker/header/GameController.svg', badge: null, title: { fa: 'سرگرمی', en: 'Fun', ar: 'الترفيه', fr: 'Loisirs' } },
+      { link: '/tools/kitchen', emoji: '🍳', icon: '/src/global/img/sticker/header/combo_chart.svg', badge: 'new', title: { fa: 'آشپزخونه هوشمند', en: 'Kitchen OS', ar: 'المطبخ', fr: 'Cuisine' } },
+      { link: '/tools/closet', emoji: '👗', icon: '/src/global/img/sticker/header/interior.svg', badge: 'new', title: { fa: 'کمد هوشمند', en: 'Closet OS', ar: 'الخزانة', fr: 'Dressing' } },
     ],
   },
   {
@@ -104,6 +106,44 @@ const FALLBACK_AVATAR =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300f0ff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>'
   );
+
+/* ================================================================== */
+/* هدر Priority+ — جمع‌شدن تدریجی گزینه‌ها در منوی «بیشتر»                  */
+/* ================================================================== */
+
+const HACT_ORDER = ['net', 'clock', 'side', 'focus', 'cust', 'help', 'lang', 'act', 'music'];
+const HACT_SEL = {
+  net: '#vcrNetPill',
+  clock: '.vcr-datetime-card',
+  side: '#vcrSideCycle',
+  focus: '#vcrFocusBtn',
+  cust: '#vcrCustBtn',
+  help: '#vcrHelpBtn',
+  lang: '#vcrLangWrap',
+  act: '#vcrActWrap',
+  music: '#vcrMusicbar',
+};
+const MORE_LABELS = {
+  net: { fa: 'وضعیت شبکه', en: 'Network', ar: 'الشبكة', fr: 'Réseau' },
+  clock: { fa: 'ساعت و تاریخ', en: 'Clock & date', ar: 'الساعة والتاريخ', fr: 'Horloge & date' },
+  side: { fa: 'حالت سایدبار', en: 'Sidebar mode', ar: 'وضع القائمة', fr: 'Mode latéral' },
+  focus: { fa: 'حالت تمرکز', en: 'Focus mode', ar: 'وضع التركيز', fr: 'Mode focus' },
+  cust: { fa: 'شخصی‌سازی', en: 'Customize', ar: 'تخصيص', fr: 'Personnaliser' },
+  help: { fa: 'راهنما', en: 'Help', ar: 'المساعدة', fr: 'Aide' },
+  lang: { fa: 'زبان', en: 'Language', ar: 'اللغة', fr: 'Langue' },
+  act: { fa: 'فعالیت‌ها', en: 'Activity', ar: 'النشاط', fr: 'Activité' },
+  music: { fa: 'موزیک‌بار', en: 'Music bar', ar: 'شريط الموسيقى', fr: 'Barre musique' },
+};
+const MORE_MARKUP =
+  '<div class="vcr-dropdown-wrapper vcr-more-wrap" id="vcrMoreWrap">' +
+  '<button class="vcr-action-icon-btn vcr-more-btn" id="vcrMoreBtn" type="button" aria-haspopup="menu" aria-expanded="false" title="">' +
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>' +
+  '<span class="vcr-more-count hidden" id="vcrMoreCount">0</span></button>' +
+  '<div class="vcr-popover vcr-more-pop hidden" id="vcrMorePop" role="menu">' +
+  '<div class="vcr-popover__header vcr-more-head"><h4 class="vcr-notif-title" id="vcrMoreTitle"></h4></div>' +
+  '<div class="vcr-more-list" id="vcrMoreList">' +
+  HACT_ORDER.map((k) => '<div class="vcr-more-item" data-more-row="' + k + '" hidden><span class="vcr-more-lbl"></span></div>').join('') +
+  '</div></div></div>';
 
 /* ================================================================== */
 /* دیکشنری کروم لایوت                                                     */
@@ -182,6 +222,7 @@ const LT = {
   hFeatures: { fa: '🚀 قابلیت‌ها', en: '🚀 Features', ar: '🚀 المميزات', fr: '🚀 Fonctionnalités' },
   hCustom: { fa: '🎨 شخصی‌سازی', en: '🎨 Customizing', ar: '🎨 التخصيص', fr: '🎨 Personnalisation' },
   hInteract: { fa: '✨ تعامل‌ها', en: '✨ Interactions', ar: '✨ التفاعلات', fr: '✨ Interactions' },
+  more: { fa: 'ابزارهای بیشتر', en: 'More tools', ar: 'المزيد', fr: 'Plus d’outils' },
 };
 
 function lt(key) {
@@ -541,7 +582,7 @@ export function createToolsLayout() {
       '<span data-vcr-i18n="searchPh">' + escapeHtml(lt('searchPh')) + '</span></span>' +
       '<kbd class="vcr-kbd">Ctrl K</kbd></button>' +
       /* موزیک‌بار */
-      '<div class="vcr-musicbar" id="vcrMusicbar" data-widget="music">' +
+      '<span class="vcr-hpark" data-hpark="music"></span><div class="vcr-musicbar" id="vcrMusicbar" data-widget="music" data-hact="music">' +
       '<button class="vcr-music-cover" id="vcrMusicCover" type="button" title="' + escapeHtml(lt('musicOpen')) + '"><span class="vcr-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="vcr-music-note">🎵</span></button>' +
       '<button class="vcr-music-meta" id="vcrMusicMeta" type="button"><span class="vcr-music-title" id="vcrMusicTitle"><span>' + escapeHtml(lt('musicIdle')) + '</span></span><span class="vcr-music-sub" id="vcrMusicSub">ViXoRa Radio</span><span class="vcr-music-progress"><i id="vcrMusicProg"></i></span></button>' +
       '<span class="vcr-music-btns"><button class="vcr-mini-btn" id="vcrPrev" type="button" title="⏮ (Alt+,)">⏮</button>' +
@@ -551,20 +592,21 @@ export function createToolsLayout() {
       '</div>' +
 
       '<div class="vcr-header__actions">' +
-      '<div class="vcr-status-pill" id="vcrNetPill" data-widget="net" title="Ping"><span class="vcr-status-dot is-check" id="vcrNetDot"></span><span class="vcr-status-text" id="vcrNetText">…</span></div>' +
-      '<div class="vcr-datetime-card" data-widget="clock" aria-label="clock"><div class="vcr-time" id="vcrTime"><span>--:--</span></div><div class="vcr-date" id="vcrDate">…</div><span class="vcr-daybar"><i id="vcrDaybar"></i></span></div>' +
+      '<span class="vcr-hpark" data-hpark="net"></span><div class="vcr-status-pill" id="vcrNetPill" data-hact="net" data-widget="net" title="Ping"><span class="vcr-status-dot is-check" id="vcrNetDot"></span><span class="vcr-status-text" id="vcrNetText">…</span></div>' +
+      '<span class="vcr-hpark" data-hpark="clock"></span><div class="vcr-datetime-card" data-widget="clock" data-hact="clock" aria-label="clock"><div class="vcr-time" id="vcrTime"><span>--:--</span></div><div class="vcr-date" id="vcrDate">…</div><span class="vcr-daybar"><i id="vcrDaybar"></i></span></div>' +
 
-      '<button class="vcr-action-icon-btn" id="vcrSideCycle" type="button" title="' + escapeHtml(lt('sideToggle')) + '"><span class="vcr-side-ico" id="vcrSideIco">◀</span></button>' +
-      '<button class="vcr-action-icon-btn" id="vcrFocusBtn" type="button" title="' + escapeHtml(lt('fullscreen')) + ' (Alt+F)">⛶</button>' +
-      '<button class="vcr-action-icon-btn" id="vcrCustBtn" type="button" title="' + escapeHtml(lt('customize')) + ' (Alt+C)">🎨</button>' +
-      '<button class="vcr-action-icon-btn" id="vcrHelpBtn" type="button" title="' + escapeHtml(lt('help')) + ' (?)">❔</button>' +
+      '<span class="vcr-hpark" data-hpark="side"></span><button class="vcr-action-icon-btn" id="vcrSideCycle" data-hact="side" type="button" title="' + escapeHtml(lt('sideToggle')) + '"><span class="vcr-side-ico" id="vcrSideIco">◀</span></button>' +
+      '<span class="vcr-hpark" data-hpark="focus"></span><button class="vcr-action-icon-btn" id="vcrFocusBtn" data-hact="focus" type="button" title="' + escapeHtml(lt('fullscreen')) + ' (Alt+F)">⛶</button>' +
+      '<span class="vcr-hpark" data-hpark="cust"></span><button class="vcr-action-icon-btn" id="vcrCustBtn" data-hact="cust" type="button" title="' + escapeHtml(lt('customize')) + ' (Alt+C)">🎨</button>' +
+      '<span class="vcr-hpark" data-hpark="help"></span><button class="vcr-action-icon-btn" id="vcrHelpBtn" data-hact="help" type="button" title="' + escapeHtml(lt('help')) + ' (?)">❔</button>' +
 
-      '<div class="vcr-dropdown-wrapper" id="vcrLangWrap">' +
+      '<span class="vcr-hpark" data-hpark="lang"></span><div class="vcr-dropdown-wrapper" id="vcrLangWrap" data-hact="lang">' +
       '<button class="vcr-action-icon-btn" id="vcrLangBtn" type="button" title="' + escapeHtml(lt('lang')) + ' (Alt+L)" aria-haspopup="menu" aria-expanded="false"><span id="vcrLangFlag">' + escapeHtml(langMeta.flag) + '</span></button>' +
       '<div class="vcr-popover vcr-popover--lang hidden" id="vcrLangPop" role="menu"><div class="vcr-popover__header"><h4 class="vcr-notif-title">' + escapeHtml(lt('lang')) + '</h4></div><div class="vcr-popover__body" id="vcrLangList"></div></div>' +
       '</div>' +
 
-      '<div class="vcr-dropdown-wrapper">' +
+      '<span class="vcr-hpark" data-hpark="act"></span>' +
+      '<div class="vcr-dropdown-wrapper" id="vcrActWrap" data-hact="act">' +
       '<button class="vcr-action-icon-btn" id="vcrActBtn" type="button" title="' + escapeHtml(lt('actTitle')) + ' (Alt+A)" aria-haspopup="menu" aria-expanded="false">' +
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>' +
       '<span class="vcr-notif-badge hidden" id="vcrActBadge"></span></button>' +
@@ -579,6 +621,7 @@ export function createToolsLayout() {
       '<div class="vcr-popover vcr-popover--user hidden" id="vcrUserPop" role="menu"><div class="vcr-popover__header"><h4 class="vcr-notif-title" data-vcr-i18n="userAccount">' + escapeHtml(lt('userAccount')) + '</h4><span class="vcr-badge-count" id="vcrUserPlan">' + escapeHtml(String(user.plan || 'free')) + '</span></div><div class="vcr-popover__body" id="vcrUserBody"></div></div>' +
       '</div>' +
       '</div>' +
+      MORE_MARKUP +
       '</header>' +
 
       /* ---------- بدنه ---------- */
@@ -666,6 +709,7 @@ export function createToolsLayout() {
     refs.tip = qs('#vcrTip');
     refs.statusMeta = qs('#vcrStatusMeta');
     refs.focusChip = qs('#vcrFocusChip');
+    refs.header = qs('.vcr-header');
 
     outlet = refs.outlet || null;
 
@@ -683,6 +727,8 @@ export function createToolsLayout() {
     startNetMonitor();
     bindMusic();
     bindPopovers();
+    bindMorePop();
+    bindHeaderFit();
     bindPalette();
     bindDrawer();
     bindHelp();
@@ -713,6 +759,7 @@ export function createToolsLayout() {
     destroyed = true;
     for (const id of intervals.splice(0)) window.clearInterval(id);
     if (partyTimer) window.clearInterval(partyTimer);
+    if (headerRO) { try { headerRO.disconnect(); } catch { /* ignore */ } headerRO = null; }
     if (vanishTimer) window.clearTimeout(vanishTimer);
     for (const u of unsubs.splice(0)) {
       try {
@@ -771,6 +818,7 @@ export function createToolsLayout() {
     updateStatusMeta();
     syncDrawerUI();
     requestAnimationFrame(() => glideToActive(false));
+    requestAnimationFrame(() => fitHeader());
   }
 
   function updateStatusMeta() {
@@ -808,6 +856,8 @@ export function createToolsLayout() {
     renderHelp(qs('#vcrHelpFilter')?.value || '');
     renderDrawer();
     updateClock(true);
+    setMoreTexts();
+    fitHeader(true);
   }
 
   /* ================================================================== */
@@ -1003,6 +1053,7 @@ export function createToolsLayout() {
     if (mqMobile) {
       on(mqMobile, 'change', () => {
         placeLangBtn();
+        fitHeader(true);
         if (!isMobileView() && mobileNavOpen) setMobileNav(false);
         if (isMobileView()) syncBottomNav();
       });
@@ -2204,7 +2255,7 @@ export function createToolsLayout() {
   function attachAvatarFallbacks() {
     const scope = root || document;
     scope.querySelectorAll('img[data-vcr-avatar]').forEach((img) => {
-      if (!(img instanceof HTMLImageElement) || img.dataset.fbBound === '1') return;
+      if ((typeof HTMLImageElement !== 'undefined' && !(img instanceof HTMLImageElement)) || img.dataset.fbBound === '1') return;
       img.dataset.fbBound = '1';
       on(img, 'error', () => {
         if (img.dataset.fallbackApplied === '1') return;
@@ -2219,7 +2270,8 @@ export function createToolsLayout() {
     void keepToasts;
     openPopover = null;
     qsa('.vcr-popover').forEach((p) => p.classList.add('hidden'));
-    ['vcrActBtn', 'vcrUserBtn', 'vcrLangBtn'].forEach((id) => {
+    closeMorePop();
+    ['vcrActBtn', 'vcrUserBtn', 'vcrLangBtn', 'vcrMoreBtn'].forEach((id) => {
       const b = document.getElementById(id);
       if (b) b.setAttribute('aria-expanded', 'false');
     });
@@ -2240,6 +2292,181 @@ export function createToolsLayout() {
     }
     if (force) resetScrollLock();
     else if (!cmdkOpen && !customizeOpen && !helpOpen) unlockScroll();
+  }
+
+  /* ================================================================== */
+  /* هدر Priority+ — آیتم‌ها با کم‌شدن جا، یکی‌یکی به منوی «بیشتر» می‌روند     */
+  /* ================================================================== */
+
+  let hactCollapsed = [];
+  let headerRO = null;
+
+  function hactNode(key) {
+    return qs('[data-hact="' + key + '"]');
+  }
+  function hactPark(key) {
+    return qs('[data-hpark="' + key + '"]');
+  }
+  function hactRow(key) {
+    return qs('[data-more-row="' + key + '"]');
+  }
+
+  function setMoreTexts() {
+    const lang = getLang();
+    const T = LT.more;
+    const title = qs('#vcrMoreTitle');
+    if (title) title.textContent = T[lang] || T.en;
+    const btn = qs('#vcrMoreBtn');
+    if (btn) btn.title = T[lang] || T.en;
+    for (const k of HACT_ORDER) {
+      const lbl = qs('[data-more-row="' + k + '"] .vcr-more-lbl');
+      if (lbl) lbl.textContent = (MORE_LABELS[k] || {})[lang] || k;
+    }
+  }
+
+  function isHactAvailable(key) {
+    const node = hactNode(key);
+    if (!node || node.classList.contains('hidden')) return false;
+    return !node.closest('#vcrMorePop');
+  }
+
+  function collapseHact(key) {
+    const node = hactNode(key);
+    const row = hactRow(key);
+    if (!node || !row || node.closest('#vcrMorePop')) return false;
+    row.appendChild(node);
+    row.hidden = false;
+    return true;
+  }
+
+  function restoreHact(key) {
+    const node = hactNode(key);
+    const row = hactRow(key);
+    const park = hactPark(key);
+    if (!node || !park) return false;
+    if (node.closest('#vcrMorePop') && park.parentNode && !node.contains(park) && park !== node) {
+      park.parentNode.insertBefore(node, park);
+    }
+    if (row) row.hidden = true;
+    return true;
+  }
+
+  function headerOverflowed() {
+    const h = refs.header;
+    return !!h && h.scrollWidth > h.clientWidth + 2;
+  }
+
+  function headerHasSlack() {
+    const h = refs.header;
+    return !!h && h.scrollWidth <= h.clientWidth - 56;
+  }
+
+  function fitHeader(rebuild = false) {
+    const h = refs.header;
+    if (!h || destroyed) return;
+    if (h.getBoundingClientRect().height < 24) return;
+
+    if (rebuild) {
+      for (const k of [...hactCollapsed].reverse()) restoreHact(k);
+      hactCollapsed = [];
+      setMoreTexts();
+    }
+
+    let guard = 30;
+    while (guard-- > 0) {
+      if (headerOverflowed()) {
+        const pick = HACT_ORDER.find((k) => !(k === 'lang' && isMobileView()) && !hactCollapsed.includes(k) && isHactAvailable(k));
+        if (!pick) break;
+        collapseHact(pick);
+        hactCollapsed.push(pick);
+      } else if (hactCollapsed.length && headerHasSlack()) {
+        const last = hactCollapsed[hactCollapsed.length - 1];
+        restoreHact(last);
+        hactCollapsed.pop();
+        if (headerOverflowed()) {
+          collapseHact(last);
+          hactCollapsed.push(last);
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    updateMoreUI();
+  }
+
+  function updateMoreUI() {
+    const wrap = qs('#vcrMoreWrap');
+    const cnt = qs('#vcrMoreCount');
+    if (!wrap) return;
+    const n = hactCollapsed.length;
+    wrap.classList.toggle('is-empty', n === 0);
+    if (cnt) {
+      cnt.textContent = String(n);
+      cnt.classList.toggle('hidden', n === 0);
+    }
+    if (n === 0) closeMorePop();
+  }
+
+  function restaggerRows(pop) {
+    pop.querySelectorAll('.vcr-more-item:not([hidden])').forEach((row, i) => {
+      row.style.animation = 'none';
+      void row.offsetWidth;
+      row.style.animation = '';
+      row.style.animationDelay = Math.min(i * 34, 340) + 'ms';
+    });
+  }
+
+  function toggleMorePop(force) {
+    const pop = qs('#vcrMorePop');
+    const btn = qs('#vcrMoreBtn');
+    const wrap = qs('#vcrMoreWrap');
+    if (!pop || !btn) return;
+    const willOpen = typeof force === 'boolean' ? force : pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !willOpen);
+    if (wrap) wrap.classList.toggle('is-open', willOpen);
+    btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen && getLayoutPrefs().motion) restaggerRows(pop);
+  }
+
+  function closeMorePop() {
+    toggleMorePop(false);
+  }
+
+  function bindMorePop() {
+    on(qs('#vcrMoreBtn'), 'click', (e) => {
+      e.stopPropagation();
+      toggleMorePop();
+    });
+    on(document, 'click', (e) => {
+      const pop = qs('#vcrMorePop');
+      if (!pop || pop.classList.contains('hidden')) return;
+      const btn = qs('#vcrMoreBtn');
+      if (pop.contains(e.target) || (btn && btn.contains(e.target))) return;
+      closeMorePop();
+    });
+  }
+
+  function bindHeaderFit() {
+    refs.header = qs('.vcr-header');
+    setMoreTexts();
+    try {
+      if (typeof ResizeObserver !== 'undefined') {
+        headerRO = new ResizeObserver(() => fitHeader());
+        if (refs.header) headerRO.observe(refs.header);
+      }
+    } catch {
+      /* ignore */
+    }
+    on(window, 'resize', () => fitHeader());
+    try {
+      if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+        document.fonts.ready.then(() => fitHeader(true)).catch(() => {});
+      }
+    } catch {
+      /* ignore */
+    }
+    fitHeader(true);
   }
 
   /* ---------------- public API ---------------- */

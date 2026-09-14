@@ -1,0 +1,220 @@
+/* ViXoRa visual overhaul — loaded last. Responsive + glyph clip + equal cards + motion */
+
+html { line-height: 1.7; }
+body { overflow-x: hidden; }
+h1, h2, h3, h4, h5, p, label, button, a, li, span, b, strong {
+  line-height: 1.65;
+}
+h1, h2, h3, h4 {
+  overflow: visible !important;
+  padding-block: 0.12em;
+  text-wrap: balance;
+}
+
+/* Persian ascenders/descenders: don't clip text boxes */
+.vcr-brand-name,
+.vcr-user-name,
+.vcr-menu-text,
+.vcr-music-title,
+.vcr-cmdk-item__title,
+.vcr-tip,
+.dash-w-title,
+.dash-title h1,
+.kt-head h1,
+.wd-head h1,
+.sv-head h1 {
+  overflow: visible !important;
+  line-height: 1.7 !important;
+  padding-block: 0.14em;
+  white-space: normal;
+  -webkit-text-fill-color: unset;
+}
+.vcr-brand-name,
+.dash-title h1 {
+  background: none !important;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.vcr-datetime-card { overflow: visible; }
+.vcr-panel-content {
+  overflow: auto !important;
+  overflow-x: hidden;
+  min-width: 0;
+}
+.vcr-sidebar { overflow: visible; }
+.vcr-sidebar__scroll { overflow-x: hidden; overflow-y: auto; }
+
+/* Header: wrap instead of crush */
+@media (max-width: 1280px) {
+  .vcr-header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--vcr-header-h);
+    row-gap: 8px;
+  }
+  .vcr-header__center { flex: 1 1 220px; min-width: 0; }
+  .vcr-header__actions { flex-wrap: wrap; justify-content: flex-end; }
+  .vcr-musicbar { max-width: min(280px, 100%); }
+}
+@media (max-width: 900px) {
+  .vcr-header { padding-inline: 10px; }
+  .vcr-body { padding: 8px; flex-direction: column !important; }
+  .vcr-panel-content { padding: 12px; border-radius: 16px; }
+}
+
+/* Tables never explode layout */
+table { max-width: 100%; }
+.vx-scroll-x, [data-table], .kt-main table, .sv-root table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+img, svg, video, canvas { max-width: 100%; height: auto; }
+
+/* Equal dashboard widgets */
+.dash-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)) !important;
+  gap: 16px !important;
+  align-items: stretch;
+}
+.dash-widget,
+.dash-widget[data-size="s"],
+.dash-widget[data-size="m"],
+.dash-widget[data-size="l"],
+.dash-widget[data-size="xl"] {
+  grid-column: auto !important;
+  min-height: 260px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+  border-radius: 22px !important;
+}
+.dash-widget[data-size="xl"] {
+  grid-column: 1 / -1 !important;
+}
+@media (min-width: 1100px) {
+  .dash-widget[data-size="l"] { grid-column: span 2 !important; }
+}
+.dash-w-head { overflow: visible; flex-shrink: 0; }
+.dash-w-body { flex: 1; min-height: 0; overflow: auto; padding: 14px; }
+.dash-widget.drop-target {
+  outline: 2px dashed var(--d-c1, #8b5cf6);
+  outline-offset: 3px;
+  transform: scale(1.02);
+}
+.dash-header { flex-wrap: wrap; }
+.dash-views {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.dash-view-btn { flex: 0 0 auto; }
+
+@media (max-width: 760px) {
+  .dash-root { padding: 10px 8px 80px !important; }
+  .dash-header { position: static !important; margin: 0 0 12px !important; }
+  .dash-logo { width: 44px; height: 44px; }
+  .dash-widget, .dash-widget[data-size="l"], .dash-widget[data-size="xl"] {
+    grid-column: 1 / -1 !important;
+    min-height: 0;
+  }
+}
+
+/* Kitchen / closet / savings mobile */
+.kt-root, .wd-root, .sv-root { padding: 14px !important; overflow: visible; }
+.kt-grid, .wd-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)) !important;
+}
+.kt-tabs, .wd-tabs, .sv-tabs {
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch;
+}
+.kt-tab, .wd-tab, .sv-tab { flex: 0 0 auto; }
+.kt-overlay, .wd-overlay, .sv-overlay { padding: 10px; }
+.kt-modal, .wd-modal { width: min(720px, calc(100vw - 20px)); }
+
+/* Home header mobile already; extra polish */
+@media (max-width: 960px) {
+  .HL-header { height: auto; min-height: 60px; flex-wrap: wrap; padding: 8px 12px; }
+  .HL-main { padding-top: 68px; }
+}
+@media (max-width: 560px) {
+  .HL-footer__base { flex-direction: column; text-align: center; }
+}
+
+/* Scroll-driven cinematic (home) */
+@supports (animation-timeline: scroll()) {
+  .hm-hero__orb--a {
+    animation: hm-orb-scroll linear both;
+    animation-timeline: scroll();
+    animation-range: 0 70vh;
+  }
+  .hm-hero__title {
+    animation: hm-title-scroll linear both;
+    animation-timeline: scroll();
+    animation-range: 0 50vh;
+  }
+}
+@keyframes hm-orb-scroll {
+  to { transform: translate3d(-80px, 120px, 0) scale(1.4); opacity: 0.1; }
+}
+@keyframes hm-title-scroll {
+  to { transform: translateY(-40px) scale(0.92); opacity: 0.35; filter: blur(2px); }
+}
+
+.hm-film {
+  position: relative;
+  height: 42vh;
+  margin: 20px auto;
+  max-width: 1100px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--hm-border, rgba(255,255,255,.1));
+  background:
+    linear-gradient(90deg, rgba(34,211,238,.15), rgba(167,139,250,.15)),
+    repeating-linear-gradient(90deg, #0b1020 0 12%, #141a2e 12% 24%);
+  background-size: 400% 100%;
+  animation: hm-film 18s linear infinite;
+}
+@keyframes hm-film { to { background-position: 100% 0; } }
+.hm-film::after {
+  content: 'اسکرول کن — فریم بعدی';
+  position: absolute; inset: auto 16px 14px auto;
+  font-size: 12px; color: #9aa5c4;
+}
+@supports (animation-timeline: scroll()) {
+  .hm-film {
+    animation: hm-film-scrub linear both;
+    animation-timeline: scroll();
+    animation-range: 10vh 90vh;
+  }
+}
+@keyframes hm-film-scrub {
+  from { background-position: 0 0; filter: saturate(1); }
+  to { background-position: 100% 0; filter: saturate(1.4) contrast(1.1); }
+}
+
+.hm-feature, .hm-tool, .hm-stat {
+  transition: transform .35s cubic-bezier(.22,.9,.24,1), box-shadow .35s, border-color .3s;
+}
+.hm-feature:hover, .hm-tool:hover, .hm-stat:hover {
+  box-shadow: 0 20px 50px -20px rgba(34,211,238,.45);
+}
+
+/* Auth pages */
+@media (max-width: 640px) {
+  .auth-card, .login-card, [class*="auth"] form { width: 100% !important; max-width: 100%; }
+}
+
+/* Touch targets */
+@media (pointer: coarse) {
+  button, .vcr-action-icon-btn, .dash-icon-btn, .kt-btn, .wd-btn {
+    min-height: 40px;
+  }
+}

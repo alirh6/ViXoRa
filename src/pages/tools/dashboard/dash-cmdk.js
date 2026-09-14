@@ -28,6 +28,7 @@ export function buildCommands(api) {
   add('go-fin', '💰', 'سوپراپ مالی', 'Go F', go('/tools/invoices'), 'مالی پول حساب فاکتور finance');
   add('go-cust', '👥', 'مشتریان', 'Go C', go('/tools/customerInfo'), 'مشتری customer');
   add('go-build', '🏢', 'ساختمان', 'Go B', go('/tools/building'), 'ساختمان واحد building');
+  add('go-save', '🤝', 'صندوق خانگی', 'Go S', go('/tools/savingsCircle'), 'صندوق کمیته قرعه rotating savings');
   add('go-arcade', '🎮', 'آرکید', 'Go A', go('/tools/entertainment'), 'بازی arcade game');
   add('go-dash', '🛩', 'کاکپیت', 'Go D', go('/tools/dashboard'), 'داشبورد cockpit');
 

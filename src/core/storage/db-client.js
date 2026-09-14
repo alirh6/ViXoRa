@@ -285,25 +285,51 @@ function mirrorToRemote(updater) {
  * اولین اجرا: جدول کاربران را در LocalStorage می‌سازد.
  * چندبار صدا زده شود هم امن است (idempotent).
  */
-export function ensureDatabaseReady() {
+// export function ensureDatabaseReady() {
+//   if (seedPromise) return seedPromise;
+
+//   seedPromise = Promise.resolve().then(() => {
+//     const existing = storage.get(STORAGE_KEYS.users, null);
+
+//     if (existing && Array.isArray(existing.users) && existing.users.length > 0) {
+//       return existing.users.length;
+//     }
+
+//     const seeded = SEED_USERS.map((user) => normalizeUserRecord(cloneUser(user)));
+    
+//     writeUsersTable(seeded);
+//     storage.set(STORAGE_KEYS.seed, new Date().toISOString());
+
+//     return seeded.length;
+//   });
+
+//   return seedPromise;
+// }
+
+export async function ensureDatabaseReady() {
+  // اگر یک عملیات راه‌اندازی در جریان است، همان را بازگردان (جلوگیری از Race Condition)
   if (seedPromise) return seedPromise;
 
-  seedPromise = Promise.resolve().then(() => {
-    const existing = storage.get(STORAGE_KEYS.users, null);
+  seedPromise = (async () => {
+    const existingTable = storage.get(STORAGE_KEYS.users, null);
 
-    if (existing && Array.isArray(existing.users) && existing.users.length > 0) {
-      return existing.users.length;
+    // بررسی اینکه آیا جدول کاربران از قبل وجود دارد و فرمت آن آرایه است یا نه
+    const hasValidTable = existingTable && Array.isArray(existingTable.users);
+
+    if (!hasValidTable) {
+      // برای بار اول: ایجاد یک جدول کاربران کاملاً خالی
+      writeUsersTable([]);
+      storage.set(STORAGE_KEYS.seed, new Date().toISOString());
+      return 0; // تعداد کاربران در ابتدای کار صفر است
     }
 
-    const seeded = SEED_USERS.map((user) => normalizeUserRecord(cloneUser(user)));
-    writeUsersTable(seeded);
-    storage.set(STORAGE_KEYS.seed, new Date().toISOString());
-
-    return seeded.length;
-  });
+    // اگر از قبل جدول ساخته شده بود، تعداد کاربران واقعی ثبت‌نام‌شده را برگردان
+    return existingTable.users.length;
+  })();
 
   return seedPromise;
 }
+
 
 /** بازنشانی کامل دیتابیس به حالت اولیه */
 export function resetDatabase() {
