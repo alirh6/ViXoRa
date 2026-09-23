@@ -4,6 +4,8 @@ import { esc, load } from './dash-state.js';
 
 const UNLOCK_KEY = 'vixora:achieve-unlocked';
 
+const testNewProject = null
+
 export const ACHIEVEMENTS = [
   // شروع
   { id: 'first-step', icon: '👣', name: 'قدم اول', desc: 'اولین ورود به کاکپیت', check: () => true },
