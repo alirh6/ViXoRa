@@ -2,10 +2,12 @@
 
 
 .dashboardLayoutRoot{
-
+  width: 100%;
 }
 .DLHeader{
   display: flex;
+  width: 90%;
+  margin: 0 auto;
 }
 .DLHeaderL-userInfo{
   display: flex;
