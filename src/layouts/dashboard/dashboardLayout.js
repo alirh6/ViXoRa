@@ -6,6 +6,14 @@ export function createDashboardLayout (ct) {
 
   function render () {
     return /*html*/`
+      <div class="DL-root">
+        <header class="DL-header">
+          <section class="DL-leftHeader"></section>
+          <section class="DL-middleHeader"></section>
+          <section class="DL-rightHeader"></section>
+        </header>
+      </div>
+
     `
   }
 
